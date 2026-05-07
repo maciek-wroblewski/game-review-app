@@ -25,10 +25,15 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'username' => fake()->unique()->userName(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
+            // We use static password so all test users have the same password (e.g., 'password')
             'password' => static::$password ??= Hash::make('password'),
+            'bio' => fake()->sentence(),
+            // We can use a service like DiceBear to generate quick random avatars
+            'avatar' => 'https://api.dicebear.com/7.x/pixel-art/svg?seed=' . fake()->word(),
+            'verified' => fake()->boolean(10), // 10% chance to be a verified user
             'remember_token' => Str::random(10),
         ];
     }
