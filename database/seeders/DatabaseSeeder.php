@@ -7,6 +7,8 @@ use App\Models\UserSetting;
 use App\Models\Game;
 use App\Models\Post;
 use App\Models\Media;
+use App\Models\Genre;
+use App\Models\Review;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -23,11 +25,6 @@ class DatabaseSeeder extends Seeder
             ChatSeeder::class,
         ]);
 
-        //  Automatically generate User Settings for everyone
-        User::all()->each(function ($user) {
-            UserSetting::factory()->create(['user_id' => $user->id]);
-        });
-
         $posts = Post::inRandomOrder(1234)->take(20)->get();
         foreach ($posts as $post) {
             Media::factory()->create(['post_id' => $post->id]);
@@ -38,6 +35,15 @@ class DatabaseSeeder extends Seeder
         // =========================================================
         $users = User::all();
         $games = Game::all();
+
+        $genres = Genre::all();
+
+        // Assign 1 to 3 random genres to every game
+        $games->each(function ($game) use ($genres) {
+            $game->genres()->attach(
+                $genres->random(rand(1, 3))->pluck('id')->toArray()
+            );
+        });
 
         foreach ($users as $user) {
             
@@ -56,8 +62,34 @@ class DatabaseSeeder extends Seeder
 
         // POPULATE 'game_credits': Assign a few random users as developers to games
         foreach ($games as $game) {
-            $randomDev = $users->random();
-            $game->credits()->attach($randomDev->id, ['role' => 'Lead Developer']);
+            // Regular posts
+            Post::factory(10)->create([
+                'hub_id' => $game->id,
+                'hub_type' => get_class($game),
+            ]);
+
+            // Create 5 reviews manually in a loop to avoid Collection/Closure issues
+            for ($i = 0; $i < 5; $i++) {
+                // 1. Create the Post first
+                $post = Post::factory()->create([
+                    'hub_id' => $game->id,
+                    'hub_type' => get_class($game),
+                    'user_id' => $users->random()->id,
+                ]);
+
+                // 2. Create the Review linked to that post
+                $review = \App\Models\Review::factory()->create([
+                    'post_id' => $post->id,
+                ]);
+
+                // 3. Create the 3 replies to that specific post
+                Post::factory(3)->create([
+                    'parent_id' => $post->id, 
+                    'hub_id' => $game->id,
+                    'hub_type' => get_class($game),
+                    'user_id' => $users->random()->id,
+                ]);
+            }
         }
     }
 }

@@ -127,4 +127,14 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Conversation::class, 'conversation_user')->withPivot('last_read_at')->withTimestamps();
     }
+
+    protected static function booted(): void
+    {
+        static::created(function ($user) {
+            $user->settings()->create([
+                'comments' => 'everyone',
+                'dms' => 'mutuals',
+            ]);
+        });
+    }
 }

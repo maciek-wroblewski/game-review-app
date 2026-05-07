@@ -25,7 +25,7 @@ class PostSeeder extends Seeder
             $post->hub_id = $games->random()->id;
             $post->save();
 
-            // Create 1-3 replies for each of these posts (Reddit-style nesting!)
+            // Create 1-3 replies for each of these posts
             Post::factory(rand(1, 3))->create([
                 'hub_type' => $post->hub_type,
                 'hub_id' => $post->hub_id,

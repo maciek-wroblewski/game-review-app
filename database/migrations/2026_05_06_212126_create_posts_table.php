@@ -22,8 +22,6 @@ return new class extends Migration
             $table->foreignId('parent_id')->nullable()->constrained('posts')->cascadeOnDelete();
             
             $table->text('body');
-            $table->string('format_type')->default('post'); // post, article, review
-            $table->unsignedTinyInteger('rating')->nullable(); // 1-10 or 1-100
             $table->boolean('is_locked')->default(false);
             
             // Counter cache

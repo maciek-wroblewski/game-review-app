@@ -17,7 +17,7 @@ class GenreSeeder extends Seeder
         ];
 
         foreach ($genres as $genre) {
-            Genre::create(['name' => $genre]); // Slug auto-generates via Model boot!
+            Genre::create(['name' => $genre]);
         }
     }
 }

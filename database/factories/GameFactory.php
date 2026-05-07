@@ -22,4 +22,5 @@ class GameFactory extends Factory
             'banner_img' => 'https://placehold.co/1200x400/1a1a1a/444444?text=' . urlencode('Banner'),
         ];
     }
+    
 }

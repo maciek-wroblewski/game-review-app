@@ -11,8 +11,7 @@ class Post extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id', 'parent_id', 'body', 'format_type', 
-        'rating', 'is_locked', 'likes_count'
+        'user_id', 'parent_id', 'body', 'is_locked', 'likes_count'
     ];
 
     protected function casts(): array
@@ -50,5 +49,17 @@ class Post extends Model
     public function likes()
     {
         return $this->morphToMany(User::class, 'likeable', 'likes')->withTimestamps();
+    }
+
+    public function review()
+    {
+        return $this->hasOne(Review::class);
+    }
+
+    // Helper to check if this post is a review/article
+    
+    public function isReview(): bool
+    {
+        return $this->review()->exists();
     }
 }
