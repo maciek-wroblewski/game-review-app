@@ -1,3 +1,3 @@
-<x-layout :headtitle="$headtitle">
+<x-layout headtitle="Home">
     hello bro
 </x-layout>
