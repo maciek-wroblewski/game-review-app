@@ -4,16 +4,15 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Playlist;
 use App\Models\User;
+use App\Models\Playlist;
 
 class PlaylistSeeder extends Seeder
 {
     public function run(): void
     {
         // Get our admin user (ID 1)
-        $admin = User::find(1, ['id']);
-
+        $admin = User::findOrFail(1, ['id']);
         // Generate the 4 system lists for the Admin
         $systemLists = ['Completed', 'Playing', 'Dropped', 'Wishlist'];
         foreach ($systemLists as $listName) {

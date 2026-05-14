@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\UserSetting;
 use App\Models\Game;
 use App\Models\Post;
 use App\Models\Media;
@@ -35,7 +34,7 @@ class DatabaseSeeder extends Seeder
         // =========================================================
         $users = User::all();
         $games = Game::all();
-
+        $roles = ['Lead Developer', 'Designer', 'Composer', 'Writer', 'Artist'];
         $genres = Genre::all();
 
         // Assign 1 to 3 random genres to every game
@@ -62,6 +61,12 @@ class DatabaseSeeder extends Seeder
 
         // POPULATE 'game_credits': Assign a few random users as developers to games
         foreach ($games as $game) {
+            $staffMembers = $users->random(rand(2, 4));
+            foreach ($staffMembers as $staff) {
+                $game->credits()->attach($staff->id, [
+                    'role' => $roles[array_rand($roles)] // Assign a random role from our list
+                ]);
+            }
             // Regular posts
             Post::factory(10)->create([
                 'hub_id' => $game->id,
@@ -78,8 +83,9 @@ class DatabaseSeeder extends Seeder
                 ]);
 
                 // 2. Create the Review linked to that post
-                $review = \App\Models\Review::factory()->create([
+                $review = Review::factory()->create([
                     'post_id' => $post->id,
+                    'type' => "recommendation",
                 ]);
 
                 // 3. Create the 3 replies to that specific post
