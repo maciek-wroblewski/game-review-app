@@ -5,9 +5,9 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GameReviewController;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\PlaylistGameController;
 use App\Http\Controllers\PostLikeController;
-use App\Http\Controllers\GameController;
 use App\Http\Controllers\FollowController;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,16 +17,20 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/Hub', function () {
+Route::get('/hub', function () {
     return view('welcome');
 });
 
 Route::get('/games/{game}/review', [GameReviewController::class, 'create']);
 Route::post('/games/{game}/reviews', [GameReviewController::class, 'store']);
+Route::put('/reviews/{review}', [GameReviewController::class, 'update']);
+Route::delete('/reviews/{review}', [GameReviewController::class, 'destroy']);
 Route::get('/games/{game}', [GameController::class, 'show']);
+Route::get('/playlists/{playlist}', [PlaylistController::class, 'show']);
 Route::post('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'store']);
+Route::delete('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'destroy']);
 Route::post('/posts/{post}/like', [PostLikeController::class, 'store']);
-Route::get('/Games', [GameController::class, 'index']);
+Route::get('/games', [GameController::class, 'index']);
 
 Route::get('/dashboard', function () {
     return view('dashboard');

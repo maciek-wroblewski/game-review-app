@@ -3,45 +3,69 @@
 namespace App\Http\Controllers;
 
 use App\Models\Game;
+use App\Models\Review;
 use Illuminate\Http\Request;
 
 class GameReviewController extends Controller
 {
-    /**
-     * Show the form for creating a new review.
-     */
     public function create(Game $game)
     {
         return view('reviews.create', compact('game'));
     }
 
-    /**
-     * Store a newly created review in storage.
-     */
     public function store(Request $request, Game $game)
     {
-        // 1. Validate the incoming data from the form
         $validated = $request->validate([
             'rating' => 'required|integer|min:1|max:10',
             'body'   => 'required|string|max:5000',
         ]);
 
-        // Get the currently authenticated user, or default to User ID 1 for testing purposes
         $userId = auth()->id() ?? 1;
 
-        // 2. Create the generic Post linked to the Game hub
+        if ($game->posts()->where('user_id', $userId)->whereHas('review')->exists()) {
+            return back()->withErrors(['rating' => 'You have already reviewed this game.']);
+        }
+
         $post = $game->posts()->create([
             'user_id' => $userId,
             'body'    => $validated['body'],
         ]);
 
-        // 3. Create the specific Review linked to the Post
         $post->review()->create([
-            'type'   => 'recommendation', // Matches the DB enum constraint
+            'type'   => 'recommendation',
             'rating' => $validated['rating'],
         ]);
 
-        // Redirect back to the Hub or the Game's page with a success message
-        return redirect('/Hub')->with('success', 'Review submitted successfully!');
+        return redirect('/games/' . $game->id)->with('success', 'Review submitted successfully!');
+    }
+
+    public function edit(Review $review)
+    {
+        return view('reviews.edit', compact('review'));
+    }
+
+    public function update(Request $request, Review $review)
+    {
+        $validated = $request->validate([
+            'rating' => 'required|integer|min:1|max:10',
+            'body'   => 'required|string|max:5000',
+        ]);
+
+        $review->update([
+            'rating' => $validated['rating'],
+        ]);
+
+        $review->post->update([
+            'body' => $validated['body'],
+        ]);
+
+        return redirect('/games/' . $review->game->id)->with('success', 'Review updated successfully!');
+    }
+
+    public function destroy(Review $review)
+    {
+        $review->delete();
+        
+        return redirect('/games/' . $review->game->id)->with('success', 'Review deleted successfully!');
     }
 }

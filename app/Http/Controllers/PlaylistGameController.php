@@ -13,17 +13,20 @@ class PlaylistGameController extends Controller
      */
     public function store(Playlist $playlist, Game $game)
     {
-        // Check if the game is already in the playlist to avoid duplicates
         if (!$playlist->games()->where('game_id', $game->id)->exists()) {
             
-            // Get the current max order in the playlist so we can append to the end
             $maxOrder = $playlist->games()->max('order') ?? 0;
             
-            // Attach the game to the playlist via the pivot table
             $playlist->games()->attach($game->id, ['order' => $maxOrder + 1]);
         }
 
-        // Redirect back to the game page with a success message
         return back()->with('success', "Game added to {$playlist->name} successfully!");
+    }
+
+    public function destroy(Playlist $playlist, Game $game)
+    {
+        $playlist->games()->detach($game->id);
+
+        return back()->with('success', "Game removed from {$playlist->name} successfully!");
     }
 }
