@@ -1,4 +1,5 @@
 <x-layout headtitle="Browse Games">
+    <x-trending-games />
     <!-- Game Grid -->
     <div class="row g-4">
         @foreach($games as $game)
