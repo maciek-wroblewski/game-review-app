@@ -10,15 +10,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable([
-        'username',
-        'email',
-        'password',
-        'bio',
-        'avatar',
-        'verified',
-    ])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -136,5 +127,46 @@ class User extends Authenticatable
                 'dms' => 'mutuals',
             ]);
         });
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class)
+            ->latest();
+    }
+
+    public function canViewProfile(?User $viewer = null): bool
+    {
+        $visibility = $this->settings->profile_visibility ?? 'public';
+
+        if ($visibility === 'public') {
+            return true;
+        }
+
+        if (!$viewer) {
+            return false;
+        }
+
+        if ($viewer->id === $this->id) {
+            return true;
+        }
+
+        if ($visibility === 'followers') {
+
+            return $this->followers()
+                ->where('user_id', $viewer->id)
+                ->exists();
+        }
+
+        if ($visibility === 'mutuals') {
+
+            return $this->isMutualWith($viewer);
+        }
+
+        if ($visibility === 'private') {
+            return false;
+        }
+
+        return false;
     }
 }

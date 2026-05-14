@@ -1,10 +1,16 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-Use App\Http\Controllers\GameController;
+use App\Http\Controllers\GameController;
+use App\Http\Controllers\FollowController;
+use Illuminate\Support\Facades\Auth;
+
+Route::get('/users/{username}', [UserController::class, 'show']);
 
 Route::get('/', function () {
-    return view('index');
+    return view('welcome');
 });
 
 Route::get('/Hub', function () {
@@ -12,3 +18,41 @@ Route::get('/Hub', function () {
 });
 
 Route::get('/Games', [GameController::class, 'index']);
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::post('/users/{user}/follow', [FollowController::class, 'toggle'])
+    ->middleware('auth');
+
+Route::get('/users/{user:username}/followers', [UserController::class, 'followers']);
+Route::get('/users/{user:username}/following', [UserController::class, 'following']);
+
+Route::get('/users/{user:username}/playlists', [UserController::class, 'playlists']);
+
+Route::get('/users/{user:username}/reviews', [UserController::class, 'reviews']);
+
+Route::post('/notifications/{notification}/read', function (\App\Models\Notification $notification) {
+
+    if ($notification->user_id === Auth::id()) {
+
+        $notification->update([
+            'read' => true
+        ]);
+    }
+
+    return back();
+
+})->middleware('auth');
+
+Route::patch('/profile/privacy', [ProfileController::class, 'updatePrivacy'])
+    ->middleware('auth');
+
+require __DIR__.'/auth.php';
