@@ -1,4 +1,4 @@
-<a href="/Games/{{ $game->id }}" class="text-decoration-none">
+<a href="/games/{{ $game->id }}" class="text-decoration-none">
     <div class="card h-100 shadow-sm border-0 position-relative group overflow-hidden">
         
         <!-- Banner Section: Takes full width, height scales with card width -->
