@@ -55,13 +55,13 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="/Games">
+                        <a class="nav-link" href="/games">
                             Games
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="/Hub">
+                        <a class="nav-link" href="/hub">
                             Community
                         </a>
                     </li>
@@ -275,7 +275,7 @@
         </div>
 
     </footer>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

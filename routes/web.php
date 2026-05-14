@@ -13,11 +13,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/Hub', function () {
+Route::get('/hub', function () {
     return view('welcome');
 });
 
-Route::get('/Games', [GameController::class, 'index']);
+Route::get('/games', [GameController::class, 'index']);
 
 Route::get('/dashboard', function () {
     return view('dashboard');

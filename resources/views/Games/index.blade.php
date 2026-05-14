@@ -1,83 +1,129 @@
 <x-layout headtitle="Browse Games">
-    <!-- Game Grid -->
-    <div class="row g-4">
-        @foreach($games as $game)
-            <div class="col-12 col-md-6 col-lg-4 col-xl-3">
-                <x-game-card :game="$game" />
+    <div class="container-xl py-5">
+        
+        <!-- Trending Section -->
+        <section class="trending-section mb-5">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="carousel-controls">
+                </div>
             </div>
-        @endforeach
-    </div>
+            <div class="trending-wrapper">
+                <x-trending-games />
+            </div>
+        </section>
 
-<!-- Pagination Section -->
-    <div class="d-flex justify-content-center mt-5 mb-4">
-        <div class="pagination-wrapper bg-white border">
-            {{ $games->links('pagination::bootstrap-5') }}
-        </div>
+        <hr class="my-5 opacity-10">
+
+        <section class="grid-section">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h2 class="fw-bold mb-0">🎮 Explore Games</h2>
+                <span class="text-muted small">{{ $games->total() }} titles found</span>
+            </div>
+
+            <div class="row g-4">
+                @foreach($games as $game)
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                        <x-game-card :game="$game" />
+                    </div>
+                @endforeach
+            </div>
+
+            <!-- Enhanced Pagination Section -->
+            <div class="pagination-container mt-5">
+                <div class="pagination-wrapper shadow-sm">
+                    {{ $games->links('pagination::bootstrap-5') }}
+                </div>
+            </div>
+        </section>
     </div>
 </x-layout>
 
 <style>
-    .pagination-wrapper {
-        border-radius: 0.75rem; /* ~12px */
-        padding: 1% 2%;
-        box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.04);
-        width: 100%;
-        display: flex;
-        justify-content: center;
+    /* Section Headers */
+    h2 {
+        letter-spacing: -0.5px;
+        color: #1a1d20;
     }
 
-    .pagination-wrapper .pagination {
-        margin-bottom: 0;
-        display: flex;
-        width: 100%;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-        justify-content: space-between;
+    /* Container refinement */
+    .container-xl {
+        max-width: 1400px; /* Limits width on ultra-wide screens */
     }
-    .pagination-wrapper .pagination li {
-        flex-grow: 1;
+
+    /* Smooth transition for game cards */
+    .row .col-12 {
+        transition: transform 0.2s ease;
+    }
+
+    /* Pagination Redesign */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        padding-bottom: 2rem;
+    }
+
+    .pagination-wrapper {
+        background: #ffffff;
+        border-radius: 50px; /* Pill shape */
+        padding: 0.5rem 1.5rem;
+        border: 1px solid #edf2f7;
+        display: inline-block;
     }
 
     .pagination-wrapper nav {
-        width: 100%;
+        margin: 0;
+    }
+
+    .pagination-wrapper .pagination {
+        margin: 0;
+        gap: 0.25rem;
+        border: none;
+    }
+
+    .pagination-wrapper .page-item {
+        border: none;
     }
 
     .pagination-wrapper .page-link {
-        border: 0.125rem solid transparent; /* ~2px */
-        color: #6c757d;
+        border: none;
+        background: transparent;
+        color: #4a5568;
         font-weight: 600;
-        background-color: #f8f9fa; 
-        border-radius: 0.5rem !important; /* ~8px */
-        
-        min-width: 2.6rem; 
-        height: 2.6rem;
-        padding: 0 1.2em;
-        
+        border-radius: 50% !important; /* Circular buttons */
+        width: 40px;
+        height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        font-size: 1rem; /* Standard root size */
+        margin: 0 2px;
+        transition: all 0.2s ease;
     }
 
+    /* Active State */
     .pagination-wrapper .page-item.active .page-link {
-        background-color: #ffffff;
-        color: #0d6efd; 
-        border: 0.125rem solid #0d6efd; 
-        box-shadow: 0 0.25rem 0.75rem rgba(13, 110, 253, 0.15); 
+        background-color: #0d6efd;
+        color: white;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
     }
 
-    .pagination-wrapper .page-item:not(.active):not(.disabled) .page-link:hover {
-        background-color: #ffffff;
-        color: #0a58ca;
-        border-color: #b6d4fe; 
-        transform: translateY(-0.125rem); 
+    /* Hover State */
+    .pagination-wrapper .page-item:not(.active) .page-link:hover {
+        background-color: #f8f9fa;
+        color: #0d6efd;
+        transform: translateY(-2px);
     }
 
+    /* Disabled State */
     .pagination-wrapper .page-item.disabled .page-link {
-        background-color: #ffffff;
-        color: #dee2e6;
-        opacity: 0.6;
-        pointer-events: none;
+        opacity: 0.4;
+        background: transparent;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 768px) {
+        .pagination-wrapper {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+        }
     }
 </style>
