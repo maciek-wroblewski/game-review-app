@@ -3,14 +3,19 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-Use App\Http\Controllers\GameController;
+use App\Http\Controllers\GameController;
 
 Route::get('/users/{id}', [UserController::class, 'show']);
 
 Route::get('/', function () {
-<<<<<<< HEAD
     return view('welcome');
 });
+
+Route::get('/Hub', function () {
+    return view('welcome');
+});
+
+Route::get('/Games', [GameController::class, 'index']);
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -23,13 +28,3 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
-=======
-    return view('index');
-});
-
-Route::get('/Hub', function () {
-    return view('welcome');
-});
-
-Route::get('/Games', [GameController::class, 'index']);
->>>>>>> main
