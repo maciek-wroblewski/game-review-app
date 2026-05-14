@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
@@ -35,6 +36,37 @@ class ProfileController extends Controller
         $request->user()->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    public function updatePrivacy(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'profile_visibility' => [
+                'required',
+                Rule::in([
+                    'public',
+                    'followers',
+                    'mutuals',
+                    'private',
+                ]),
+            ],
+
+            'playlist_visibility' => [
+                'required',
+                Rule::in([
+                    'public',
+                    'followers',
+                    'mutuals',
+                    'private',
+                ]),
+            ],
+        ]);
+
+        $request->user()
+            ->settings()
+            ->update($validated);
+
+        return back()->with('status', 'privacy-updated');
     }
 
     /**
