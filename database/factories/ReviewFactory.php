@@ -15,7 +15,7 @@ class ReviewFactory extends Factory
                 'hub_id' => Game::factory(), // Creates a new game if one isn't provided
             ]),
             'type' => $this->faker->randomElement(['recommendation', 'article', 'patch_note']),
-            'rating' => $this->faker->numberBetween(0, 1), // 0 for Bad, 1 for Good
+            'rating' => $this->faker->numberBetween(0, 10)
         ];
     }
 

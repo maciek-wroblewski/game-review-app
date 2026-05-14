@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\UserSetting;
 use App\Models\Game;
 use App\Models\Post;
 use App\Models\Media;
@@ -84,7 +83,7 @@ class DatabaseSeeder extends Seeder
                 ]);
 
                 // 2. Create the Review linked to that post
-                $review = \App\Models\Review::factory()->create([
+                $review = Review::factory()->create([
                     'post_id' => $post->id,
                 ]);
 
