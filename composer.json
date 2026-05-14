@@ -15,6 +15,7 @@
         "laravel/ui": "*"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^4.2",
         "fakerphp/faker": "^1.23",
         "laravel/boost": "*",
         "laravel/pao": "^1.0.6",
