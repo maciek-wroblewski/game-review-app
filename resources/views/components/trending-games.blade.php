@@ -51,17 +51,15 @@
                          
                     <div class="position-absolute top-0 start-0 w-100 h-100 carousel-gradient-overlay"></div>
 
-                    <div class="carousel-caption text-start mb-2 mb-md-4 bottom-0 pb-4">
+                    <div class="carousel-caption text-start">
                         <div class="d-flex align-items-center gap-2 gap-md-3 mb-2">
                             @if($game->logo)
-                                <img src="{{ asset($game->logo) }}" alt="logo" class="img-fluid" style="max-height: 40px; md:max-height: 60px;">
+                                <img src="{{ asset($game->logo) }}" alt="logo" class="img-fluid" style="height: 50%; md:max-height: 60px;">
                             @else
-                                <!-- Responsive typography: fs-4 on mobile, fs-2 on desktop -->
                                 <h2 class="fw-bold mb-0 text-white fs-4 fs-md-2">{{ $game->title }}</h2>
                             @endif
                         </div>
                         
-                        <!-- Responsive typography for the description -->
                         <p class="text-light mb-3 text-truncate-2 small fs-md-6 w-100 w-md-75">
                             {{ strip_tags($game->details) }}
                         </p>
