@@ -85,6 +85,7 @@ class DatabaseSeeder extends Seeder
                 // 2. Create the Review linked to that post
                 $review = Review::factory()->create([
                     'post_id' => $post->id,
+                    'type' => "recommendation",
                 ]);
 
                 // 3. Create the 3 replies to that specific post
