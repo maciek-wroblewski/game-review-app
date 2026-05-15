@@ -217,8 +217,8 @@
                                 @csrf
                                 <button type="submit" class="btn btn-sm btn-light border shadow-sm">
                                     👍 Helpful 
-                                    @if($post->likes->count() > 0)
-                                        <span class="badge bg-secondary ms-1">{{ $post->likes->count() }}</span>
+                                    @if($post->likes_count > 0)
+                                        <span class="badge bg-secondary ms-1">{{ $post->likes_count }}</span>
                                     @endif
                                 </button>
                             </form>

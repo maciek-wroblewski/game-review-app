@@ -51,6 +51,22 @@ class Post extends Model
         return $this->morphToMany(User::class, 'likeable', 'likes')->withTimestamps();
     }
 
+    public function toggleLike($userId)
+    {
+        // toggle() returns an array like: ['attached' => [1], 'detached' => []]
+        $changes = $this->likes()->toggle($userId);
+
+        // If a record was attached (created), increment the cache
+        if (!empty($changes['attached'])) {
+            $this->increment('likes_count', 1);
+        }
+        
+        // If a record was detached (deleted), decrement the cache
+        if (!empty($changes['detached'])) {
+            $this->decrement('likes_count', 1);
+        }
+    }
+
     public function review()
     {
         return $this->hasOne(Review::class);

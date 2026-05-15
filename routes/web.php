@@ -29,7 +29,7 @@ Route::get('/games/{game}', [GameController::class, 'show']);
 Route::get('/playlists/{playlist}', [PlaylistController::class, 'show']);
 Route::post('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'store']);
 Route::delete('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'destroy']);
-Route::post('/posts/{post}/like', [PostLikeController::class, 'store']);
+Route::post('/posts/{post}/like', [PostLikeController::class, 'store'])->name('posts.like');
 Route::get('/games', [GameController::class, 'index']);
 
 Route::get('/dashboard', function () {

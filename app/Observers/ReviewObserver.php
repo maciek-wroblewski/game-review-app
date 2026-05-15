@@ -3,34 +3,35 @@
 namespace App\Observers;
 
 use App\Models\Review;
+use App\Models\Game;
 
 class ReviewObserver
 {
     public function saved(Review $review)
     {
-        $this->updateGameRating($review);
+        $this->recalculateGameRating($review);
     }
 
     public function deleted(Review $review)
     {
-        $this->updateGameRating($review);
+        $this->recalculateGameRating($review);
     }
 
-    protected function updateGameRating(Review $review)
+    protected function recalculateGameRating(Review $review)
     {
-        // 1. Get the game through the post relationship
-        $game = $review->post->hub; 
+        $post = $review->post;
 
-        // Ensure the post actually belongs to a Game hub
-        if ($game instanceof \App\Models\Game) {
-            // 2. Recalculate average from all related reviews
-            $average = $game->posts()
-                ->whereHas('review')
-                ->join('reviews', 'posts.id', '=', 'reviews.post_id')
-                ->avg('reviews.rating');
+        if ($post && $post->hub_type === Game::class && $post->hub_id) {
+            $gameId = $post->hub_id;
 
-            // 3. Save to the games table
-            $game->update(['average_rating' => $average ?? 0]);
+            $newAverage = Review::whereHas('post', function ($query) use ($gameId) {
+                $query->where('hub_id', $gameId)
+                      ->where('hub_type', Game::class);
+            })->avg('rating');
+
+            Game::where('id', $gameId, null, null)->update([
+                'average_rating' => round($newAverage ?? 0, 2) // Default to 0 if no reviews left
+            ]);
         }
     }
 }

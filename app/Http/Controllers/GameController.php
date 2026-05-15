@@ -39,7 +39,7 @@ class GameController extends Controller
         $averageRating = $reviews->count() > 0 ? round($reviews->avg('review.rating'), 1) : null;
 
         $userId = auth()->id() ?? 1;
-        $user = \App\Models\User::find($userId);
+        $user = \App\Models\User::find($userId, 'id');
         $playlists = $user ? $user->playlists : collect();
 
         $userReviewPost = $reviews->firstWhere('user_id', $userId);
