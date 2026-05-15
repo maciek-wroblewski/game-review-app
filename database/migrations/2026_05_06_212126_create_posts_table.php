@@ -23,6 +23,7 @@ return new class extends Migration
             
             $table->text('body');
             $table->boolean('is_locked')->default(false);
+            $table->boolean('is_spoiler')->default(false);
             
             // Counter cache
             $table->integer('likes_count')->default(0); 

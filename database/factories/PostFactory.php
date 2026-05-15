@@ -16,6 +16,8 @@ public function definition(): array
             'hub_type' => 'App\Models\Game',
             'parent_id' => null, // Default is a top-level post
             'likes_count' => $this->faker->numberBetween(0, 100),
+            'is_locked' => $this->faker->boolean(10),
+            'is_spoiler' => $this->faker->boolean(25)
         ];
     }
 }
