@@ -61,7 +61,7 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="/hub">
+                        <a class="nav-link" href="/posts">
                             Community
                         </a>
                     </li>
@@ -276,6 +276,7 @@
 
     </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<x-ui.lightbox/>
 </body>
 
 </html>

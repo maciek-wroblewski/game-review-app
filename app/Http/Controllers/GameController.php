@@ -30,7 +30,7 @@ class GameController extends Controller
             'credits',
             'posts' => function ($query) {
                 $query->whereHas('review')
-                      ->with(['author', 'review', 'likes'])
+                      ->with(['author', 'review', 'likes', 'media'])
                       ->latest();
             }
         ]);

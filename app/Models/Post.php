@@ -11,13 +11,14 @@ class Post extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id', 'parent_id', 'body', 'is_locked', 'likes_count'
+        'user_id', 'parent_id', 'body', 'is_locked', 'is_spoiler', 'likes_count'
     ];
 
     protected function casts(): array
     {
         return [
             'is_locked' => 'boolean',
+            'is_spoiler' => 'boolean',
         ];
     }
 
@@ -37,6 +38,11 @@ class Post extends Model
     public function parent()
     {
         return $this->belongsTo(Post::class, 'parent_id');
+    }
+    
+    public function media()
+    {
+        return $this->hasMany(Media::class);
     }
 
     // What are the replies to this post?

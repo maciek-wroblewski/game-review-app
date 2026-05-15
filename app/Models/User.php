@@ -79,24 +79,22 @@ class User extends Authenticatable
         return $this->morphToMany(User::class, 'followable', 'follows', 'followable_id', 'user_id')->withTimestamps();
     }
 
-    public function friends()
+    public function mutuals()
     {
-        // The moots trick
-        return $this->morphedByMany(User::class, 'followable', 'follows', 'user_id', 'followable_id')
-            ->whereIn('users.id', function($query) {
+        return $this->following()
+            ->whereIn('users.id', function ($query) {
                 $query->select('user_id')
                       ->from('follows')
-                      ->where('followable_type', User::class)
+                      ->where('followable_type', static::class)
                       ->where('followable_id', $this->id);
             });
     }
 
     public function isMutualWith(User $targetUser): bool 
     {
-        return $this->following()->where('followable_id', $targetUser->id)->exists() &&
-               $this->followers()->where('user_id', $targetUser->id)->exists();
+        return $this->mutuals()->where('users.id', $targetUser->id)->exists();
     }
-
+    
     // --- Likes ---
     public function likedPosts()
     {
