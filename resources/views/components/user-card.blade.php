@@ -87,7 +87,7 @@
         @if($isCompact)
             <div class="card-footer bg-white border-top-0 d-flex justify-content-around py-3">
                 <div class="text-center">
-                    <div class="fw-bold fs-5">{{ $user->followers->count() }}</div>
+                    <div class="followers-count fw-bold fs-5" data-user-id="{{ $user->id }}">{{ $user->followers->count() }}</div>
                     <div class="text-muted small">Followers</div>
                 </div>
                 <div class="text-center">
@@ -209,7 +209,7 @@
                                 <i class="bi bi-people-fill text-danger fs-1"></i>
                             </div>
 
-                            <h2 class="fw-bold display-5 mb-1 text-dark">
+                            <h2 class="followers-count fw-bold display-5 mb-1 text-dark" data-user-id="{{ $user->id }}">
                                 {{ $user->followers->count() }}
                             </h2>
 
@@ -228,3 +228,20 @@
         </div>
     @endif
 </div>
+
+<style>
+    .followers-count {
+        /* Required for transforms (rotate) to work on span elements */
+        display: inline-block; 
+        
+        /* 150ms going out, 150ms coming back = 300ms total animation */
+        transition: transform 0.15s ease-in, opacity 0.15s ease-in;
+        transform-origin: center;
+    }
+
+    /* This class will be toggled by JavaScript */
+    .followers-count.is-flipping {
+        transform: rotateX(90deg); /* Flips it flat so it's invisible */
+        opacity: 0; 
+    }
+</style>

@@ -11,13 +11,14 @@ class Post extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id', 'parent_id', 'body', 'is_locked', 'likes_count'
+        'user_id', 'parent_id', 'body', 'is_locked', 'is_spoiler', 'likes_count'
     ];
 
     protected function casts(): array
     {
         return [
             'is_locked' => 'boolean',
+            'is_spoiler' => 'boolean',
         ];
     }
 

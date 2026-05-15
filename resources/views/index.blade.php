@@ -1,5 +1,6 @@
 <x-layout headtitle="Home">
     hello bro
+
    <div class="container mt-4">
         <!-- The Upload Form -->
         <form id="mediaUploadForm" enctype="multipart/form-data">
@@ -17,8 +18,8 @@
         <div id="mediaPreviewGallery" class="row g-2 mt-3">
             <!-- JavaScript will dynamically inject uploaded images here -->
         </div>
-    </div>
-    <script>
+
+            <script>
         document.getElementById('mediaUploadForm').addEventListener('submit', async function(e) {
         e.preventDefault(); // Stop the page from reloading
 
@@ -81,4 +82,5 @@
         }
     });
     </script>
+    </div>
 </x-layout>

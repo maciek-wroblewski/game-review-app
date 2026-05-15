@@ -208,7 +208,7 @@
                         $post->review->setRelation('post', $post); 
                     @endphp
                     
-                    <x-review :review="$post->review" />
+                    <x-post :post="$post" />
                 @empty
                     <div class="alert alert-info border-0 shadow-sm p-4 text-center">
                         <h5 class="mb-0">No reviews yet! Be the first to share your thoughts above.</h5>
