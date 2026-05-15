@@ -33,6 +33,7 @@ class UserFactory extends Factory
             'bio' => fake()->sentence(),
             // We can use a service like DiceBear to generate quick random avatars
             'avatar' => 'https://api.dicebear.com/7.x/pixel-art/svg?seed=' . fake()->word(),
+            'banner' => 'https://picsum.photos/seed/' . fake()->uuid() . '/1200/400',
             'verified' => fake()->boolean(10), // 10% chance to be a verified user
             'remember_token' => Str::random(10),
         ];

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('password');
             $table->text('bio')->nullable();
             $table->string('avatar')->nullable();
+            $table->string('banner')->nullable();
             $table->boolean('verified')->default(false);
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();

@@ -109,124 +109,106 @@
             <!-- Right Column: Reviews -->
             <div class="col-md-8">
                 <!-- Write / Edit Review Form -->
-                @if($userReviewPost)
-                    <div class="card shadow-sm mb-5 border-0 bg-light">
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h4 class="mb-0 fw-bold">Edit Your Review</h4>
-                                <form action="/reviews/{{ $userReviewPost->review->id }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your review?');" class="m-0">
+                @auth
+                    @if($userReviewPost)
+                        <div class="card shadow-sm mb-5 border-0 bg-light">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h4 class="mb-0 fw-bold">Edit Your Review</h4>
+                                    <form action="/reviews/{{ $userReviewPost->review->id }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your review?');" class="m-0">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i> Delete Review
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                @if ($errors->any())
+                                    <div class="alert alert-danger border-0">
+                                        <ul class="mb-0">
+                                            @foreach ($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
+
+                                <form action="/reviews/{{ $userReviewPost->review->id }}" method="POST">
                                     @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-trash"></i> Delete Review
-                                    </button>
+                                    @method('PUT')
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="rating" class="form-label fw-semibold">Rating (1-10)</label>
+                                            <select class="form-select border-0 shadow-sm" id="rating" name="rating" required>
+                                                <option value="">Choose...</option>
+                                                @for ($i = 1; $i <= 10; $i++)
+                                                    <option value="{{ $i }}" {{ (old('rating') ?? $userReviewPost->review->rating) == $i ? 'selected' : '' }}>{{ $i }} / 10</option>
+                                                @endfor
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="body" class="form-label fw-semibold">Your Thoughts</label>
+                                        <textarea class="form-control border-0 shadow-sm" id="body" name="body" rows="4" required placeholder="What did you think of the game?">{{ old('body') ?? $userReviewPost->body }}</textarea>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary fw-bold px-4 py-2">Update Review</button>
                                 </form>
                             </div>
-                            
-                            @if ($errors->any())
-                                <div class="alert alert-danger border-0">
-                                    <ul class="mb-0">
-                                        @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endif
-
-                            <form action="/reviews/{{ $userReviewPost->review->id }}" method="POST">
-                                @csrf
-                                @method('PUT')
-                                <div class="row mb-3">
-                                    <div class="col-md-4">
-                                        <label for="rating" class="form-label fw-semibold">Rating (1-10)</label>
-                                        <select class="form-select border-0 shadow-sm" id="rating" name="rating" required>
-                                            <option value="">Choose...</option>
-                                            @for ($i = 1; $i <= 10; $i++)
-                                                <option value="{{ $i }}" {{ (old('rating') ?? $userReviewPost->review->rating) == $i ? 'selected' : '' }}>{{ $i }} / 10</option>
-                                            @endfor
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="body" class="form-label fw-semibold">Your Thoughts</label>
-                                    <textarea class="form-control border-0 shadow-sm" id="body" name="body" rows="4" required placeholder="What did you think of the game?">{{ old('body') ?? $userReviewPost->body }}</textarea>
-                                </div>
-
-                                <button type="submit" class="btn btn-primary fw-bold px-4 py-2">Update Review</button>
-                            </form>
                         </div>
-                    </div>
-                @else
-                    <div class="card shadow-sm mb-5 border-0 bg-light">
-                        <div class="card-body p-4">
-                            <h4 class="mb-3 fw-bold">Leave a Review</h4>
-                            
-                            @if ($errors->any())
-                                <div class="alert alert-danger border-0">
-                                    <ul class="mb-0">
-                                        @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endif
-
-                            <form action="/games/{{ $game->id }}/reviews" method="POST">
-                                @csrf
-                                <div class="row mb-3">
-                                    <div class="col-md-4">
-                                        <label for="rating" class="form-label fw-semibold">Rating (1-10)</label>
-                                        <select class="form-select border-0 shadow-sm" id="rating" name="rating" required>
-                                            <option value="">Choose...</option>
-                                            @for ($i = 1; $i <= 10; $i++)
-                                                <option value="{{ $i }}" {{ old('rating') == $i ? 'selected' : '' }}>{{ $i }} / 10</option>
-                                            @endfor
-                                        </select>
+                    @else
+                        <div class="card shadow-sm mb-5 border-0 bg-light">
+                            <div class="card-body p-4">
+                                <h4 class="mb-3 fw-bold">Leave a Review</h4>
+                                
+                                @if ($errors->any())
+                                    <div class="alert alert-danger border-0">
+                                        <ul class="mb-0">
+                                            @foreach ($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
                                     </div>
-                                </div>
+                                @endif
 
-                                <div class="mb-3">
-                                    <label for="body" class="form-label fw-semibold">Your Thoughts</label>
-                                    <textarea class="form-control border-0 shadow-sm" id="body" name="body" rows="4" required placeholder="What did you think of the game?">{{ old('body') }}</textarea>
-                                </div>
+                                <form action="/games/{{ $game->id }}/reviews" method="POST">
+                                    @csrf
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="rating" class="form-label fw-semibold">Rating (1-10)</label>
+                                            <select class="form-select border-0 shadow-sm" id="rating" name="rating" required>
+                                                <option value="">Choose...</option>
+                                                @for ($i = 1; $i <= 10; $i++)
+                                                    <option value="{{ $i }}" {{ old('rating') == $i ? 'selected' : '' }}>{{ $i }} / 10</option>
+                                                @endfor
+                                            </select>
+                                        </div>
+                                    </div>
 
-                                <button type="submit" class="btn btn-primary fw-bold px-4 py-2">Publish Review</button>
-                            </form>
+                                    <div class="mb-3">
+                                        <label for="body" class="form-label fw-semibold">Your Thoughts</label>
+                                        <textarea class="form-control border-0 shadow-sm" id="body" name="body" rows="4" required placeholder="What did you think of the game?">{{ old('body') }}</textarea>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary fw-bold px-4 py-2">Publish Review</button>
+                                </form>
+                            </div>
                         </div>
-                    </div>
-                @endif
+                    @endif
+                @endauth
 
-                <!-- Existing Reviews List -->
+                <!-- Existing Reviews List (Now using components) -->
                 <h3 class="mb-4 fw-bold">Player Reviews <span class="text-muted fs-5 fw-normal">({{ $game->posts->count() }})</span></h3>
                 
                 @forelse($game->posts as $post)
-                    <div class="card shadow-sm mb-4 border-0">
-                        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                            <span class="fw-bold text-primary">{{ $post->author->username ?? $post->author->name ?? 'Anonymous User' }}</span>
-                            <span class="badge rounded-pill {{ $post->review->rating >= 7 ? 'bg-success' : ($post->review->rating >= 4 ? 'bg-warning text-dark' : 'bg-danger') }} fs-6 px-3 py-2">
-                                {{ $post->review->rating }} / 10
-                            </span>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text fs-5" style="white-space: pre-line;">{{ $post->body }}</p>
-                        </div>
-                        <div class="card-footer text-muted small bg-white border-0 pb-3 d-flex justify-content-between align-items-center">
-                            <span>Posted on {{ $post->created_at->format('M d, Y') }}</span>
-                            <form action="/posts/{{ $post->id }}/like" method="POST" class="m-0">
-                                @csrf
-                                @php
-                                    $hasLiked = auth()->check() && $post->likes()->where('user_id', auth()->id())->exists();
-                                @endphp
-                                <button type="submit" class="btn btn-sm shadow-sm {{ $hasLiked ? 'btn-primary text-white' : 'btn-light border' }}">
-                                    {{ $hasLiked ? '👎 Remove Like' : '👍 Helpful' }}
-                                    @if($post->likes_count > 0)
-                                        <span class="badge bg-secondary ms-1">{{ $post->likes_count }}</span>
-                                    @endif
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                    {{-- Passing the post relationship down to prevent an N+1 query inside the component --}}
+                    @php 
+                        $post->review->setRelation('post', $post); 
+                    @endphp
+                    
+                    <x-review :review="$post->review" />
                 @empty
                     <div class="alert alert-info border-0 shadow-sm p-4 text-center">
                         <h5 class="mb-0">No reviews yet! Be the first to share your thoughts above.</h5>

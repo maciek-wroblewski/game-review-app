@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Notification;
+use Illuminate\Http\Request;
 
 class FollowController extends Controller
 {
-    public function toggle(User $user)
+    public function toggle(User $user, Request $request)
     {
         $currentUser = request()->user();
 
@@ -21,11 +22,9 @@ class FollowController extends Controller
             ->exists();
 
         if ($isFollowing) {
-
             $currentUser->following()->detach($user->id);
-
+            $status = 'unfollowed'; // Track status for JSON
         } else {
-
             $currentUser->following()->attach($user->id, [
                 'followable_type' => User::class
             ]);
@@ -36,7 +35,15 @@ class FollowController extends Controller
                 'type' => 'follow',
                 'message' => $currentUser->username . ' started following you.',
             ]);
+            
+            $status = 'followed'; // Track status for JSON
+        }
 
+        // Return JSON if requested via AJAX
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => $status
+            ]);
         }
 
         return back();
