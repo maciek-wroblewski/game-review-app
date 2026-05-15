@@ -9,12 +9,15 @@ use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\PlaylistGameController;
 use App\Http\Controllers\PostLikeController;
 use App\Http\Controllers\FollowController;
+use App\Http\Controllers\MediaController;
 use Illuminate\Support\Facades\Auth;
+
+Route::post('/upload', [MediaController::class, 'upload'])->name('upload');
 
 Route::get('/users/{username}', [UserController::class, 'show']);
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('index');
 });
 
 Route::get('/hub', function () {

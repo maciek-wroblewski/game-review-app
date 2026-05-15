@@ -9,7 +9,7 @@ class Media extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['post_id', 'file_path', 'mime_type', 'file_name'];
+    protected $fillable = ['post_id', 'file_path', 'mime_type'];
 
     public function post()
     {

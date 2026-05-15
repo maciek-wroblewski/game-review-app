@@ -38,6 +38,11 @@ class Post extends Model
     {
         return $this->belongsTo(Post::class, 'parent_id');
     }
+    
+    public function media()
+    {
+        return $this->hasMany(Media::class);
+    }
 
     // What are the replies to this post?
     public function replies()
