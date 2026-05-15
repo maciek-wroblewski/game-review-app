@@ -9,4 +9,10 @@ For development on linux use "docker run --rm \
     -w /var/www/html \
     laravelsail/php83-composer:latest \
     composer install --ignore-platform-reqs"
-    to build the container then "./vendor/bin/sail up -d" inside project folder. Site will run in localhost.
+    or
+    "./vendor/bin/sail build --no-cache"
+    to build the container then 
+    "./vendor/bin/sail up -d"
+    followed by
+    "./vendor/bin/sail php artisan optimize:clear"
+    inside project folder. Site will run in localhost.
