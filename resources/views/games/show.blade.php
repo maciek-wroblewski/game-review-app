@@ -215,8 +215,11 @@
                             <span>Posted on {{ $post->created_at->format('M d, Y') }}</span>
                             <form action="/posts/{{ $post->id }}/like" method="POST" class="m-0">
                                 @csrf
-                                <button type="submit" class="btn btn-sm btn-light border shadow-sm">
-                                    👍 Helpful 
+                                @php
+                                    $hasLiked = auth()->check() && $post->likes()->where('user_id', auth()->id())->exists();
+                                @endphp
+                                <button type="submit" class="btn btn-sm shadow-sm {{ $hasLiked ? 'btn-primary text-white' : 'btn-light border' }}">
+                                    {{ $hasLiked ? '👎 Remove Like' : '👍 Helpful' }}
                                     @if($post->likes_count > 0)
                                         <span class="badge bg-secondary ms-1">{{ $post->likes_count }}</span>
                                     @endif
