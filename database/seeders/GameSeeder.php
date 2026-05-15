@@ -15,6 +15,9 @@ class GameSeeder extends Seeder
             'title' => 'Elden Ring',
             'details' => 'An action role-playing game developed by FromSoftware. It features a vast open world, deep lore, and challenging combat.',
             'release_date' => '2022-02-25',
+            'cover_img' => 'https://cdn2.steamgriddb.com/thumb/557fa68027943a8b0d3b66c4e72ff23b.jpg',
+            'banner_img' => 'https://cdn2.steamgriddb.com/hero_thumb/d1fcdf15cb97c47d0ed1e1e10773ae36.jpg',
+            'logo' => 'https://cdn2.steamgriddb.com/logo_thumb/69f5d5c1249e17f4ac1d5b716db47105.png',
         ]);
 
         Game::factory()->create([
