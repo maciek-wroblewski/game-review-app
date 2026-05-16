@@ -2,15 +2,8 @@
 
 <div class="card-header clickable-card bg-white d-flex justify-content-between align-items-center py-3 border-bottom-0"
     data-href="/posts/{{ $post->id }}" style="cursor: pointer;">
-    <div class="d-flex align-items-center">
-        <span class="user-popover-wrapper position-relative">
-            <a href="/users/{{ $post->author->username ?? '#' }}" class="user-card-trigger d-inline-block" data-bs-toggle="popover" data-bs-trigger="manual">
-                <img src="{{ $post->author->avatar ?? asset('images/default-avatar.png') }}" class="rounded-circle me-3 border" style="width: 48px; height: 48px; object-fit: cover;" alt="{{ $post->author->name ?? 'User' }}">
-            </a>
-            <div class="popover-template d-none">
-                <x-user-card :user="$post->author" layout="compact" />
-            </div>
-        </span>
+    <div class="d-flex align-items-center column-gap-4">
+        <x-user.avatar :user="$post->author" layout="compact" :size="'50px'" />
         <div>
             <div class="d-flex align-items-center">
                 <a href="/users/{{ $post->author->username ?? '#' }}" class="text-decoration-none fw-bold text-dark fs-5 me-2">
@@ -53,12 +46,9 @@
 </div>
 
 <style>
-    .user-card-trigger img { transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease; }
-    .user-card-trigger:hover img { transform: scale(1.06); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important; }
-    .user-card-popover { border: none !important; background: transparent !important; filter: drop-shadow(0 12px 12px rgba(0, 0, 0, 0.01)); }
-    .user-card-popover .popover-arrow { display: none !important; }
-    .user-card-popover .popover-body { padding: 0 !important; border-radius: 14px; overflow: hidden; background: #fff; opacity: 0; transform: translateY(10px) scale(0.96); transition: opacity 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
-    .user-card-popover.show .popover-body { opacity: 1; transform: translateY(0) scale(1); }
+    {{-- Keep only Post-Card specific styles --}}
+    .clickable-card { transition: background-color 0.2s ease; }
+    .clickable-card:hover { background-color: rgba(0,0,0,0.02); }
 </style>
 
 @once
@@ -95,36 +85,6 @@
                     } 
                 });
             }
-        });
-
-        // Setup bootstrap custom context popovers
-        document.querySelectorAll('.user-card-trigger').forEach(trigger => {
-            const wrapper = trigger.closest('.user-popover-wrapper');
-            const template = wrapper.querySelector('.popover-template');
-            let timeout = null;
-
-            const popover = new bootstrap.Popover(trigger, {
-                html: true,
-                content: template.innerHTML,
-                sanitize: false,
-                customClass: 'user-card-popover',
-                placement: 'auto', 
-                offset: [0, 12] 
-            });
-
-            const startHideTimeout = () => { timeout = setTimeout(() => popover.hide(), 400); };
-            const clearHideTimeout = () => clearTimeout(timeout);
-
-            wrapper.addEventListener('mouseenter', () => { clearHideTimeout(); popover.show(); });
-            wrapper.addEventListener('mouseleave', startHideTimeout);
-
-            trigger.addEventListener('inserted.bs.popover', () => {
-                const popoverElement = document.getElementById(trigger.getAttribute('aria-describedby'));
-                if (popoverElement) {
-                    popoverElement.addEventListener('mouseenter', clearHideTimeout);
-                    popoverElement.addEventListener('mouseleave', startHideTimeout);
-                }
-            });
         });
     });
 </script>

@@ -17,28 +17,14 @@
                 <!-- Header -->
                 <div class="card shadow-sm border-0 mb-4 overflow-hidden">
 
-                    @if($user->banner)
-                        <img src="{{ asset($user->banner) }}" class="w-100" style="height: 220px; object-fit: cover;" alt="{{ $user->username }}'s Banner">
-                    @else
-                        <div style="height: 220px; background: linear-gradient(135deg, {{ $bannerColor1 }} 0%, {{ $bannerColor2 }} 100%);"></div>
-                    @endif
+                    <x-user.banner :user="$user" layout="full" />
 
                     <div class="card-body position-relative p-4">
 
                         <div class="d-flex flex-column flex-lg-row align-items-lg-end gap-4">
 
                             <!-- Avatar -->
-                            @if($user->avatar)
-                                <img src="{{ asset($user->avatar) }}" 
-                                    class="rounded-circle shadow border border-4 border-white"
-                                    style="width: 160px; height: 160px; margin-top: -110px; flex-shrink: 0; object-fit: cover; position: relative; z-index: 2;"
-                                    alt="{{ $user->username }}'s Avatar">
-                            @else
-                                <div class="rounded-circle text-white d-flex align-items-center justify-content-center shadow border border-4 border-white 'mx-auto'"
-                                    style="width: -110px; height: -110px; font-size: 4.5rem; margin-top: -110px; flex-shrink: 0; background-color: {{ $avatarColor }}; position: relative; z-index: 2;">
-                                    {{ strtoupper(substr($user->username, 0, 1)) }}
-                                </div>
-                            @endif
+                            <x-user.static-avatar :user="$user" layout="full" :interactive="false" />
 
                             <!-- Header Text -->
                             <div class="pb-lg-2">

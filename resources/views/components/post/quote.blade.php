@@ -1,31 +1,52 @@
-@props(['post'])
+@props(['post', 'parentIsSpoiler' => false])
 
 @if($post)
-<a href="/posts/{{$post->id }}" class="text-decoration-none text-body d-block mt-3">
-    <div class="border rounded p-3 hover-bg-light transition-all" style="background-color: #f8f9fa;">
+    <div class="border rounded p-3 hover-bg-light transition-all position-relative" style="background-color: #f8f9fa;">
         
         <!-- Header: Avatar, Username, and Date -->
         <div class="d-flex align-items-center gap-2 mb-2">
-            <img 
-                src="{{ $post->author->avatar}}" 
-                alt="Avatar" 
-                class="rounded-circle object-fit-cover" 
-                style="width: 24px; height: 24px;"
-            >
+            <x-user.avatar :user="$post->author" layout="compact" :size="'24px'" />
             <span class="fw-semibold" style="font-size: 0.9rem;">
-                {{ $post->user->username ?? 'Anonymous' }}
+                {{ $post->author->username ?? $post->user->username ?? 'Anonymous' }}
             </span>
             <span class="text-muted" style="font-size: 0.8rem;">
                 &middot; {{ $post->created_at->diffForHumans(null, true, true) }}
             </span>
         </div>
 
-        <!-- Body: Clamped Text -->
-        <div 
-            class="text-muted" 
-            style="font-size: 0.85rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-            {{ $post->body }}
+        <!-- Content Wrapper -->
+        <div class="position-relative spoiler-container">
+            <!-- Clamped Text -->
+            <div class="text-muted" style="font-size: 0.85rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                {{ $post->body }}
+            </div>
+
+            <!-- Media (Limited to 1 for quotes to keep it compact) -->
+            @php
+                $visualMedia = ($post->media ?? collect())->filter(fn($m) => in_array($m->mime_type, ['image/jpeg', 'image/png', 'image/gif', 'video/mp4']))->take(1);
+            @endphp
+            @if($visualMedia->isNotEmpty())
+                <div class="mt-2 rounded overflow-hidden">
+                    @foreach($visualMedia as $media)
+                        @if(str_starts_with($media->mime_type, 'video/'))
+                            <video src="{{ $media->file_path }}" class="w-100 rounded" muted></video>
+                        @else
+                            <img src="{{ $media->file_path }}" class="w-100 rounded" alt="quoted media">
+                        @endif
+                    @endforeach
+                </div>
+            @endif
+
+            <!-- Spoiler Overlay -->
+            @if($post->is_spoiler && !$parentIsSpoiler)
+                {{-- Added z-index: 1 so main post overlay (z-index: 10) sits on top --}}
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-dark bg-opacity-75 text-white rounded spoiler-overlay" style="z-index: 1;">
+                    <div class="text-center">
+                        <i class="bi bi-eye-slash fs-5 mb-1 d-block"></i>
+                        <span class="fw-bold small">Spoiler Content</span>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
-</a>
 @endif

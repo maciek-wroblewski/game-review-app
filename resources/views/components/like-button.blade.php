@@ -1,161 +1,136 @@
 @props(['post'])
 
 @auth
-    <form action="/posts/{{ $post->id }}/like" method="POST" class="m-0 ajax-like-form d-inline-block">
-        @csrf
-        @php
-            $hasLiked = $post->likes()->where('user_id', auth()->id())->exists();
-            $hasCount = $post->likes_count > 0;
-        @endphp
+<form action="/posts/{{ $post->id }}/like" method="POST" class="m-0 ajax-like-form d-inline-block">
+    @csrf
+    @php
+        $hasLiked = $post->likes()->where('user_id', auth()->id())->exists();
+        $count = $post->likes_count ?? 0;
+    @endphp
+    
+    <button type="submit" class="btn rounded-pill border shadow-sm d-flex align-items-center gap-2 like-btn {{ $hasLiked ? 'btn-primary is-liked' : 'btn-light' }}">
+        <span class="like-icon-container">
+            <i class="bi bi-heart icon-unliked"></i>
+            <i class="bi bi-heart-fill icon-liked"></i>
+        </span>
         
-        <button type="submit" class="btn btn-sm shadow-sm rounded-pill px-3 like-btn {{ $hasLiked ? 'btn-primary text-white' : 'btn-light border' }}">
-            <i class="bi {{ $hasLiked ? 'bi-heart-fill' : 'bi-heart' }} me-1 like-icon"></i>
-            <span class="like-text">{{ $hasLiked ? 'Liked' : 'Like' }}</span>
-            
-            <!-- Replaced inline display:none with a conditional 'is-empty' CSS class for smooth transitions -->
-            <span class="badge bg-white text-dark ms-1 rounded-pill like-count {{ $hasCount ? '' : 'is-empty' }}">
-                {{ $hasCount ? $post->likes_count : '' }}
-            </span>
-        </button>
-    </form>
-@else
-    <button class="btn btn-sm btn-light border shadow-sm rounded-pill px-3 d-inline-block" disabled>
-        <i class="bi bi-heart me-1"></i>
-        @if($post->likes_count > 0)
-            <span class="badge bg-white text-dark ms-1 rounded-pill">{{ $post->likes_count }}</span>
-        @endif
+        <span class="like-count fw-medium">
+            {{ $count > 0 ? $count : 'Like' }}
+        </span>
     </button>
+</form>
+@else
+<div class="m-0 d-inline-block">
+    @php $guestCount = $post->likes_count ?? 0; @endphp
+    <button class="btn btn-light rounded-pill border shadow-sm d-flex align-items-center gap-2" disabled>
+        <i class="bi bi-heart"></i>
+        <span class="fw-medium">{{ $guestCount > 0 ? $guestCount : 'Like' }}</span>
+    </button>
+</div>
 @endauth
 
 @once
-    <style>
-        /* 1. Base Button Smooth Morphing */
-        .like-btn {
-            transition: background-color 0.3s cubic-bezier(0.25, 1, 0.5, 1),
-                        border-color 0.3s cubic-bezier(0.25, 1, 0.5, 1),
-                        color 0.3s cubic-bezier(0.25, 1, 0.5, 1),
-                        box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
-            position: relative;
-            overflow: hidden;
-        }
+<style>
+    .like-btn {
+        /* Smooth transition for background and color changes */
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+        white-space: nowrap;
+    }
 
-        /* 2. Heart Pop Keyframe Animation */
-        @keyframes heartPulse {
-            0% { transform: scale(1); }
-            30% { transform: scale(1.45); }
-            60% { transform: scale(0.85); }
-            100% { transform: scale(1); }
-        }
+    .like-icon-container {
+        display: inline-grid;
+        place-items: center;
+        /* Slight adjustment to align heart with text */
+        margin-bottom: -1px; 
+    }
 
-        .like-icon {
-            display: inline-block;
-            transition: transform 0.2s ease;
-        }
+    .icon-unliked, .icon-liked {
+        grid-area: 1/1;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
 
-        /* Class applied dynamically via JS on toggle */
-        .heart-animate {
-            animation: heartPulse 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
+    /* Default State (Unliked) */
+    .like-btn .icon-liked { opacity: 0; transform: scale(0.5); }
+    .like-btn .icon-unliked { opacity: 1; transform: scale(1); }
 
-        /* 3. Fluid Badge Transitions */
-        .like-count {
-            display: inline-block;
-            vertical-align: middle;
-            opacity: 1;
-            transform: scale(1);
-            max-width: 80px; /* High enough value to accommodate large numbers */
-            transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                        transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-                        max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                        margin 0.25s ease,
-                        padding 0.25s ease;
-        }
+    /* Liked State */
+    .like-btn.is-liked .icon-liked { opacity: 1; transform: scale(1); }
+    .like-btn.is-liked .icon-unliked { opacity: 0; transform: scale(0.5); }
 
-        /* Hidden State Class to morph values safely without display: none */
-        .like-count.is-empty {
-            opacity: 0;
-            transform: scale(0.4);
-            max-width: 0;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-            margin-left: 0 !important;
-        }
-    </style>
+    /* Heart Pop Animation */
+    @keyframes heartPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.4); }
+        100% { transform: scale(1); }
+    }
+    
+    .like-btn.animate-pop .like-icon-container {
+        animation: heartPulse 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+</style>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.addEventListener('submit', function(e) {
-                const likeForm = e.target.closest('.ajax-like-form');
-                if (likeForm) {
-                    e.preventDefault(); 
-                    
-                    let btn = likeForm.querySelector('.like-btn');
-                    let icon = likeForm.querySelector('.like-icon');
-                    let text = likeForm.querySelector('.like-text');
-                    let countBadge = likeForm.querySelector('.like-count');
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('submit', function(e) {
+            const likeForm = e.target.closest('.ajax-like-form');
+            if (!likeForm) return;
 
-                    // Prevent rapid multiple submissons during animation runtime
-                    if (btn.classList.contains('is-processing')) return;
-                    btn.classList.add('is-processing');
+            e.preventDefault(); 
+            
+            const btn = likeForm.querySelector('.like-btn');
+            const countBadge = likeForm.querySelector('.like-count');
 
-                    // Trigger structural icon pop preparation
-                    icon.classList.remove('heart-animate');
-                    void icon.offsetWidth; // Reflow trigger to reset CSS animation state
-                    icon.classList.add('heart-animate');
+            // Prevent double submissions
+            if (btn.classList.contains('is-processing')) return;
+            btn.classList.add('is-processing');
 
-                    fetch(likeForm.action, {
-                        method: 'POST',
-                        body: new FormData(likeForm),
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        let currentCount = parseInt(countBadge.textContent.trim()) || 0;
+            // Reset animation class to allow re-trigger
+            btn.classList.remove('animate-pop');
+            // Force reflow to ensure animation restarts if it was already running
+            void btn.offsetWidth; 
 
-                        if (data.status === 'liked') {
-                            btn.classList.replace('btn-light', 'btn-primary');
-                            btn.classList.replace('border', 'text-white');
-                            icon.classList.replace('bi-heart', 'bi-heart-fill');
-                            text.textContent = 'Liked';
-                            
-                            currentCount++;
-                        } else {
-                            btn.classList.replace('btn-primary', 'btn-light');
-                            btn.classList.replace('text-white', 'border');
-                            icon.classList.replace('bi-heart-fill', 'bi-heart');
-                            text.textContent = 'Like';
-                            
-                            currentCount--;
-                        }
-
-                        // UI Counter Synchronization matching CSS transitions
-                        if (currentCount > 0) {
-                            countBadge.textContent = currentCount;
-                            countBadge.classList.remove('is-empty');
-                        } else {
-                            countBadge.classList.add('is-empty');
-                            // Delay text removal slightly to let the fade/shrink animation finish smoothly
-                            setTimeout(() => {
-                                if (countBadge.classList.contains('is-empty')) {
-                                    countBadge.textContent = '';
-                                }
-                            }, 250);
-                        }
-                    })
-                    .catch(err => console.error(err))
-                    .finally(() => {
-                        btn.classList.remove('is-processing');
-                    });
-
-                    // Cleanup animation class after completion to preserve memory lifecycle
-                    icon.addEventListener('animationend', function() {
-                        icon.classList.remove('heart-animate');
-                    }, { once: true });
+            fetch(likeForm.action, {
+                method: 'POST',
+                body: new FormData(likeForm),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
                 }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const isLiked = data.status === 'liked';
+                
+                // Parse current count safely
+                let currentCount = parseInt(countBadge.textContent.trim()) || 0;
+
+                // Update Count
+                if (isLiked) {
+                    currentCount++;
+                    btn.classList.add('btn-primary', 'is-liked');
+                    btn.classList.remove('btn-light');
+                } else {
+                    currentCount--;
+                    btn.classList.remove('btn-primary', 'is-liked');
+                    btn.classList.add('btn-light');
+                }
+
+                // Update Text
+                countBadge.textContent = currentCount > 0 ? currentCount : 'Like';
+
+                // Trigger Animation only if the state actually changed visually
+                // (We can assume it changed if we got a valid response)
+                btn.classList.add('animate-pop');
+
+            })
+            .catch(err => {
+                console.error(err);
+                // Optional: Revert UI if error occurred
+            })
+            .finally(() => {
+                btn.classList.remove('is-processing');
             });
         });
-    </script>
+    });
+</script>
 @endonce

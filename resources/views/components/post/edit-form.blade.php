@@ -94,16 +94,41 @@
             const postId = card.dataset.postId;
             const isReview = card.dataset.isReview === 'true';
 
-            const toggleEditMode = (show) => {
-                el('.js-view-mode')?.classList.toggle('d-none', show);
-                el('.js-post-footer')?.classList.toggle('d-none', show);
-                el('.js-edit-mode')?.classList.toggle('d-none', !show);
-                el('.js-editing-badge')?.classList.toggle('d-none', !show);
-                el('.js-rating-overlay')?.classList.toggle('d-none', !show);
+            const toggleEditMode = (showEditMode) => {
+                const viewMode = el('.js-view-mode');
+                const editMode = el('.js-edit-mode');
+                const footer = el('.js-post-footer');
+                const badge = el('.js-editing-badge');
+                const ratingOverlay = el('.js-rating-overlay');
+
+                if (showEditMode) {
+                    // Hide View Mode and Footer
+                    if (viewMode) viewMode.classList.add('d-none');
+                    if (footer) footer.classList.add('d-none');
+                    
+                    // Show Edit Mode and Badge
+                    if (editMode) editMode.classList.remove('d-none');
+                    if (badge) badge.classList.remove('d-none');
+                    if (ratingOverlay) ratingOverlay.classList.remove('d-none'); // Hide rating during edit
+                } else {
+                    // Show View Mode and Footer
+                    if (viewMode) viewMode.classList.remove('d-none');
+                    if (footer) footer.classList.remove('d-none');
+                    
+                    // Hide Edit Mode and Badge
+                    if (editMode) editMode.classList.add('d-none');
+                    if (badge) badge.classList.add('d-none');
+                    if (ratingOverlay) ratingOverlay.classList.add('d-none'); // Show rating if it exists
+                }
             };
+
 
             // Trigger Edit
             if (e.target.closest('.js-btn-edit')) {
+                // Prevent default if it's inside a form or link
+                e.preventDefault();
+                e.stopPropagation();
+                
                 if (window.animateCardTransition) {
                     window.animateCardTransition(card, ['.js-view-mode', '.js-post-footer'], ['.js-edit-mode'], () => toggleEditMode(true));
                 } else {
@@ -111,14 +136,19 @@
                 }
             }
 
+
             // Trigger Cancel
             if (e.target.closest('.js-btn-cancel')) {
+                e.preventDefault();
+                e.stopPropagation();
+
                 if (window.animateCardTransition) {
                     window.animateCardTransition(card, ['.js-edit-mode'], ['.js-view-mode', '.js-post-footer'], () => toggleEditMode(false));
                 } else {
                     toggleEditMode(false);
                 }
             }
+
 
             // Saving Form Data
             if (e.target.closest('.js-btn-save')) {

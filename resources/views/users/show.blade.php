@@ -3,7 +3,7 @@
     <div class="container py-5">
 
         <!-- Profile Header -->
-        <x-user-card :user="$user" />
+        <x-user.card :user="$user" />
 
         <!-- Recent Reviews -->
         <div class="card shadow-sm border-0">
