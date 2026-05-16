@@ -1,5 +1,13 @@
 <x-layout headtitle="Edit Profile">
+@php
+    // Color generation logic
+    $bannerHash = md5($user->username . '-banner');
+    $bannerColor1 = '#' . substr($bannerHash, 0, 6);
+    $bannerColor2 = '#' . substr($bannerHash, 6, 6);
 
+    $avatarHash = md5($user->username . '-avatar');
+    $avatarColor = '#' . substr($avatarHash, 0, 6);
+@endphp
     <div class="container py-5">
 
         <div class="row justify-content-center">
@@ -9,32 +17,28 @@
                 <!-- Header -->
                 <div class="card shadow-sm border-0 mb-4 overflow-hidden">
 
-                    <div class="bg-dark"
-                         style="
-                            height: 180px;
-                            background: linear-gradient(135deg, #0d6efd 0%, #111827 100%);
-                         ">
-                    </div>
+                    @if($user->banner)
+                        <img src="{{ asset($user->banner) }}" class="w-100" style="height: 220px; object-fit: cover;" alt="{{ $user->username }}'s Banner">
+                    @else
+                        <div style="height: 220px; background: linear-gradient(135deg, {{ $bannerColor1 }} 0%, {{ $bannerColor2 }} 100%);"></div>
+                    @endif
 
                     <div class="card-body position-relative p-4">
 
                         <div class="d-flex flex-column flex-lg-row align-items-lg-end gap-4">
 
                             <!-- Avatar -->
-                            <div class="rounded-circle bg-primary text-white
-                                        d-flex align-items-center justify-content-center
-                                        shadow border border-4 border-white"
-                                 style="
-                                    width: 140px;
-                                    height: 140px;
-                                    font-size: 3.8rem;
-                                    margin-top: -90px;
-                                    flex-shrink: 0;
-                                 ">
-
-                                {{ strtoupper(substr(auth()->user()->username, 0, 1)) }}
-
-                            </div>
+                            @if($user->avatar)
+                                <img src="{{ asset($user->avatar) }}" 
+                                    class="rounded-circle shadow border border-4 border-white"
+                                    style="width: 160px; height: 160px; margin-top: -110px; flex-shrink: 0; object-fit: cover; position: relative; z-index: 2;"
+                                    alt="{{ $user->username }}'s Avatar">
+                            @else
+                                <div class="rounded-circle text-white d-flex align-items-center justify-content-center shadow border border-4 border-white 'mx-auto'"
+                                    style="width: -110px; height: -110px; font-size: 4.5rem; margin-top: -110px; flex-shrink: 0; background-color: {{ $avatarColor }}; position: relative; z-index: 2;">
+                                    {{ strtoupper(substr($user->username, 0, 1)) }}
+                                </div>
+                            @endif
 
                             <!-- Header Text -->
                             <div class="pb-lg-2">

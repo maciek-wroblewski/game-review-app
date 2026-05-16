@@ -5,6 +5,7 @@
     $gridClass = match($mediaCount) { 0, 1 => 'grid-1', 2 => 'grid-2', 3 => 'grid-3', default => 'grid-4' };
     $lightboxPayload = $visualMedia->map(fn($m) => ['url' => $m->file_path, 'type' => str_starts_with($m->mime_type, 'video/') ? 'video' : 'image'])->toJson();
 @endphp
+
 @once
 <style>
     .text-truncate-container { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
@@ -28,10 +29,7 @@
 </style>
 @endonce
 
-{{-- VIEW MODE SECTION --}}
 <div class="js-view-mode">
-    
-    {{-- NEW: Replied To Micro-Post --}}
     @if($post->parentPost)
         <div class="border rounded p-3 mb-3 bg-light d-flex flex-column" style="cursor: pointer;" onclick="window.location.href='/posts/{{ $post->parentPost->id }}'">
             <div class="d-flex align-items-center mb-1">
@@ -42,6 +40,7 @@
             <p class="mb-0 small text-truncate">{{ $post->parentPost->body }}</p>
         </div>
     @endif
+    
     <div class="js-text-wrapper {{ $mediaCount > 0 ? 'text-truncate-container' : '' }}">
         <p class="js-text-body card-text fs-5 mb-3" style="white-space: pre-line;">{{ $post->body }}</p>
     </div>
@@ -71,3 +70,44 @@
         @endif
     </div>
 </div>
+
+@once
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('click', (e) => {
+            const card = e.target.closest('.js-post-card');
+            if (!card) return;
+
+            // 1. Lightbox functionality 
+            const trigger = e.target.closest('.js-lightbox-trigger');
+            if (trigger && window.openGlobalLightbox) {
+                const container = trigger.closest('.js-media-container');
+                const fullMediaArray = JSON.parse(container.dataset.fullMedia);
+                window.openGlobalLightbox(fullMediaArray, trigger.dataset.index);
+            }
+
+            // 2. Read More Text Expansion Engine
+            if (e.target.closest('.js-btn-read-more')) {
+                const btn = e.target.closest('.js-btn-read-more');
+                const textWrapper = card.querySelector('.js-text-wrapper');
+                if (!textWrapper) return;
+
+                const startHeight = textWrapper.offsetHeight;
+                textWrapper.classList.remove('text-truncate-container'); 
+                btn.style.display = 'none';
+                const endHeight = textWrapper.offsetHeight;
+                
+                const anim = textWrapper.animate([
+                    { height: `${startHeight}px`, overflow: 'hidden' },
+                    { height: `${endHeight}px`, overflow: 'hidden' }
+                ], { duration: 300, easing: 'ease-in-out' });
+
+                anim.onfinish = () => {
+                    textWrapper.style.height = '';
+                    textWrapper.style.overflow = '';
+                };
+            }
+        });
+    });
+</script>
+@endonce
