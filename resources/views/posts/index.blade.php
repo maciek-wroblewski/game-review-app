@@ -3,6 +3,11 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 
+
+                @auth
+                <x-post.create-form />
+                @endauth
+
                 {{-- Loop through the timeline --}}
                 @foreach($posts as $post)
                     <x-post :post="$post" />

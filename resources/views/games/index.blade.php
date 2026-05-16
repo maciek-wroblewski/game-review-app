@@ -7,7 +7,7 @@
                 </div>
             </div>
             <div class="trending-wrapper">
-                <x-trending-games />
+                <x-game.trending />
             </div>
         </section>
 
@@ -22,7 +22,7 @@
             <div class="row g-4">
                 @foreach($games as $game)
                     <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
-                        <x-game-card :game="$game" />
+                        <x-game.card :game="$game" />
                     </div>
                 @endforeach
             </div>
