@@ -12,7 +12,7 @@ class PostController extends Controller
     /**
      * Display a listing of the resource (Timeline).
      */
-    public function index()
+    public function index(Request $request)
     {
         // Eager load relationships to prevent N+1 query problems
         $posts = Post::with(['author', 'media', 'hub', 'review'])
@@ -22,7 +22,7 @@ class PostController extends Controller
         return view('posts.index', compact('posts'));
     }
 
-    
+
     public function store(Request $request)
     {
         // 1. Validate the incoming payload
@@ -70,9 +70,14 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
+        // Eager load relationships for the main post
         $post->load(['author', 'media', 'hub', 'review']);
-        
-        return view('posts.show', compact('post'));
+
+        // Paginate the replies
+        $replies = $post->replies()->latest()->paginate(15);
+
+        // Pass both variables to the view
+        return view('posts.show', compact('post', 'replies'));
     }
 
     /**
@@ -109,9 +114,9 @@ class PostController extends Controller
         } else {
             // Dissociate removed media
             $post->media()->whereNotIn('id', $validated['media_ids'])->update(['post_id' => null]);
-            
+
             // Associate any newly uploaded media
-            Media::whereIn('id', $validated['media_ids'],null, null)->update(['post_id' => $post->id]);
+            Media::whereIn('id', $validated['media_ids'], null, null)->update(['post_id' => $post->id]);
         }
 
         // 5. Update Review Rating (If applicable)

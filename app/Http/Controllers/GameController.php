@@ -9,7 +9,7 @@ use App\Models\Game;
 class GameController extends Controller
 
 {
-    public function index()
+    public function index(Request $request)
     {
         $games = Game::with(['genres', 'credits' => function($query) {
             $query->withPivot('role');

@@ -1,4 +1,4 @@
-@props(['post', 'layout' => 'full'])
+@props(['post'])
 
 @php
 $isReview = method_exists($post, 'isReview') && $post->isReview() && $post->review;

@@ -1,8 +1,10 @@
-@props(['user', 'layout' => 'full'])
+@props(['user', 'layout' => 'full', 'height' => null])
 
 @php
-    $isCompact = $layout === 'compact';
-    $height = $isCompact ? '100px' : '220px';
+    if ($height === null) {
+        $isCompact = $layout === 'compact';
+        $height = $isCompact ? '100px' : '220px';
+    }
     
     $bannerHash = md5($user->username . '-banner');
     $color1 = '#' . substr($bannerHash, 0, 6);
