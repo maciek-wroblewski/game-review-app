@@ -22,6 +22,49 @@ class PostController extends Controller
         return view('posts.index', compact('posts'));
     }
 
+    
+    public function store(Request $request)
+    {
+        // 1. Validate the incoming payload
+        $validated = $request->validate([
+            'body' => 'required|string|max:5000',
+            'hub_type' => 'nullable|string',
+            'hub_id' => 'nullable|integer',
+            'parent_id' => 'nullable|exists:posts,id',
+            'is_spoiler' => 'boolean',
+            'is_locked' => 'boolean',
+            'media_ids' => 'nullable|array',
+            'media_ids.*' => 'exists:media,id',
+            'review_type' => 'nullable|string|in:recommendation,article,patch_note,announcement',
+            'rating' => 'nullable|integer|min:1|max:10',
+        ]);
+
+        // 2. Create the Post
+        $post = Post::create([
+            'user_id' => auth()->id(),
+            'body' => $validated['body'],
+            'hub_type' => $validated['hub_type'],
+            'hub_id' => $validated['hub_id'],
+            'parent_id' => $validated['parent_id'],
+            'is_spoiler' => $validated['is_spoiler'] ?? false,
+            'is_locked' => $validated['is_locked'] ?? false,
+        ]);
+
+        // 3. Handle Review creation (if applicable)
+        if (!empty($validated['review_type'])) {
+            $post->review()->create([
+                'type' => $validated['review_type'],
+                'rating' => $validated['review_type'] === 'recommendation' ? $validated['rating'] : null,
+            ]);
+        }
+
+        // 4. Sync Media (assuming you are using Spatie MediaLibrary or a custom media pivot table)
+        if (!empty($validated['media_ids'])) {
+            \App\Models\Media::whereIn('id', $validated['media_ids'], null, null)->update(['post_id' => $post->id]);
+        }
+        // The JS expects a 200 OK response to reload the page
+        return response()->json(['message' => 'Post created successfully', 'post' => $post]);
+    }
     /**
      * Display the specified resource (Single Post Page).
      */

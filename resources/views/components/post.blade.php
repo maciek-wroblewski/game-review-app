@@ -45,7 +45,7 @@ $isReview = method_exists($post, 'isReview') && $post->isReview() && $post->revi
     <x-post.rating :rating="$post->review->rating ?? 0" />
     @endif
 
-    <div class="w-100 flex-grow-1 d-flex flex-column {{ $isReview ? 'bg-white' : '' }}">
+    <div class="flex-grow-1 d-flex flex-column {{ $isReview ? 'bg-white' : '' }}" style="min-width: 0;">
         <x-post.header :post="$post" />
 
         @if($post->trashed())
@@ -58,19 +58,6 @@ $isReview = method_exists($post, 'isReview') && $post->isReview() && $post->revi
         <!-- Edit Form -->
         <x-post.edit-form :post="$post" />
         @endif
-
-        @if(!$post->trashed())
-        <div
-            class="js-post-footer card-footer bg-white border-top border-light d-flex justify-content-between align-items-center py-3">
-            {{-- There will be 2 buttons. The one below that then slides down a text box (with attachment picker) that
-            allows user to reply to this post
-            adds a form FOR LOGGED USERS that lets user create a post --}}
-            <button class="btn btn-light rounded-pill border shadow-sm d-flex align-items-center gap-2"><i
-                    class="bi bi-chat"></i> Reply</button>
-            {{-- the second one, minor one will just slide down the comments section. THIS COMMENT SECTION IS OUR MICRO
-            COMPONENT THAT WE WILL DO RIGHT NOW. --}}
-            <x-like-button :post="$post" />
-        </div>
-        @endif
+        <x-post.footer :post="$post" />
     </div>
 </div>

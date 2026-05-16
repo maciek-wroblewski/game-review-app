@@ -1,7 +1,6 @@
 <x-layout headtitle="Browse Games">
     <div class="container-xl py-5">
         
-        <!-- Trending Section -->
         <section class="trending-section mb-5">
             <div class="d-flex align-items-center justify-content-between">
                 <div class="carousel-controls">
@@ -28,7 +27,6 @@
                 @endforeach
             </div>
 
-            <!-- Enhanced Pagination Section -->
             <div class="pagination-container mt-5">
                 <div class="pagination-wrapper shadow-sm">
                     {{ $games->links('pagination::bootstrap-5') }}

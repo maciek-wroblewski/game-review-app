@@ -50,27 +50,31 @@
     .clickable-card { transition: background-color 0.2s ease; }
     .clickable-card:hover { background-color: rgba(0,0,0,0.02); }
 </style>
-
 @once
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
-        // Global Event Delegation for Header Actions
+        // Global Event Delegation for Header & Quote Actions
         document.addEventListener('click', (e) => {
-            const card = e.target.closest('.js-post-card');
-            
-            // 1. Post Row Interceptor Redirection
+            // --- 1. Handle Clickable Cards (Header AND Quote) ---
             const clickable = e.target.closest('.clickable-card');
+            
+            // If we clicked a clickable-card, AND we didn't click an internal link/button/dropdown
             if (clickable && !e.target.closest('a') && !e.target.closest('button') && !e.target.closest('.dropdown-menu')) {
                 const url = clickable.getAttribute('data-href');
-                if (url) window.location.href = url;
-                return;
+                if (url) {
+                    window.location.href = url;
+                }
+                return; // Stop further processing for this click
             }
 
+            // --- 2. Handle Post Card Specific Actions (Edit/Delete) ---
+            // Only proceed if we are inside a post card for destructive actions
+            const card = e.target.closest('.js-post-card');
             if (!card) return;
 
-            // 2. Destructive Actions API Hook
+            // Destructive Actions API Hook
             if (e.target.closest('.js-btn-delete')) {
                 if (!confirm('Permanently delete this post?')) return;
                 fetch(`/posts/${card.dataset.postId}`, { 

@@ -1,7 +1,14 @@
 @props(['post', 'parentIsSpoiler' => false])
 
 @if($post)
-    <div class="border rounded p-3 hover-bg-light transition-all position-relative" style="background-color: #f8f9fa;">
+    <!-- 
+        1. Added data-href for the redirect URL 
+        2. Added 'clickable-card' class to match the header's styling/JS target
+        3. Added cursor: pointer inline style (or via CSS class)
+    -->
+    <div class="border rounded p-3 hover-bg-light transition-all position-relative clickable-card" 
+         style="background-color: #f8f9fa; cursor: pointer;"
+         data-href="/posts/{{ $post->id }}">
         
         <!-- Header: Avatar, Username, and Date -->
         <div class="d-flex align-items-center gap-2 mb-2">
