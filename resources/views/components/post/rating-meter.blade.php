@@ -15,7 +15,7 @@
     }
     /* Optional: Add a subtle visual cue that the meter is now draggable */
     .is-editing .js-meter-fill {
-        box-shadow: inset 0 0 0 2px rgba(255,255,255,0.4);
+        /* box-shadow: inset 0 0 0 2px rgba(255,255,255,0.4); */
     }
 </style>
 
