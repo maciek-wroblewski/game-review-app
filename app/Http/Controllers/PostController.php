@@ -151,4 +151,16 @@ class PostController extends Controller
             'message' => 'Post deleted successfully.'
         ], 200);
     }
+
+    public function getReplies(Post $post)
+    {
+        // Eager load author & media to prevent N+1
+        $replies = $post->replies()
+            ->with(['author', 'media'])
+            ->latest()
+            ->get();
+
+        // Return a raw HTML view (no layout, no <html>/<body> tags)
+        return view('components.post.replies-container-content', compact('replies'));
+    }
 }

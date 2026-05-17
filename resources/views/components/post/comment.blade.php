@@ -3,7 +3,7 @@
 @props(['post'])
 
 {{-- Main container --}}
-<div class="js-post-card js-comment-card position-relative rounded shadow-sm mb-3 overflow-hidden"
+<div class="js-post-card js-comment-card position-relative rounded shadow-sm overflow-hidden mb-3"
     data-post-id="{{ $post->id }}" data-is-review="false">
 
     @if(!$post->trashed())
@@ -14,7 +14,7 @@
         <div class="edit_form_collapsable">
             {{-- Gradient Overlay --}}
             <div class="position-absolute top-0 start-0 w-100 h-100"
-                style="background: linear-gradient(to right, rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0.855) 40%, rgba(255, 255, 255, 0.213) 100%); pointer-events: none;">
+                style="background: linear-gradient(to right, rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0.945) 40%, rgba(255, 255, 255, 0.59) 100%); pointer-events: none;">
             </div>
 
             {{-- View Mode wrapped in Clickable Card --}}
@@ -22,9 +22,9 @@
                 <div class="js-view-mode position-relative d-flex flex-row w-100 p-3 gap-3">
                     <x-user.avatar :user="$post->author" :size="'36px'" />
 
-                    <div class="flex-grow-1 d-flex flex-column min-w-0">
+                    <div class="flex-grow-1 d-flex flex-column min-w-0 row-gap-3">
                         <!-- Header / Info -->
-                        <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center gap-2">
                                 <span class="fw-bold small">{{ $post->author->username }}</span>
                                 <span class="text-muted small" style="font-size: 0.75rem;">{{
@@ -39,22 +39,29 @@
                         </div>
 
                         <!-- Content & Actions -->
-                        <x-post.spoiler :is-spoiler="$post->is_spoiler">
-                            <x-truncate-text :size="$post->media->count() > 0 ? 1 : 2">
-                                <x-post.text-body :body="$post->body" />
-                            </x-truncate-text>
-                            <x-post.media-grid :media="$post->media" />
-                        </x-post.spoiler>
-
+                        <div>
+                            <x-post.spoiler :is-spoiler="$post->is_spoiler">
+                                <x-truncate-text :size="$post->media->count() > 0 ? 1 : 2">
+                                    <x-post.text-body :body="$post->body" />
+                                </x-truncate-text>
+                                <x-post.media-grid :media="$post->media" />
+                            </x-post.spoiler>
+                        </div>
                         <!-- Actions -->
                         <div class="d-flex flex-row justify-content-between">
-                            <x-post.reply-toggle :post="$post" />
+                            <div>
+
+                                <x-post.reply-toggle :post="$post" />
+                                <x-post.replies-toggle :post="$post" />
+                            </div>
                             <x-like-button :post='$post' />
                         </div>
                     </div>
                 </div>
             </x-clickable-card>
             <x-post.reply-container :post="$post" />
+
+            <x-post.replies-container :post="$post" />
         </div>
         <x-post.edit-form :post="$post" />
     </div>

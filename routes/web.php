@@ -43,11 +43,8 @@ Route::delete('/playlists/{playlist}/games/{game}', [PlaylistGameController::cla
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{post}', [PostController::class, 'show']);
 Route::post('/posts/{post}/like', [PostLikeController::class, 'store']);
-Route::get('/posts/{post}/replies', function(Post $post) {
-    $replies = $post->replies()->with('author')->get();
+Route::get('/posts/{post}/replies', [PostController::class, 'getReplies']);
 
-    return view('components.post.replies-list', compact('replies'));
-});
 
 
 Route::get('/dashboard', function () {
@@ -83,10 +80,9 @@ Route::post('/notifications/{notification}/read', function (\App\Models\Notifica
     }
 
     return back();
-
 })->middleware('auth');
 
 Route::patch('/profile/privacy', [ProfileController::class, 'updatePrivacy'])
     ->middleware('auth');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

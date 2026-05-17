@@ -18,54 +18,18 @@
 
 @once
 <style>
-    .spoiler-container {
-        position: relative;
-        isolation: isolate;
-    }
-
-    .spoiler-overlay {
-        /* 
-       A low positive z-index is now all we need to sit on top of 
-       the immediate text and nested containers inside this context.
-    */
+        /* By default, the overlay is visible */
+        .spoiler-overlay {
+        transition: opacity 0.2s ease, visibility 0.2s ease;
         z-index: 3;
         backdrop-filter: blur(5px);
-        transition: opacity 0.2s ease, visibility 0.2s ease;
-        pointer-events: auto;
-    }
+        }
 
-    /* Only reveal the immediate overlay layer */
-    .spoiler-container.is-revealed>.spoiler-overlay {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-    }
-</style>
+        /* When the container is hovered, hide the overlay */
+        .spoiler-container:hover .spoiler-overlay {
+            opacity: 0;
+            pointer-events: none; /* Prevents the overlay from blocking clicks on the content */
+        }
+    </style>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-    const attachSpoilerListeners = () => {
-        document.querySelectorAll('[data-spoiler]:not([data-spoiler-initialized])').forEach(spoiler => {
-            // Mark as initialized to prevent duplicate event listeners
-            spoiler.setAttribute('data-spoiler-initialized', 'true');
-
-            // mouseenter does not bubble up to parents
-            spoiler.addEventListener('mouseenter', () => {
-                spoiler.classList.add('is-revealed');
-            });
-
-            // mouseleave does not bubble up to parents
-            spoiler.addEventListener('mouseleave', () => {
-                spoiler.classList.remove('is-revealed');
-            });
-        });
-    };
-
-    // Initial run
-    attachSpoilerListeners();
-
-    // Optional: Re-initialize if you use dynamic frontend frameworks like Livewire
-    document.addEventListener('livewire:navigated', attachSpoilerListeners);
-});
-</script>
 @endonce

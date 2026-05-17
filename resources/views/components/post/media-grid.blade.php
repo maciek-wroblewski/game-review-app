@@ -13,28 +13,22 @@
         3 => 'grid-3',
         default => 'grid-4'
     };
-
-    // Fixes the JS bug: safe payload for your lightbox script
-    $lightboxPayload = $mediaCollection->map(fn($item) => [
-        'file_path' => $item->file_path,
-        'mime_type' => $item->mime_type
-    ])->toJson();
 @endphp
 
 @if($count > 0)
-<div class="js-media-container mb-3" data-full-media="{{ $lightboxPayload }}">
+<div class="js-media-container">
     {{-- Dynamically set the aspect ratio via a CSS variable: 1/1 for a single item, 16/9 for galleries --}}
     <div class="media-grid {{ $gridClass }} shadow-sm w-100" style="--grid-aspect-ratio: {{ $count === 1 ? '1/1' : '16/9' }};">
         @foreach($mediaCollection->take(4) as $index => $item)
         <div class="media-item-wrapper js-lightbox-trigger" data-index="{{ $index }}">
             
             @if(str_starts_with($item->mime_type, 'video/'))
-                <video src="{{ $item->file_path }}" class="media-element pointer-events-none" muted></video>
+                <video src="{{ $item->file_path }}" class="media-element" muted></video>
                 <div class="video-play-overlay">
                     <i class="bi bi-play-fill fs-4"></i>
                 </div>
             @else
-                <img src="{{ $item->file_path }}" class="media-element pointer-events-none" alt="Media item">
+                <img src="{{ $item->file_path }}" class="media-element" alt="Media item">
             @endif
 
             @if($count > 4 && $index === 3)
@@ -103,16 +97,4 @@
 }
 </style>
 
-<script>
-document.addEventListener('click', (e) => {
-    const trigger = e.target.closest('.js-lightbox-trigger');
-    if (trigger && window.openGlobalLightbox) {
-        const container = trigger.closest('.js-media-container');
-        if (container) {
-            const fullMedia = JSON.parse(container.dataset.fullMedia || '[]');
-            window.openGlobalLightbox(fullMedia, trigger.dataset.index);
-        }
-    }
-});
-</script>
 @endonce
