@@ -1,7 +1,7 @@
 @props(['post'])
 
 @auth
-<form action="/posts/{{ $post->id }}/like" method="POST" class="m-0 ajax-like-form d-inline-block">
+<form action="/posts/{{ $post->id }}/like" method="POST" class="m-0 ajax-like-form d-inline-block" data-post-id="{{ $post->id }}">
 @csrf
 @php
     $hasLiked = $post->likes()->where('user_id', auth()->id())->exists();
@@ -74,17 +74,25 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!likeForm) return;
 
         e.preventDefault(); 
-        const btn = likeForm.querySelector('.like-btn');
-        const countBadge = likeForm.querySelector('.like-count');
-
+        
+        const clickedBtn = likeForm.querySelector('.like-btn');
         // Prevent double submissions
-        if (btn.classList.contains('is-processing')) return;
-        btn.classList.add('is-processing');
+        if (clickedBtn.classList.contains('is-processing')) return;
 
-        // Reset animation class to allow re-trigger
-        btn.classList.remove('animate-pop');
-        // Force reflow to ensure animation restarts if it was already running
-        void btn.offsetWidth; 
+        // 1. Grab the target post ID to find ALL instances on the page
+        const postId = likeForm.dataset.postId;
+        const matchingForms = document.querySelectorAll(`.ajax-like-form[data-post-id="${postId}"]`);
+
+        // 2. Lock and trigger visual transition preparations on ALL matching buttons
+        matchingForms.forEach(form => {
+            const btn = form.querySelector('.like-btn');
+            btn.classList.add('is-processing');
+            
+            // Reset animation class to allow re-trigger
+            btn.classList.remove('animate-pop');
+            // Force reflow to ensure animation restarts if it was already running
+            void btn.offsetWidth; 
+        });
 
         fetch(likeForm.action, {
             method: 'POST',
@@ -97,34 +105,50 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(res => res.json())
         .then(data => {
             const isLiked = data.status === 'liked';
-            // Parse current count safely
-            let currentCount = parseInt(countBadge.textContent.trim()) || 0;
+            
+            // Parse current count safely from the clicked form to ensure math is consistent
+            const clickedCountBadge = likeForm.querySelector('.like-count');
+            let currentCount = parseInt(clickedCountBadge.textContent.trim()) || 0;
 
-            // Update Count
+            // Calculate the new count once
             if (isLiked) {
                 currentCount++;
-                btn.classList.add('btn-primary', 'is-liked');
-                btn.classList.remove('btn-light');
             } else {
-                currentCount--;
-                btn.classList.remove('btn-primary', 'is-liked');
-                btn.classList.add('btn-light');
+                currentCount = Math.max(0, currentCount - 1);
             }
+            
+            const newText = currentCount > 0 ? currentCount : 'Like';
 
-            // Update Text
-            countBadge.textContent = currentCount > 0 ? currentCount : 'Like';
+            // 3. Loop through all matching instances and sync their appearance perfectly
+            matchingForms.forEach(form => {
+                const btn = form.querySelector('.like-btn');
+                const countBadge = form.querySelector('.like-count');
 
-            // Trigger Animation only if the state actually changed visually
-            // (We can assume it changed if we got a valid response)
-            btn.classList.add('animate-pop');
+                // Update UI State
+                if (isLiked) {
+                    btn.classList.add('btn-primary', 'is-liked');
+                    btn.classList.remove('btn-light');
+                } else {
+                    btn.classList.remove('btn-primary', 'is-liked');
+                    btn.classList.add('btn-light');
+                }
+
+                // Update Text
+                countBadge.textContent = newText;
+
+                // Trigger Animation on all instances
+                btn.classList.add('animate-pop');
+            });
 
         })
         .catch(err => {
             console.error(err);
-            // Optional: Revert UI if error occurred
         })
         .finally(() => {
-            btn.classList.remove('is-processing');
+            // 4. Release execution locks across all instances
+            matchingForms.forEach(form => {
+                form.querySelector('.like-btn').classList.remove('is-processing');
+            });
         });
     });
 });

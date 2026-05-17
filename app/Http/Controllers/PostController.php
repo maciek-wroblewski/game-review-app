@@ -140,17 +140,17 @@ class PostController extends Controller
     {
         // Authorization check
         if (auth()->id() !== $post->user_id) {
-            return response()->json(['message' => 'Unauthorized.'], 403);
+            abort(403, 'Unauthorized.');
         }
 
-        // If you are using SoftDeletes on your Post model, this will trash it.
-        // If not, it permanently deletes it.
+        // Delete the post
         $post->delete();
 
-        return response()->json([
-            'message' => 'Post deleted successfully.'
-        ], 200);
+        // Redirect back to the previous page (e.g., the post feed or single post view)
+        // You can also use redirect()->route('posts.index') if you want to go to a specific page.
+        return redirect()->back()->with('success', 'Post deleted successfully.');
     }
+
 
     public function getReplies(Post $post)
     {
