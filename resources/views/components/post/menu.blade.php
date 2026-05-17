@@ -51,6 +51,7 @@
 .custom-post-dropdown .dropdown-trigger:hover {
     background-color: #e9ecef !important;
     transform: scale(1.1) rotate(90deg);
+    cursor: pointer;
 }
 
 .custom-post-dropdown .dropdown-trigger:active {
@@ -87,6 +88,7 @@
     transition: background-color 0.15s ease, color 0.15s ease;
     display: flex;
     align-items: center;
+    cursor: pointer;
 }
 
 .custom-post-dropdown .dropdown-item:not(.text-danger):hover {

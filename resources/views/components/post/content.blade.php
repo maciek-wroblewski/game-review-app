@@ -2,15 +2,17 @@
 @php
 $height = $post->media->count() > '0' ? '2':'5';
 @endphp
-<x-post.spoiler :isSpoiler='$post->is_spoiler'>
-    <div class="js-view-mode card-body pt-2 position-relative">
+<div class="js-view-mode card-body pt-2 position-relative">
+
+    <x-post.spoiler :isSpoiler='$post->is_spoiler'>
         <x-truncate-text :size="$post->media->count() > 0 ? 2 : 5">
             <x-post.text-body :body="$post->body" />
         </x-truncate-text>
-        <x-post.media-grid :media="$post->media"/>
+        <x-post.media-grid :media="$post->media" />
 
-        @if($post->parent_id)
-        <x-post.quote :post="$post->parent" :parentIsSpoiler="$post->is_spoiler" />
-        @endif
-    </div>
-</x-post.spoiler>
+    </x-post.spoiler>
+
+    @if($post->parent_id)
+    <x-post.quote :post="$post->parent" :parentIsSpoiler="$post->is_spoiler" />
+    @endif
+</div>

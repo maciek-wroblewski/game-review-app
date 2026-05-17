@@ -2,18 +2,17 @@
 
 @auth
 <form action="/posts/{{ $post->id }}/like" method="POST" class="m-0 ajax-like-form d-inline-block">
-    @csrf
-    @php
-        $hasLiked = $post->likes()->where('user_id', auth()->id())->exists();
-        $count = $post->likes_count ?? 0;
-    @endphp
-    
-    <button type="submit" class="btn rounded-pill border shadow-sm d-flex align-items-center gap-2 like-btn {{ $hasLiked ? 'btn-primary is-liked' : 'btn-light' }}">
+@csrf
+@php
+    $hasLiked = $post->likes()->where('user_id', auth()->id())->exists();
+    $count = $post->likes_count ?? 0;
+@endphp
+    <button type="submit" 
+        class="btn btn-sm rounded-pill border-0 small d-flex align-items-center gap-2 like-btn {{ $hasLiked ? 'btn-primary is-liked' : 'btn-light' }}">
         <span class="like-icon-container">
             <i class="bi bi-heart icon-unliked"></i>
             <i class="bi bi-heart-fill icon-liked"></i>
         </span>
-        
         <span class="like-count fw-medium">
             {{ $count > 0 ? $count : 'Like' }}
         </span>
@@ -22,7 +21,7 @@
 @else
 <div class="m-0 d-inline-block">
     @php $guestCount = $post->likes_count ?? 0; @endphp
-    <button class="btn btn-light rounded-pill border shadow-sm d-flex align-items-center gap-2" disabled>
+    <button class="btn btn-sm btn-light rounded-pill border-0 small d-flex align-items-center gap-2" disabled>
         <i class="bi bi-heart"></i>
         <span class="fw-medium">{{ $guestCount > 0 ? $guestCount : 'Like' }}</span>
     </button>
@@ -63,74 +62,71 @@
         50% { transform: scale(1.4); }
         100% { transform: scale(1); }
     }
-    
     .like-btn.animate-pop .like-icon-container {
         animation: heartPulse 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.addEventListener('submit', function(e) {
-            const likeForm = e.target.closest('.ajax-like-form');
-            if (!likeForm) return;
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('submit', function(e) {
+        const likeForm = e.target.closest('.ajax-like-form');
+        if (!likeForm) return;
 
-            e.preventDefault(); 
-            
-            const btn = likeForm.querySelector('.like-btn');
-            const countBadge = likeForm.querySelector('.like-count');
+        e.preventDefault(); 
+        const btn = likeForm.querySelector('.like-btn');
+        const countBadge = likeForm.querySelector('.like-count');
 
-            // Prevent double submissions
-            if (btn.classList.contains('is-processing')) return;
-            btn.classList.add('is-processing');
+        // Prevent double submissions
+        if (btn.classList.contains('is-processing')) return;
+        btn.classList.add('is-processing');
 
-            // Reset animation class to allow re-trigger
-            btn.classList.remove('animate-pop');
-            // Force reflow to ensure animation restarts if it was already running
-            void btn.offsetWidth; 
+        // Reset animation class to allow re-trigger
+        btn.classList.remove('animate-pop');
+        // Force reflow to ensure animation restarts if it was already running
+        void btn.offsetWidth; 
 
-            fetch(likeForm.action, {
-                method: 'POST',
-                body: new FormData(likeForm),
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(res => res.json())
-            .then(data => {
-                const isLiked = data.status === 'liked';
-                
-                // Parse current count safely
-                let currentCount = parseInt(countBadge.textContent.trim()) || 0;
+        fetch(likeForm.action, {
+            method: 'POST',
+            body: new FormData(likeForm),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            const isLiked = data.status === 'liked';
+            // Parse current count safely
+            let currentCount = parseInt(countBadge.textContent.trim()) || 0;
 
-                // Update Count
-                if (isLiked) {
-                    currentCount++;
-                    btn.classList.add('btn-primary', 'is-liked');
-                    btn.classList.remove('btn-light');
-                } else {
-                    currentCount--;
-                    btn.classList.remove('btn-primary', 'is-liked');
-                    btn.classList.add('btn-light');
-                }
+            // Update Count
+            if (isLiked) {
+                currentCount++;
+                btn.classList.add('btn-primary', 'is-liked');
+                btn.classList.remove('btn-light');
+            } else {
+                currentCount--;
+                btn.classList.remove('btn-primary', 'is-liked');
+                btn.classList.add('btn-light');
+            }
 
-                // Update Text
-                countBadge.textContent = currentCount > 0 ? currentCount : 'Like';
+            // Update Text
+            countBadge.textContent = currentCount > 0 ? currentCount : 'Like';
 
-                // Trigger Animation only if the state actually changed visually
-                // (We can assume it changed if we got a valid response)
-                btn.classList.add('animate-pop');
+            // Trigger Animation only if the state actually changed visually
+            // (We can assume it changed if we got a valid response)
+            btn.classList.add('animate-pop');
 
-            })
-            .catch(err => {
-                console.error(err);
-                // Optional: Revert UI if error occurred
-            })
-            .finally(() => {
-                btn.classList.remove('is-processing');
-            });
+        })
+        .catch(err => {
+            console.error(err);
+            // Optional: Revert UI if error occurred
+        })
+        .finally(() => {
+            btn.classList.remove('is-processing');
         });
     });
+});
 </script>
 @endonce

@@ -12,6 +12,7 @@
     /* Magically show the drag overlay when the parent post enters edit mode */
     .is-editing .js-meter-overlay {
         display: block !important;
+        cursor: crosshair;
     }
     /* Optional: Add a subtle visual cue that the meter is now draggable */
     .is-editing .js-meter-fill {
@@ -26,7 +27,7 @@
     
     <div class="js-meter-fill meter-fill w-100 d-flex align-items-start justify-content-center pt-2 text-white fw-bold style-transition {{ $meterColor }}" 
          style="height: {{ $rating * 10 }}%; transition: height 0.3s, background-color 0.3s;">
-        <span class="js-meter-text" style="writing-mode: vertical-rl; transform: rotate(180deg); font-size: 0.85rem;">{{ $rating }} / 10</span>
+        <span class="js-meter-text" style="font-size: 0.85rem;">{{ $rating }} / 10</span>
     </div>
 
     {{-- Overlay is always present, but hidden unless passed 'editable' OR parent has .is-editing class --}}
