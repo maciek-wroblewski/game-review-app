@@ -7,7 +7,6 @@
 
 @php
     $isRecommendation = $reviewType === 'recommendation';
-    // Generate a unique ID for the toggle labels to prevent conflicts if rendered multiple times
     $uid = \Illuminate\Support\Str::random(8);
 @endphp
 
@@ -18,12 +17,8 @@
     data-review-type="{{ $reviewType }}">
 
     @if($isRecommendation)
-    <div class="rating-meter-container position-relative d-flex flex-column justify-content-end border-end" style="width: 50px; min-width: 50px; background-color: rgba(0, 0, 0, 0.05); z-index: 1;">
-        <div class="js-create-meter-fill meter-fill w-100 d-flex align-items-start justify-content-center pt-2 text-white fw-bold style-transition bg-success" style="height: 100%; transition: height 0.1s, background-color 0.3s;">
-            <span class="js-create-meter-text" style="writing-mode: vertical-rl; transform: rotate(180deg); font-size: 0.85rem;">10 / 10</span>
-        </div>
-        <div class="js-create-rating-overlay position-absolute top-0 start-0 w-100 h-100 cursor-crosshair" style="z-index: 10;" title="Click and drag to set rating"></div>
-    </div>
+        {{-- Look how clean this is now! We just pass editable="true" and a starting rating of 10 --}}
+        <x-post.rating-meter :rating="10" editable="true" />
     @endif
 
     <div class="flex-grow-1 d-flex flex-column p-3 bg-white" style="min-width: 0;">
@@ -75,52 +70,10 @@
     document.addEventListener('DOMContentLoaded', () => {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
-        // 1. Drag Logic for the Recommendation Rating Meter
-        document.querySelectorAll('.js-create-post-card').forEach(card => {
-            const ratingOverlay = card.querySelector('.js-create-rating-overlay');
-            if (!ratingOverlay) return;
+        // Note: All the complex drag logic is completely gone from here!
+        // It now lives exclusively inside the rating-meter component.
 
-            let isDragging = false;
-
-            const updateRating = (e) => {
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                const rect = ratingOverlay.getBoundingClientRect();
-                const percent = Math.max(0.1, Math.min(1.0, 1 - ((clientY - rect.top) / rect.height)));
-                
-                const newRating = Math.round(percent * 10);
-                const fill = card.querySelector('.js-create-meter-fill');
-                const text = card.querySelector('.js-create-meter-text');
-                
-                if (fill && text) {
-                    fill.style.height = `${newRating * 10}%`;
-                    text.innerText = `${newRating} / 10`;
-                    fill.className = `js-create-meter-fill meter-fill w-100 d-flex align-items-start justify-content-center pt-2 text-white fw-bold style-transition ${newRating >= 7 ? 'bg-success' : (newRating >= 4 ? 'bg-warning' : 'bg-danger')}`;
-                }
-            };
-
-            const toggleDrag = state => e => { 
-                isDragging = state; 
-                if (state) updateRating(e); 
-                if (e.cancelable) e.preventDefault(); 
-            };
-
-            const onDrag = e => { 
-                if (isDragging) { 
-                    updateRating(e); 
-                    if (e.cancelable) e.preventDefault(); 
-                } 
-            };
-
-            ratingOverlay.addEventListener('mousedown', toggleDrag(true));
-            document.addEventListener('mousemove', onDrag);
-            document.addEventListener('mouseup', toggleDrag(false));
-
-            ratingOverlay.addEventListener('touchstart', toggleDrag(true), { passive: false });
-            document.addEventListener('touchmove', onDrag, { passive: false });
-            document.addEventListener('touchend', toggleDrag(false));
-        });
-
-        // 2. Global Event Delegation for Creation Interactions
+        // Global Event Delegation for Creation Interactions
         document.addEventListener('click', async (e) => {
             const card = e.target.closest('.js-create-post-card');
             if (!card) return;
@@ -134,13 +87,18 @@
                 if (el('.js-create-spoiler')) el('.js-create-spoiler').checked = false;
                 if (el('.js-create-locked')) el('.js-create-locked').checked = false;
                 
-                // Reset meter if it exists
-                const fill = el('.js-create-meter-fill');
-                const text = el('.js-create-meter-text');
-                if (fill && text) {
-                    fill.style.height = `100%`;
-                    text.innerText = `10 / 10`;
-                    fill.className = `js-create-meter-fill meter-fill w-100 d-flex align-items-start justify-content-center pt-2 text-white fw-bold style-transition bg-success`;
+                // Reset meter visually if it exists
+                const meter = el('.rating-meter-container');
+                if (meter) {
+                    const fill = meter.querySelector('.js-meter-fill');
+                    const text = meter.querySelector('.js-meter-text');
+                    
+                    meter.dataset.currentRating = 10;
+                    if (fill && text) {
+                        fill.style.height = `100%`;
+                        text.innerText = `10 / 10`;
+                        fill.className = `js-meter-fill meter-fill w-100 d-flex align-items-start justify-content-center pt-2 text-white fw-bold style-transition bg-success`;
+                    }
                 }
                 return;
             }
@@ -166,12 +124,16 @@
                     is_locked: el('.js-create-locked')?.checked ? 1 : 0
                 };
                 
-                // Append Review specific data if present
+                // Decoupled Rating Extraction
                 const reviewType = card.dataset.reviewType;
                 if (reviewType) {
                     payload.review_type = reviewType;
-                    if (reviewType === 'recommendation' && el('.js-create-meter-text')) {
-                        payload.rating = parseInt(el('.js-create-meter-text').innerText);
+                    
+                    if (reviewType === 'recommendation') {
+                        const meter = el('.rating-meter-container');
+                        if (meter && meter.dataset.currentRating) {
+                            payload.rating = parseInt(meter.dataset.currentRating, 10);
+                        }
                     }
                 }
                 

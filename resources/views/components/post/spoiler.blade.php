@@ -1,17 +1,19 @@
 @props(['isSpoiler' => false, 'parentIsSpoiler' => false])
-
-<div class="spoiler-wrapper position-relative">
-    @if($isSpoiler && !$parentIsSpoiler)
-        <div class="spoiler-overlay position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-dark bg-opacity-75 text-white rounded" style="z-index: 10;">
-            <div class="text-center"><i class="bi bi-eye-slash fs-5 mb-1 d-block"></i><span class="fw-bold small">Spoiler Content</span></div>
-        </div>
-    @endif
+@if($isSpoiler && !$parentIsSpoiler)
+<div class="spoiler-container position-relative">
+    <div class="spoiler-overlay position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-dark bg-opacity-75 text-white rounded">
+        <div class="text-center"><i class="bi bi-eye-slash fs-3 mb-2 d-block"></i><span class="fw-bold">Spoiler Content</span></div>
+    </div>
     {{ $slot }}
 </div>
+@else
+    {{ $slot }}
+@endif
 
 @once
 <style>
-    .spoiler-wrapper .spoiler-overlay { transition: opacity 0.2s, visibility 0.2s; }
-    .spoiler-wrapper:hover .spoiler-overlay { opacity: 0; visibility: hidden; pointer-events: none; }
+.spoiler-container { position: relative; }
+.spoiler-overlay { z-index: 10; backdrop-filter: blur(5px); transition: opacity 0.2s, visibility 0.2s; pointer-events: none; }
+.spoiler-container:hover .spoiler-overlay { opacity: 0; visibility: hidden; }
 </style>
 @endonce
