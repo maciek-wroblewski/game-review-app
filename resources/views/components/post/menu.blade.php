@@ -114,10 +114,9 @@
         transform: scale(0.98);
     }
 </style>
-
 <script>
-    document.addEventListener('click', async (e) => {
-    // 1. Handle Delete Logic
+document.addEventListener('click', async (e) => {
+    // 1. Handle Delete Logic (Unchanged)
     if (e.target.closest('.js-btn-delete')) {
         const card = e.target.closest('.js-post-card');
         if (!card || !confirm('Permanently delete this post?')) return;
@@ -132,14 +131,25 @@
                 setTimeout(() => card.remove(), 400);
             }
         } catch (err) { console.error(err); }
+        return; // Exit early
     }
 
     // 2. Handle Edit Trigger
-    // We prevent default here so the dropdown doesn't close immediately before the animation starts
-    if (e.target.closest('.js-btn-edit')) {
-        e.preventDefault(); 
-        e.stopPropagation();
-        // The edit-form component listens for this click globally
+    const editBtn = e.target.closest('.js-btn-edit');
+    if (editBtn) {
+        // Find the shared parent wrapper
+        const card = editBtn.closest('.js-post-card');
+        if (!card) return;
+
+        // Find the edit container inside this specific card
+        const editContainer = card.querySelector('.js-edit-container');
+        if (!editContainer) return;
+
+        // Dispatch the custom event to the container
+        editContainer.dispatchEvent(new CustomEvent('toggle-edit', { 
+            bubbles: true,
+            detail: { card } // Pass the card along so the receiver can find the view container
+        }));
     }
 });
 </script>

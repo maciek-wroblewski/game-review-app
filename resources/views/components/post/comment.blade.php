@@ -3,7 +3,7 @@
 @props(['post'])
 
 {{-- Main container --}}
-<div class="js-post-card js-comment-card position-relative rounded shadow-sm overflow-hidden mb-3"
+<div class="js-post-card js-comment-card position-relative rounded shadow-sm overflow-hidden mb-3 js-post-wrapper"
     data-post-id="{{ $post->id }}" data-is-review="false">
 
     @if(!$post->trashed())
@@ -49,8 +49,7 @@
                         </div>
                         <!-- Actions -->
                         <div class="d-flex flex-row justify-content-between">
-                            <div>
-
+                            <div class="d-flex column-gap-2">
                                 <x-post.reply-toggle :post="$post" />
                                 <x-post.replies-toggle :post="$post" />
                             </div>

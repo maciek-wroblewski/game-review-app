@@ -15,7 +15,7 @@ $isReview = method_exists($post, 'isReview') && $post->isReview() && $post->revi
     }
 </style>
 
-<div class="js-post-card card shadow-sm mb-4 border-0 overflow-hidden {{ $isReview ? 'd-flex flex-row align-items-stretch' : '' }}"
+<div class="js-post-wrapper js-post-card card shadow-sm mb-4 border-0 overflow-hidden {{ $isReview ? 'd-flex flex-row align-items-stretch' : '' }}"
     data-post-id="{{ $post->id }}" data-is-review="{{ $isReview ? 'true' : 'false' }}">
 
     @if($isReview && $post->review->type === 'recommendation')

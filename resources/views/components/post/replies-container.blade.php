@@ -1,10 +1,10 @@
 @props(['post'])
 
-<div id="comment-list-{{ $post->id }}"
-     class="js-comment-list-container overflow-hidden bg-white border-top border-light"
+<div class="js-comment-list-container overflow-hidden bg-white border-top border-light"
      style="max-height: 0; opacity: 0; transition: max-height 0.3s ease-out, opacity 0.3s ease-out;">
     <div class="p-3">
-        <div class="js-replies-content">
+        {{-- Added max-height and overflow-y-auto here --}}
+        <div class="js-replies-content overflow-y-auto overflow-x-hidden" style="max-height: 60vh;">
             <div class="text-center text-muted small py-4">
                 <i class="bi bi-chat-dots me-1"></i> Click to load replies
             </div>
@@ -22,7 +22,6 @@ document.addEventListener('toggle-replies', async (e) => {
     const isLoaded = container.dataset.loaded === 'true';
 
     if (!isOpen) {
-        // 1. Lazy Load if not already fetched
         if (!isLoaded) {
             contentArea.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-muted"></div></div>';
             try {
@@ -40,23 +39,36 @@ document.addEventListener('toggle-replies', async (e) => {
             }
         }
 
-        // 2. Animate Open
-        container.offsetHeight; // Force reflow for smooth transition
+        // Animate Open
+        container.offsetHeight; // Force reflow
         container.style.maxHeight = container.scrollHeight + 'px';
         container.style.opacity = '1';
         container.dataset.open = 'true';
         
-        // Optional: Update button text
         btn.querySelector('.btn-text').textContent = 'Hide Replies';
         btn.querySelector('i').classList.replace('bi-chevron-down', 'bi-chevron-up');
 
+        // NEW: Once the animation is done, remove the max-height limit. 
+        // This allows the div to grow/shrink dynamically if content inside changes!
+        container.addEventListener('transitionend', function handler(event) {
+            if (event.propertyName === 'max-height' && container.dataset.open === 'true') {
+                container.style.maxHeight = 'none';
+            }
+            container.removeEventListener('transitionend', handler);
+        });
+
     } else {
-        // 3. Animate Close
+        // NEW: Before we can animate closed, we must swap 'none' back to explicit pixels.
+        container.style.maxHeight = container.scrollHeight + 'px';
+        
+        // Force reflow so the browser registers the pixel value
+        container.offsetHeight; 
+
+        // Animate Closed
         container.style.maxHeight = '0';
         container.style.opacity = '0';
         container.dataset.open = 'false';
         
-        // Optional: Update button text
         btn.querySelector('.btn-text').textContent = 'Show Replies';
         btn.querySelector('i').classList.replace('bi-chevron-up', 'bi-chevron-down');
     }

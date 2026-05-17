@@ -2,8 +2,9 @@
 
 @if(!$post->is_locked)
 <button class="js-btn-reply btn btn-sm btn-light rounded-pill border-0 small"
-    data-hub-type="{{ $post->hubable_type ?? $post->hub_type }}" data-hub-id="{{ $post->hubable_id ?? $post->hub_id }}"
-    data-parent-id="{{ $post->id }}" data-target-container="reply-container-{{ $post->id }}">
+    data-hub-type="{{ $post->hubable_type ?? $post->hub_type }}" 
+    data-hub-id="{{ $post->hubable_id ?? $post->hub_id }}"
+    data-parent-id="{{ $post->id }}">
     <i class="bi bi-reply me-1"></i>Reply
 </button>
 @else
@@ -13,17 +14,17 @@
 </button>
 @endif
 
-{{-- JS lives here, but targets containers by ID --}}
 @once
 <script>
     document.addEventListener('click', (e) => {
         const btn = e.target.closest('.js-btn-reply');
         if (!btn) return;
 
-        const targetId = btn.dataset.targetContainer;
-        if (!targetId) return;
+        const postWrapper = btn.closest('.js-post-wrapper');
+        if (!postWrapper) return;
 
-        const container = document.getElementById(targetId);
+        // 2. Go DOWN to find the specific container inside THIS wrapper
+        const container = postWrapper.querySelector('.js-reply-container');
         if (!container) return;
 
         e.preventDefault();
