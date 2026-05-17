@@ -16,7 +16,8 @@
         -->
         <div class="dropdown-animate-container p-1">
             <li>
-                <button class="js-btn-edit dropdown-item py-2 px-3">
+                <!-- This button triggers the edit-form component -->
+                <button class="js-btn-edit dropdown-item py-2 px-3" data-post-id="{{ $post->id }}">
                     <i class="bi bi-pencil me-2"></i><span>Edit</span>
                 </button>
             </li>
@@ -59,12 +60,10 @@
 }
 
 /* --- Decoupled Animation Engine --- */
-/* The parent UL layer stays entirely out of document flow and won't stretch parent containers */
 .custom-post-dropdown .standard-dropdown-flow {
-    background: transparent !important; /* Managed by the inner container instead */
+    background: transparent !important;
 }
 
-/* The inner wrapper handles all the scaling and opacity states */
 .custom-post-dropdown .dropdown-animate-container {
     background-color: #fff;
     border-radius: 10px;
@@ -76,7 +75,6 @@
                 transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* When Bootstrap applies the active state to the UL, smoothly wake up the inner container */
 .custom-post-dropdown .standard-dropdown-flow.show .dropdown-animate-container {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -121,20 +119,30 @@
 
 <script>
 document.addEventListener('click', async (e) => {
-    if (!e.target.closest('.js-btn-delete')) return;
-    const card = e.target.closest('.js-post-card');
-    if (!card || !confirm('Permanently delete this post?')) return;
-    
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-    try {
-        const res = await fetch(`/posts/${card.dataset.postId}`, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': csrfToken } });
-        if (res.ok) {
-            card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-            card.style.opacity = '0';
-            card.style.transform = 'scale(0.95) translateY(10px)';
-            setTimeout(() => card.remove(), 400);
-        }
-    } catch (err) { console.error(err); }
+    // 1. Handle Delete Logic
+    if (e.target.closest('.js-btn-delete')) {
+        const card = e.target.closest('.js-post-card');
+        if (!card || !confirm('Permanently delete this post?')) return;
+        
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+        try {
+            const res = await fetch(`/posts/${card.dataset.postId}`, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': csrfToken } });
+            if (res.ok) {
+                card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.95) translateY(10px)';
+                setTimeout(() => card.remove(), 400);
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    // 2. Handle Edit Trigger
+    // We prevent default here so the dropdown doesn't close immediately before the animation starts
+    if (e.target.closest('.js-btn-edit')) {
+        e.preventDefault(); 
+        e.stopPropagation();
+        // The edit-form component listens for this click globally
+    }
 });
 </script>
 @endonce
