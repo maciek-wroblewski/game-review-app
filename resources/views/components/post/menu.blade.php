@@ -4,16 +4,13 @@
 @if(auth()->id() === $post->user_id && !$post->trashed())
 <div class="dropdown custom-post-dropdown">
     <!-- The trigger button remains a standard, layout-stable inline element -->
-    <button class="btn btn-light btn-sm rounded-circle border-0 dropdown-trigger" data-bs-toggle="dropdown" aria-expanded="false">
+    <button class="btn btn-light btn-sm rounded-circle border-0 dropdown-trigger" data-bs-toggle="dropdown"
+        aria-expanded="false">
         <i class="bi bi-three-dots"></i>
     </button>
-    
+
     <!-- We let Bootstrap handle the display state and absolute positioning on the UL container -->
-    <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-0 standard-dropdown-flow">
-        <!-- 
-          This inner wrapper completely decouples our custom animations 
-          from Bootstrap's positioning engine.
-        -->
+    <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-0 standard-dropdown-flow" style="z-index: 5;">
         <div class="dropdown-animate-container p-1">
             <li>
                 <!-- This button triggers the edit-form component -->
@@ -34,91 +31,92 @@
 
 @once
 <style>
-/* --- Stable Trigger Layout --- */
-.custom-post-dropdown {
-    display: inline-block;
-    line-height: 1;
-}
+    /* --- Stable Trigger Layout --- */
+    .custom-post-dropdown {
+        display: inline-block;
+        line-height: 1;
+    }
 
-.custom-post-dropdown .dropdown-trigger {
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease;
-    width: 32px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
+    .custom-post-dropdown .dropdown-trigger {
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease;
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-.custom-post-dropdown .dropdown-trigger:hover {
-    background-color: #e9ecef !important;
-    transform: scale(1.1) rotate(90deg);
-    cursor: pointer;
-}
+    .custom-post-dropdown .dropdown-trigger:hover {
+        background-color: #e9ecef !important;
+        transform: scale(1.1) rotate(90deg);
+        cursor: pointer;
+    }
 
-.custom-post-dropdown .dropdown-trigger:active {
-    transform: scale(0.95) rotate(90deg);
-}
+    .custom-post-dropdown .dropdown-trigger:active {
+        transform: scale(0.95) rotate(90deg);
+    }
 
-/* --- Decoupled Animation Engine --- */
-.custom-post-dropdown .standard-dropdown-flow {
-    background: transparent !important;
-}
 
-.custom-post-dropdown .dropdown-animate-container {
-    background-color: #fff;
-    border-radius: 10px;
-    min-width: 140px;
-    opacity: 0;
-    transform: scale(0.95) translateY(-5px);
-    transform-origin: top right;
-    transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), 
-                transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
+    /* --- Decoupled Animation Engine --- */
+    .custom-post-dropdown .standard-dropdown-flow {
+        background: transparent !important;
+    }
 
-.custom-post-dropdown .standard-dropdown-flow.show .dropdown-animate-container {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-}
+    .custom-post-dropdown .dropdown-animate-container {
+        background-color: #fff;
+        border-radius: 10px;
+        min-width: 140px;
+        opacity: 0;
+        transform: scale(0.95) translateY(-5px);
+        transform-origin: top right;
+        transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+            transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-/* --- Dropdown Item Styles --- */
-.custom-post-dropdown .dropdown-item {
-    border-radius: 6px;
-    transition: background-color 0.15s ease, color 0.15s ease;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-}
+    .custom-post-dropdown .standard-dropdown-flow.show .dropdown-animate-container {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 
-.custom-post-dropdown .dropdown-item:not(.text-danger):hover {
-    background-color: #f1f3f5;
-    color: #212529;
-}
+    /* --- Dropdown Item Styles --- */
+    .custom-post-dropdown .dropdown-item {
+        border-radius: 6px;
+        transition: background-color 0.15s ease, color 0.15s ease;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
 
-.custom-post-dropdown .dropdown-item.text-danger:hover {
-    background-color: #fff5f5;
-    color: #e03131 !important;
-}
+    .custom-post-dropdown .dropdown-item:not(.text-danger):hover {
+        background-color: #f1f3f5;
+        color: #212529;
+    }
 
-.custom-post-dropdown .dropdown-item i,
-.custom-post-dropdown .dropdown-item span {
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
+    .custom-post-dropdown .dropdown-item.text-danger:hover {
+        background-color: #fff5f5;
+        color: #e03131 !important;
+    }
 
-.custom-post-dropdown .dropdown-item:hover i {
-    transform: scale(1.15);
-}
+    .custom-post-dropdown .dropdown-item i,
+    .custom-post-dropdown .dropdown-item span {
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-.custom-post-dropdown .dropdown-item:hover span {
-    transform: translateX(3px);
-}
+    .custom-post-dropdown .dropdown-item:hover i {
+        transform: scale(1.15);
+    }
 
-.custom-post-dropdown .dropdown-item:active {
-    transform: scale(0.98);
-}
+    .custom-post-dropdown .dropdown-item:hover span {
+        transform: translateX(3px);
+    }
+
+    .custom-post-dropdown .dropdown-item:active {
+        transform: scale(0.98);
+    }
 </style>
 
 <script>
-document.addEventListener('click', async (e) => {
+    document.addEventListener('click', async (e) => {
     // 1. Handle Delete Logic
     if (e.target.closest('.js-btn-delete')) {
         const card = e.target.closest('.js-post-card');
