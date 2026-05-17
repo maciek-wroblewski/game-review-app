@@ -9,19 +9,20 @@ use Illuminate\Support\Facades\Gate;
 
 class PostController extends Controller
 {
-    /**
-     * Display a listing of the resource (Timeline).
-     */
-    public function index(Request $request)
-    {
-        // Eager load relationships to prevent N+1 query problems
-        $posts = Post::with(['author', 'media', 'hub', 'review'])
-            ->latest() // Order by created_at DESC
-            ->paginate(15);
+    public function index(Request $request) 
+{
+    $posts = Post::with(['author', 'media', 'hub', 'review'])
+        ->whereNull('parent_id') // Top-level posts only
+        ->with(['author', 'hub', 'review'])
+        ->latest()
+        ->paginate(10);
 
-        return view('posts.index', compact('posts'));
+    if ($request->ajax()) {
+        return view('components.post.items', compact('posts'))->render();
     }
 
+    return view('posts.index', compact('posts'));
+}
 
     public function store(Request $request)
     {
@@ -68,16 +69,16 @@ class PostController extends Controller
     /**
      * Display the specified resource (Single Post Page).
      */
-    public function show(Post $post)
+
+    public function show(Request $request, Post $post) 
     {
-        // Eager load relationships for the main post
-        $post->load(['author', 'media', 'hub', 'review']);
+        $posts = $post->replies()->oldest()->paginate(15);
 
-        // Paginate the replies
-        $replies = $post->replies()->latest()->paginate(15);
+        if ($request->ajax()) {
+            return view('components.post.items', compact('posts'))->render();
+        }
 
-        // Pass both variables to the view
-        return view('posts.show', compact('post', 'replies'));
+        return view('posts.show', compact('post', 'posts'));
     }
 
     /**
@@ -107,8 +108,6 @@ class PostController extends Controller
             'is_locked' => $validated['is_locked'] ?? false,
         ]);
 
-        // 4. Update Media Attachments (Since Post hasMany Media)
-        // First, dissociate any media that is no longer in the media_ids array
         if (empty($validated['media_ids'])) {
             $post->media()->update(['post_id' => null]); // Or delete() if you want to trash the files
         } else {
@@ -144,7 +143,7 @@ class PostController extends Controller
         }
 
         // Delete the post
-        $post->delete();
+        $post->delete($post->id);
 
         // Redirect back to the previous page (e.g., the post feed or single post view)
         // You can also use redirect()->route('posts.index') if you want to go to a specific page.

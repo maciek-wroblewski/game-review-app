@@ -77,7 +77,6 @@
                 loadMoreBtn.innerHTML = 'Load More Games';
             })
             .finally(() => {
-                // 🔑 CRITICAL FIX: Reset state after every request
                 isLoading = false;
                 loadMoreBtn.disabled = false;
             });

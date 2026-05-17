@@ -19,11 +19,11 @@
             <div>
                 <h1 class="display-3 fw-bold text-white mb-0">{{ $game->title }}</h1>
             </div>
-            @if($averageRating)
+            @if($game->average_rating)
             <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center shadow-lg"
                 style="width: 100px; height: 100px; border: 4px solid white;">
                 <div class="text-center">
-                    <span class="fs-2 fw-bold d-block lh-1">{{ $averageRating }}</span>
+                    <span class="fs-2 fw-bold d-block lh-1">{{ $game->average_rating }}</span>
                     <span class="small fw-bold text-uppercase" style="font-size: 0.7rem;">Score</span>
                 </div>
             </div>

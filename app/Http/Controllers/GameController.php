@@ -23,7 +23,7 @@ class GameController extends Controller
     /**
      * Display the specified game.
      */
-    public function show(Game $game)
+    public function show(Request $request, Game $game)
     {
         $game->load([
             'genres',
@@ -35,18 +35,24 @@ class GameController extends Controller
             }
         ]);
 
-        $reviews = $game->posts->filter(fn($post) => $post->review);
-        $averageRating = $reviews->count() > 0 ? round($reviews->avg('review.rating'), 1) : null;
+        $reviews = \App\Models\Post::whereMorphRelation('hub', Game::class, 'id', $game->id)
+            ->has('review')
+            ->with(['author', 'review'])
+            ->latest()
+            ->paginate(10);
 
-        $userId = auth()->id() ?? 1;
+        $userId = auth()->id() ?? null;
         $user = \App\Models\User::find($userId, 'id');
         $playlists = $user ? $user->playlists : collect();
 
         $userReviewPost = $reviews->firstWhere('user_id', $userId);
 
-        return view('games.show', compact('game', 'averageRating', 'playlists', 'userReviewPost'));
+            if ($request->ajax()) {
+                return view('components.post-items', compact('posts'))->render();
+            }
+        return view('games.show', compact('game', 'playlists', 'userReviewPost'));
     }
-    
+   
     public function loadMore(Request $request)
     {
         $page = $request->get('page', 1);
