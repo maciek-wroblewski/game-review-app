@@ -1,6 +1,6 @@
 <x-layout headtitle="Browse Games">
     <div class="container-xl py-5">
-        
+
         <section class="trending-section mb-5">
             <div class="d-flex align-items-center justify-content-between">
                 <div class="carousel-controls">
@@ -21,107 +21,104 @@
 
             <div class="row g-4">
                 @foreach($games as $game)
-                    <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
-                        <x-game.card :game="$game" />
-                    </div>
+                <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                    <x-game.card :game="$game" />
+                </div>
                 @endforeach
             </div>
-
-            <div class="pagination-container mt-5">
-                <div class="pagination-wrapper shadow-sm">
-                    {{ $games->links('pagination::bootstrap-5') }}
-                </div>
+            <div class="text-center mt-5">
+                <button id="load-more-btn" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm">
+                    Load More Games
+                </button>
             </div>
         </section>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    const gridContainer = document.querySelector('.grid-section .row.g-4');
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    
+    let currentPage = 1;
+    let isLoading = false;
+    let hasMore = true;
+
+    if (!loadMoreBtn || !gridContainer) return;
+
+    loadMoreBtn.addEventListener('click', () => {
+        if (isLoading || !hasMore) return;
+
+        isLoading = true;
+        currentPage++;
+        loadMoreBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Loading...';
+        loadMoreBtn.disabled = true;
+
+        fetch(`/games/load-more?page=${currentPage}`)
+            .then(res => {
+                if (!res.ok) throw new Error('Network response was not ok');
+                return res.json();
+            })
+            .then(data => {
+                if (data.html) {
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = data.html;
+                    const newColumns = tempDiv.querySelectorAll('.col-12');
+                    newColumns.forEach(col => gridContainer.appendChild(col));
+                }
+
+                hasMore = data.hasMore;
+                if (!hasMore) {
+                    loadMoreBtn.style.display = 'none';
+                } else {
+                    loadMoreBtn.innerHTML = 'Load More Games';
+                }
+            })
+            .catch(err => {
+                console.error('Failed to load games:', err);
+                loadMoreBtn.innerHTML = 'Load More Games';
+            })
+            .finally(() => {
+                // 🔑 CRITICAL FIX: Reset state after every request
+                isLoading = false;
+                loadMoreBtn.disabled = false;
+            });
+    });
+});
+    </script>
+
+
 </x-layout>
 
 <style>
-    /* Section Headers */
-    h2 {
-        letter-spacing: -0.5px;
-        color: #1a1d20;
-    }
-
-    /* Container refinement */
-    .container-xl {
-        max-width: 1400px; /* Limits width on ultra-wide screens */
-    }
-
-    /* Smooth transition for game cards */
-    .row .col-12 {
-        transition: transform 0.2s ease;
-    }
-
-    /* Pagination Redesign */
-    .pagination-container {
-        display: flex;
-        justify-content: center;
-        padding-bottom: 2rem;
-    }
-
-    .pagination-wrapper {
-        background: #ffffff;
-        border-radius: 50px; /* Pill shape */
-        padding: 0.5rem 1.5rem;
-        border: 1px solid #edf2f7;
-        display: inline-block;
-    }
-
-    .pagination-wrapper nav {
-        margin: 0;
-    }
-
-    .pagination-wrapper .pagination {
-        margin: 0;
-        gap: 0.25rem;
-        border: none;
-    }
-
-    .pagination-wrapper .page-item {
-        border: none;
-    }
-
-    .pagination-wrapper .page-link {
-        border: none;
-        background: transparent;
-        color: #4a5568;
-        font-weight: 600;
-        border-radius: 50% !important; /* Circular buttons */
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 2px;
+    /* Load More Button & Loading State */
+    #load-more-btn {
+        min-width: 200px;
         transition: all 0.2s ease;
     }
 
-    /* Active State */
-    .pagination-wrapper .page-item.active .page-link {
-        background-color: #0d6efd;
-        color: white;
-        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+    #load-more-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
     }
 
-    /* Hover State */
-    .pagination-wrapper .page-item:not(.active) .page-link:hover {
-        background-color: #f8f9fa;
-        color: #0d6efd;
+    #load-more-btn:hover:not(:disabled) {
         transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(13, 110, 253, 0.25);
     }
 
-    /* Disabled State */
-    .pagination-wrapper .page-item.disabled .page-link {
-        opacity: 0.4;
-        background: transparent;
+    /* Smooth fade-in for newly loaded cards */
+    .col-12 {
+        animation: fadeIn 0.4s ease forwards;
     }
 
-    /* Responsive tweaks */
-    @media (max-width: 768px) {
-        .pagination-wrapper {
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
     }
 </style>

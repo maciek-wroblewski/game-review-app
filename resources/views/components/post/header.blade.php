@@ -6,7 +6,7 @@
 
     {{-- Gradient Overlay --}}
     <div class="position-absolute top-0 start-0 w-100 h-100"
-         style="background: linear-gradient(to right, rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0.945) 40%, rgba(255, 255, 255, 0.59) 100%); pointer-events: none;">
+         style="background: linear-gradient(to right, rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0.945) 40%, rgba(255, 255, 255, 0.239) 100%); pointer-events: none;">
     </div>
 
     {{-- Clickable Card Wrapper --}}

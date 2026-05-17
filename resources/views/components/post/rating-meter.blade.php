@@ -35,7 +35,6 @@
          style="z-index: 10; {{ $editable ? '' : 'display: none;' }}" 
          title="Click and drag to set rating"></div>
 </div>
-
 @once
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -44,39 +43,50 @@ document.addEventListener('DOMContentLoaded', () => {
         const fill = container.querySelector('.js-meter-fill');
         const text = container.querySelector('.js-meter-text');
         
+        // Detect if this meter belongs to an Edit Card or a Create Card
+        const editCard = container.closest('.js-post-card');
+        const createCard = container.closest('.js-create-post-card');
+        
         if (!overlay) return;
 
         let isDragging = false;
 
-        // Extracted visual update logic so it can be used for dragging AND resetting
+        // --- Core Logic: Visual & Data Sync ---
         const setVisualRating = (newRating) => {
             if (fill && text) {
                 fill.style.height = `${newRating * 10}%`;
                 text.innerText = `${newRating} / 10`;
-                fill.className = fill.className.replace(/bg-(success|warning|danger)/g, '') + 
-                                 ` ${newRating >= 7 ? 'bg-success' : (newRating >= 4 ? 'bg-warning' : 'bg-danger')}`;
+                
+                // Reset color classes
+                fill.classList.remove('bg-success', 'bg-warning', 'bg-danger');
+                // Apply new color class
+                if (newRating >= 7) fill.classList.add('bg-success');
+                else if (newRating >= 4) fill.classList.add('bg-warning');
+                else fill.classList.add('bg-danger');
             }
+            // Always sync the dataset so forms can read it
+            container.dataset.currentRating = newRating;
         };
 
         const updateRating = (e) => {
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             const rect = overlay.getBoundingClientRect();
+            // Calculate percentage from bottom (0 at bottom, 1 at top)
             const percent = Math.max(0.1, Math.min(1.0, 1 - ((clientY - rect.top) / rect.height)));
             const newRating = Math.round(percent * 10);
-
             setVisualRating(newRating);
-            container.dataset.currentRating = newRating; // Update for parent form to read
         };
 
         const toggleDrag = (state) => (e) => { 
-            // Crucial: Prevent dragging if the overlay isn't visually active (i.e., not in edit mode)
+            // Prevent dragging if overlay is visually hidden
             if (window.getComputedStyle(overlay).display === 'none') return;
-
+            
             isDragging = state; 
             if (state) updateRating(e); 
             if (e.cancelable) e.preventDefault(); 
         };
 
+        // --- Event Listeners for Dragging ---
         overlay.addEventListener('mousedown', toggleDrag(true));
         document.addEventListener('mousemove', (e) => { if(isDragging) updateRating(e); });
         document.addEventListener('mouseup', toggleDrag(false));
@@ -85,13 +95,34 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('touchmove', (e) => { if(isDragging) updateRating(e); }, { passive: false });
         document.addEventListener('touchend', toggleDrag(false));
 
-        // Decoupled Listener: Reset the rating visually if the edit is canceled
-        const parentCard = container.closest('.js-post-card');
-        if (parentCard) {
-            parentCard.addEventListener('post:cancel-edit', () => {
-                const orig = parseInt(container.dataset.originalRating, 10);
-                container.dataset.currentRating = orig;
-                setVisualRating(orig);
+        // --- Context-Specific Behavior ---
+
+        // 1. If inside a CREATE form: Enable dragging immediately
+        if (createCard) {
+            overlay.style.display = 'block';
+            
+            // Listen for the "Clear" button in the create form to reset rating to 10
+            createCard.addEventListener('click', (e) => {
+                if (e.target.closest('.js-btn-create-clear')) {
+                    setVisualRating(10);
+                }
+            });
+        } 
+        
+        // 2. If inside an EDIT card: Toggle dragging based on Edit/Cancel buttons
+        else if (editCard) {
+            editCard.addEventListener('click', (e) => {
+                const btnEdit = e.target.closest('.js-btn-edit');
+                const btnCancel = e.target.closest('.js-btn-cancel');
+
+                if (btnEdit) {
+                    overlay.style.display = 'block'; // Enable dragging
+                } else if (btnCancel) {
+                    overlay.style.display = 'none'; // Disable dragging
+                    // Reset to original rating on cancel
+                    const orig = parseInt(container.dataset.originalRating, 10);
+                    setVisualRating(orig);
+                }
             });
         }
     });

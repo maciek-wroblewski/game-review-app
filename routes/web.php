@@ -29,6 +29,7 @@ Route::get('/users/{username}', [UserController::class, 'show']);
 
 
 Route::get('/games', [GameController::class, 'index']);
+Route::get('/games/load-more', [GameController::class, 'loadMore']);
 Route::get('/games/{game}', [GameController::class, 'show']);
 Route::get('/games/{game}/review', [GameReviewController::class, 'create']);
 Route::post('/games/{game}/reviews', [GameReviewController::class, 'store']);
