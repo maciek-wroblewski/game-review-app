@@ -57,7 +57,7 @@
 }
 .media-grid .media-item-wrapper { position: relative; overflow: hidden; cursor: zoom-in; }
 .media-grid .media-item-wrapper:hover { opacity: 0.95; }
-.media-grid .media-element { width: 100%; height: 100%; object-fit: cover; display: block; }
+.media-grid .media-element { width: 100%; height: 100%; object-fit: cover;}
 
 /* Grid Layouts */
 .grid-1 { grid-template-columns: 1fr; }

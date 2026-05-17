@@ -13,6 +13,8 @@ $height = $post->media->count() > '0' ? '2':'5';
     </x-post.spoiler>
 
     @if($post->parent_id)
+    <div class="mt-3">
     <x-post.quote :post="$post->parent" :parentIsSpoiler="$post->is_spoiler" />
+    </div>
     @endif
 </div>
