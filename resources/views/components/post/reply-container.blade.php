@@ -1,7 +1,7 @@
 @props(['post'])
 
 <div id="reply-container-{{ $post->id }}"
-     class="js-reply-container overflow-hidden bg-white border border-light shadow-sm rounded mt-2"
+     class="js-reply-container overflow-hidden bg-white border border-light shadow-sm rounded"
      style="max-height: 0; opacity: 0; transition: max-height 0.3s ease-out, opacity 0.3s ease-out;">
     <div class="p-3">
         <x-post.comment-create 

@@ -33,12 +33,9 @@ $isReview = method_exists($post, 'isReview') && $post->isReview() && $post->revi
             <x-post.content :post="$post" />
             <x-post.footer :post="$post" />
         </div>
-        @endif
-
-        {{-- Edit Form Component (Handles its own slide logic) --}}
-        @if(!$post->trashed())
         <x-post.edit-form :post="$post" />
         @endif
-
+        <x-post.reply-container :post="$post" />
+        <x-post.replies-container :post="$post" />
     </div>
 </div>

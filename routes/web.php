@@ -43,6 +43,12 @@ Route::delete('/playlists/{playlist}/games/{game}', [PlaylistGameController::cla
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{post}', [PostController::class, 'show']);
 Route::post('/posts/{post}/like', [PostLikeController::class, 'store']);
+Route::get('/posts/{post}/replies', function(Post $post) {
+    $replies = $post->replies()->with('author')->get();
+
+    return view('components.post.replies-list', compact('replies'));
+});
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');
