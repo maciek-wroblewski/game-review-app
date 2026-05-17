@@ -1,6 +1,7 @@
 @props(['post', 'parentIsSpoiler' => false])
 
 @if($post)
+<x-clickable-card :link="'/posts/' . $post->id">
 <div class="border rounded p-3 hover-bg-light transition-all position-relative clickable-card" 
      style="background-color: #f8f9fa; cursor: pointer;"
      data-href="/posts/{{ $post->id }}">
@@ -24,7 +25,7 @@
     </div>
 
     <!-- Content Wrapper -->
-    <div class="position-relative spoiler-container">
+    <x-post.spoiler :isSpoiler='$post->is_spoiler'>
         <!-- Clamped Text -->
         <div class="text-muted" style="font-size: 0.85rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
             {{ $post->body }}
@@ -45,16 +46,7 @@
             @endforeach
         </div>
         @endif
-
-        <!-- Spoiler Overlay -->
-        @if($post->is_spoiler && !$parentIsSpoiler)
-        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-dark bg-opacity-75 text-white rounded spoiler-overlay" style="z-index: 1;">
-            <div class="text-center">
-                <i class="bi bi-eye-slash fs-5 mb-1 d-block"></i>
-                <span class="fw-bold small">Spoiler Content</span>
-            </div>
-        </div>
-        @endif
     </div>
-</div>
+</x-post.spoiler>
+</x-clickable-card>
 @endif

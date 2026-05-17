@@ -13,7 +13,7 @@
 @if($avatarUrl)
     <img src="{{ $avatarUrl }}" 
          class="rounded-circle shadow"
-         style="width: {{ $size }}; height: {{ $size }}; object-fit: cover; position: relative; z-index: 2;"
+         style="width: {{ $size }}; height: {{ $size }}; object-fit: cover; position: relative;"
          alt="{{ $user->username }}'s Avatar"
          {{ $attributes }}>
 @else
