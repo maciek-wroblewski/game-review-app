@@ -48,8 +48,10 @@
                 @endauth
 
                 <!-- Existing Reviews List (Now using components) -->
-                <h3 class="mb-4 fw-bold">Player Reviews <span class="text-muted fs-5 fw-normal">({{
-                        $game->posts->count() }})</span></h3>
+                <h3 class="mb-4 fw-bold">
+                    Player Reviews 
+                    <span class="text-muted fs-5 fw-normal">({{ $game->posts_count }})</span>
+                </h3>
 
                 <x-post.list :posts="$posts" />
             </div>

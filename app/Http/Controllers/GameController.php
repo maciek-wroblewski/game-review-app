@@ -25,33 +25,29 @@ class GameController extends Controller
      */
     public function show(Request $request, Game $game)
     {
-        $game->load([
-            'genres',
-            'credits',
-            'posts' => function ($query) {
-                $query->whereHas('review')
-                    ->with(['author', 'review', 'likes', 'media'])
-                    ->latest();
-            }
-        ]);
+        // 1. Eager load simple relations and an efficient COUNT of posts/reviews
+        $game->load(['genres', 'credits']);
+        $game->loadCount(['posts' => function ($query) {
+            $query->whereHas('review');
+        }]);
 
         $userId = auth()->id() ?? null;
         $user = \App\Models\User::find($userId, 'id');
         $playlists = $user ? $user->playlists : collect();
 
-        // 1. Find the user's specific review first (if logged in)
+        // 2. Fetch user's specific review first using the optimized feed scope
         $userReviewPost = $userId 
             ? \App\Models\Post::whereMorphRelation('hub', Game::class, 'id', $game->id)
                 ->where('user_id', $userId)
                 ->has('review')
-                ->with(['author', 'review'])
+                ->withFeedRelations() // <-- Added optimized feed relations
                 ->first()
             : null;
 
-        // 2. Fetch all OTHER reviews for the pagination
+        // 3. Fetch all other reviews using the optimized feed scope
         $posts = \App\Models\Post::whereMorphRelation('hub', Game::class, 'id', $game->id)
             ->has('review')
-            ->with(['author', 'review'])
+            ->withFeedRelations() // <-- Added optimized feed relations
             ->when($userId, function ($query) use ($userId) {
                 // This excludes the user's post from the paginated list
                 $query->where('user_id', '!=', $userId);
@@ -59,9 +55,9 @@ class GameController extends Controller
             ->latest()
             ->paginate(10);
 
-            if ($request->ajax()) {
-                return view('components.post.items', compact('posts'))->render();
-            }
+        if ($request->ajax()) {
+            return view('components.post.items', compact('posts'))->render();
+        }
         return view('games.show', compact('game', 'playlists', 'userReviewPost', 'posts'));
     }
    
