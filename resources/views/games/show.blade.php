@@ -43,7 +43,7 @@
                 @if($userReviewPost)
                 <x-post :post="$userReviewPost" />
                 @else
-                <x-post.create-form :hub-type="get_class($game)" :hub-id="$game->id" review-type="recommendation" />
+                <x-post.create-form hub-type="game" :hub-id="$game->id" review-type="recommendation" />
                 @endif
                 @endauth
 

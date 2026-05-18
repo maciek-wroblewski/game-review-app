@@ -133,4 +133,19 @@ class Post extends Model
             }]);
         });
     }
+
+    protected static function booted()
+    {
+        // Hook into the deleting event
+        static::deleting(function ($post) {
+            // Check if the post has a review, and explicitly delete it via Eloquent
+            if ($post->review) {
+                $post->review->delete(); 
+                // ^ This fires the deleted event in your ReviewObserver!
+            }
+            
+            // You can also delete media here if you want to clean up files!
+            // if ($post->media) { $post->media()->delete(); }
+        });
+    }
 }
