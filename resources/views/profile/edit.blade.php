@@ -32,9 +32,9 @@
                                     flex-shrink: 0;
                                  ">
 
-                                @if(auth()->user()->avatar_url)
+                                @if(auth()->user()->avatar()->exists())
 
-                                    <img src="{{ auth()->user()->avatar_url }}"
+                                    <img src="{{ auth()->user()->avatar()->first()->file_path }}"
                                          alt="Avatar"
                                          class="w-100 h-100 object-fit-cover">
 
