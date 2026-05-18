@@ -36,8 +36,15 @@ class UserController extends Controller
             ->paginate(10);
 
         $user->setRelation('posts', $recentPosts);
+        
+        $posts = \App\Models\Post::query()
+        ->where('hub_type', 'user')
+        ->where('hub_id', $user->id)
+        ->whereNull('parent_id')
+        ->latest()
+        ->paginate(10);
 
-        return view('users.show', ['user' => $user]);
+        return view('users.show', compact('user', 'posts'));
     }
 
 public function followers(Request $request, User $user)

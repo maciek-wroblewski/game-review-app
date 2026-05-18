@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Post;
 use App\Models\Media;
+use App\Models\Post;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
@@ -13,22 +13,33 @@ class PostController extends Controller
      */
     public function index(Request $request)
     {
+        // Validate scoped hub filters if provided
+        $request->validate([
+            'hub_type' => 'nullable|string|in:game,playlist,user',
+            'hub_id' => 'nullable|integer',
+        ]);
+
         $posts = Post::query()
-            ->with(['author', 'media', 'hub', 'review'])
-            ->withCount('replies')
+            ->withFeedRelations() // Leveraging your built-in clean relation loader scope
             ->whereNull('parent_id')
-            ->when(auth()->check(), function ($query) {
-                $query->withExists(['likes as liked_by_auth' => function ($q) {
-                    $q->where('user_id', auth()->id());
-                }]);
-            })
-            ->latest()
-            ->paginate(10); // Changed from cursorPaginate to standard pagination
+            ->latest();
+
+        // Context filter: Is it a specific Hub? (e.g., Playlist or Profile view)
+        if ($request->filled('hub_type') && $request->filled('hub_id')) {
+            $posts->where('hub_type', $request->input('hub_type'))
+                ->where('hub_id', $request->input('hub_id'));
+        } else {
+            // Global feed filter: Only show standard feed items or fallback constraints if needed
+            // optional: ->whereNull('hub_type'); // dynamic depending on if global feed shows everything
+        }
+
+        $posts = $posts->paginate(10);
 
         if ($request->ajax()) {
             return response()->json([
+                // Reuses your uniform post view stack
                 'html' => view('components.post.items', compact('posts'))->render(),
-                'next_page_url' => $posts->nextPageUrl(),
+                'next_page_url' => $posts->appends($request->only(['hub_type', 'hub_id']))->nextPageUrl(),
             ]);
         }
 
@@ -63,14 +74,14 @@ class PostController extends Controller
             'is_locked' => $validated['is_locked'] ?? false,
         ]);
 
-        if (!empty($validated['review_type'])) {
+        if (! empty($validated['review_type'])) {
             $post->review()->create([
                 'type' => $validated['review_type'],
                 'rating' => $validated['review_type'] === 'recommendation' ? $validated['rating'] : null,
             ]);
         }
 
-        if (!empty($validated['media_ids'])) {
+        if (! empty($validated['media_ids'])) {
             Media::whereIn('id', $validated['media_ids'])->update(['post_id' => $post->id]);
         }
 
@@ -110,6 +121,7 @@ class PostController extends Controller
 
         return view('posts.show', compact('post', 'replies'));
     }
+
     /**
      * Update the specified post or comment inline via AJAX.
      */
@@ -167,7 +179,7 @@ class PostController extends Controller
 
         return response()->json([
             'message' => 'Updated successfully!',
-            'html' => $html
+            'html' => $html,
         ], 200);
     }
 
