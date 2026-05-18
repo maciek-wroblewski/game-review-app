@@ -116,7 +116,7 @@
 
                 <div class="d-flex flex-wrap gap-3">
 
-                    <a href="/Games"
+                    <a href="/games"
                        class="btn btn-primary btn-lg">
 
                         <i class="bi bi-search me-2"></i>
