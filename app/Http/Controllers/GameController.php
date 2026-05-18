@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Game;
 use Illuminate\Http\Request;
 
-use App\Models\Game;
-
 class GameController extends Controller
-
 {
     public function index(Request $request)
     {
@@ -20,15 +18,16 @@ class GameController extends Controller
 
         // If it's an AJAX pagination request, return raw HTML row grids directly
         if ($request->ajax()) {
-        $html = '';
-        foreach ($games as $game) {
-            $html .= view('games.partials.game-card-wrapper', compact('game'))->render();
+            $html = '';
+            foreach ($games as $game) {
+                $html .= view('games.partials.game-card-wrapper', compact('game'))->render();
+            }
+
+            return response()->json([
+                'html' => $html,
+                'next_page_url' => $games->nextPageUrl(),
+            ]);
         }
-        return response()->json([
-            'html' => $html,
-            'next_page_url' => $games->nextPageUrl()
-        ]);
-    }
 
         return view('games.index', compact('games'));
     }
@@ -54,17 +53,17 @@ class GameController extends Controller
 
         // 2. Fetch user's specific review first using the optimized feed scope
         $userReviewPost = $userId
-            ? \App\Models\Post::whereMorphRelation('hub', Game::class, 'id', $game->id)
-            ->where('user_id', $userId)
-            ->has('review')
-            ->withFeedRelations() // <-- Added optimized feed relations
-            ->first()
-            : null;
+                    ? $game->posts() // <-- Query directly through the relationship
+                        ->where('user_id', $userId)
+                        ->has('review')
+                        ->withFeedRelations()
+                        ->first()
+                    : null;
 
         // 3. Fetch all other reviews using the optimized feed scope
-        $posts = \App\Models\Post::whereMorphRelation('hub', Game::class, 'id', $game->id)
+        $posts = $game->posts() // <-- Query directly through the relationship
             ->has('review')
-            ->withFeedRelations() // <-- Added optimized feed relations
+            ->withFeedRelations()
             ->when($userId, function ($query) use ($userId) {
                 // This excludes the user's post from the paginated list
                 $query->where('user_id', '!=', $userId);
@@ -75,6 +74,7 @@ class GameController extends Controller
         if ($request->ajax()) {
             return view('components.post.items', compact('posts'))->render();
         }
+
         return view('games.show', compact('game', 'playlists', 'userReviewPost', 'posts'));
     }
 
