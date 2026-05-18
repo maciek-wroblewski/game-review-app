@@ -42,27 +42,7 @@
 
                         </div>
 
-                        @auth
-
-                            @if(auth()->id() !== $user->id)
-
-                                <form method="POST"
-                                      action="/users/{{ $user->id }}/follow">
-
-                                    @csrf
-
-                                    <button class="btn btn-primary btn-lg px-5">
-
-                                        <i class="bi bi-person-plus-fill me-2"></i>
-                                        Follow User
-
-                                    </button>
-
-                                </form>
-
-                            @endif
-
-                        @endauth
+                        <x-follow-button :targetUser='$user'/>
 
                     </div>
 
