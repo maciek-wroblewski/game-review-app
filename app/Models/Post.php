@@ -34,10 +34,9 @@ class Post extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    // Where does it live? (Game hub, User Profile, etc.)
     public function hub()
     {
-        return $this->morphTo();
+        return $this->morphTo('hub', 'hub_type', 'hub_id');
     }
 
     // What is it replying to?
@@ -69,12 +68,12 @@ class Post extends Model
         $changes = $this->likes()->toggle($userId);
 
         // If a record was attached (created), increment the cache
-        if (!empty($changes['attached'])) {
+        if (! empty($changes['attached'])) {
             $this->increment('likes_count', 1);
         }
 
         // If a record was detached (deleted), decrement the cache
-        if (!empty($changes['detached'])) {
+        if (! empty($changes['detached'])) {
             $this->decrement('likes_count', 1);
         }
     }
@@ -98,13 +97,24 @@ class Post extends Model
     public function scopeWithFeedRelations($query)
     {
         return $query->with([
-            'author',
+            // ⚡ Eager load the author's avatar AND pre-compute all 3 popover aggregate counters
+            'author' => function ($q) {
+                $q->with('avatar')->withCount(['followers', 'following', 'posts']);
+            },
             'media',
             'review',
             'hub',
+            // ⚡ Apply the exact same optimization to parent/quoted posts to satisfy their popovers too
             'parent' => function ($q) {
                 $q->withCount('replies')
-                    ->with(['author', 'media', 'review', 'hub'])
+                    ->with([
+                        'author' => function ($sq) {
+                            $sq->with('avatar')->withCount(['followers', 'following', 'posts']);
+                        },
+                        'media',
+                        'review',
+                        'hub'
+                    ])
                     ->withLikedByAuth();
             },
         ])

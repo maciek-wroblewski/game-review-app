@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Post;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -15,7 +16,7 @@ class UserController extends Controller
     {
         $user->loadMissing('settings');
 
-        if (!$user->canViewProfile(Auth::user())) {
+        if (! $user->canViewProfile(Auth::user())) {
             // Abort with 403 Forbidden or redirect to a standard restricted template view
             abort(403, 'This profile is private.');
         }
@@ -23,10 +24,11 @@ class UserController extends Controller
 
     public function show(User $user)
     {
+        // 1. Eager load both settings AND avatar to satisfy the profile header card instantly
         $user->loadCount(['followers', 'following', 'posts', 'playlists'])
-            ->load('settings');
+            ->load(['settings', 'avatar']);
 
-        if (!$user->canViewProfile(Auth::user())) {
+        if (! $user->canViewProfile(Auth::user())) {
             return view('users.private', ['user' => $user]);
         }
 
@@ -36,18 +38,20 @@ class UserController extends Controller
             ->paginate(10);
 
         $user->setRelation('posts', $recentPosts);
-        
-        $posts = \App\Models\Post::query()
-        ->where('hub_type', 'user')
-        ->where('hub_id', $user->id)
-        ->whereNull('parent_id')
-        ->latest()
-        ->paginate(10);
+
+        // 2. Apply withFeedRelations() here to prevent an N+1 disaster in <x-hub-comments>
+        $posts = Post::query()
+            ->where('hub_type', 'user')
+            ->where('hub_id', $user->id)
+            ->whereNull('parent_id')
+            ->latest()
+            ->withFeedRelations() // ⚡ Critical Optimization
+            ->paginate(10);
 
         return view('users.show', compact('user', 'posts'));
     }
 
-public function followers(Request $request, User $user)
+    public function followers(Request $request, User $user)
     {
         $followers = $user->followers()->latest()->paginate(20);
 
@@ -61,7 +65,7 @@ public function followers(Request $request, User $user)
 
             return response()->json([
                 'html' => $html,
-                'next_page_url' => $followers->nextPageUrl()
+                'next_page_url' => $followers->nextPageUrl(),
             ]);
         }
 
@@ -82,7 +86,7 @@ public function followers(Request $request, User $user)
 
             return response()->json([
                 'html' => $html,
-                'next_page_url' => $following->nextPageUrl()
+                'next_page_url' => $following->nextPageUrl(),
             ]);
         }
 
@@ -103,10 +107,10 @@ public function followers(Request $request, User $user)
 
             return response()->json([
                 'html' => $html,
-                'next_page_url' => $playlists->nextPageUrl()
+                'next_page_url' => $playlists->nextPageUrl(),
             ]);
         }
-        
+
         return view('users.playlists', compact('user', 'playlists'));
     }
 
@@ -121,7 +125,7 @@ public function followers(Request $request, User $user)
         if ($request->ajax()) {
             return response()->json([
                 'html' => view('components.post.items', compact('posts'))->render(),
-                'next_page_url' => $posts->nextPageUrl()
+                'next_page_url' => $posts->nextPageUrl(),
             ]);
         }
 
