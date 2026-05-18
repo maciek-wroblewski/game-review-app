@@ -5,18 +5,28 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\Media;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 
 class PostController extends Controller
 {
+    /**
+     * Display a listing of top-level posts (Feed).
+     */
     public function index(Request $request)
     {
-        $posts = Post::with(['author', 'media', 'hub', 'review'])
+        $posts = Post::query()
+            ->with(['author', 'media', 'hub', 'review'])
             ->withCount('replies')
             ->whereNull('parent_id') // Top-level posts only
+            ->when(auth()->check(), function ($query) {
+                // Pre-check if logged-in user liked these posts
+                $query->withExists(['likes as liked_by_auth' => function ($q) {
+                    $q->where('user_id', auth()->id());
+                }]);
+            })
             ->latest()
             ->paginate(10);
 
+        // AJAX requests fetch the raw loop fragment for infinite scroll/feed appending
         if ($request->ajax()) {
             return view('components.post.items', compact('posts'))->render();
         }
@@ -24,9 +34,11 @@ class PostController extends Controller
         return view('posts.index', compact('posts'));
     }
 
+    /**
+     * Store a newly created post or reply.
+     */
     public function store(Request $request)
     {
-        // 1. Validate the incoming payload
         $validated = $request->validate([
             'body' => 'required|string|max:5000',
             'hub_type' => 'nullable|string',
@@ -40,7 +52,6 @@ class PostController extends Controller
             'rating' => 'nullable|integer|min:1|max:10',
         ]);
 
-        // 2. Create the Post
         $post = Post::create([
             'user_id' => auth()->id(),
             'body' => $validated['body'],
@@ -51,7 +62,6 @@ class PostController extends Controller
             'is_locked' => $validated['is_locked'] ?? false,
         ]);
 
-        // 3. Handle Review creation (if applicable)
         if (!empty($validated['review_type'])) {
             $post->review()->create([
                 'type' => $validated['review_type'],
@@ -59,108 +69,136 @@ class PostController extends Controller
             ]);
         }
 
-        // 4. Sync Media (assuming you are using Spatie MediaLibrary or a custom media pivot table)
         if (!empty($validated['media_ids'])) {
-            \App\Models\Media::whereIn('id', $validated['media_ids'], null, null)->update(['post_id' => $post->id]);
+            Media::whereIn('id', $validated['media_ids'])->update(['post_id' => $post->id]);
         }
-        // The JS expects a 200 OK response to reload the page
+
+        // Return a JSON response. If it's a comment, you could optionally return HTML here too!
         return response()->json(['message' => 'Post created successfully', 'post' => $post]);
     }
+
     /**
-     * Display the specified resource (Single Post Page).
+     * Display a Single Post Thread page.
      */
-
-    public function show(Post $post)
+    public function show(Request $request, Post $post)
     {
-        // Eager-load commonly accessed relations on the single post page
-        $post->load(['author', 'media', 'review', 'hub', 'likes']);
+        // 1. Load data for the main post card
+        $post->load(['author', 'media', 'review', 'hub']);
+        if (auth()->check()) {
+            $post->loadExists(['likes as liked_by_auth' => function ($q) {
+                $q->where('user_id', auth()->id());
+            }]);
+        }
 
-        // Eager load author & media for replies to avoid N+1 when rendering
-        $replies = $post->replies()->with(['author', 'media'])->latest()->paginate(10);
+        // If the front-end requests a single post wrapper via AJAX (e.g. to reset/cancel edit views)
+        if ($request->ajax()) {
+            return view('components.post.index', compact('post'))->render();
+        }
+
+        // 2. Fetch the initial block of replies for the thread
+        $replies = $post->replies()
+            ->with(['author', 'media'])
+            ->when(auth()->check(), function ($query) {
+                $query->withExists(['likes as liked_by_auth' => function ($q) {
+                    $q->where('user_id', auth()->id());
+                }]);
+            })
+            ->latest()
+            ->paginate(10); // Changed from 1 to 10 for standard production behavior
 
         return view('posts.show', compact('post', 'replies'));
     }
 
     /**
-     * Update the specified resource in storage (AJAX Request).
+     * Update the specified post or comment inline via AJAX.
      */
     public function update(Request $request, Post $post)
     {
-        // 1. Authorization: Ensure the user actually owns this post
         if (auth()->id() !== $post->user_id) {
             return response()->json(['message' => 'Unauthorized actions.'], 403);
         }
 
-        // 2. Validation
         $validated = $request->validate([
             'body' => 'required|string|max:5000',
-            'media_ids' => 'present|array', // Allow empty arrays if all media is removed
+            'media_ids' => 'present|array',
             'media_ids.*' => 'exists:media,id',
-            'rating' => 'nullable|integer|min:1|max:10', // For reviews
+            'rating' => 'nullable|integer|min:1|max:10',
             'is_spoiler' => 'boolean',
             'is_locked' => 'boolean',
         ]);
 
-        // 3. Update Text Body and Toggle States
         $post->update([
             'body' => $validated['body'],
             'is_spoiler' => $validated['is_spoiler'] ?? false,
             'is_locked' => $validated['is_locked'] ?? false,
         ]);
 
+        // Sync media layout
         if (empty($validated['media_ids'])) {
-            $post->media()->update(['post_id' => null]); // Or delete() if you want to trash the files
+            $post->media()->update(['post_id' => null]);
         } else {
-            // Dissociate removed media
             $post->media()->whereNotIn('id', $validated['media_ids'])->update(['post_id' => null]);
-
-            // Associate any newly uploaded media
-            Media::whereIn('id', $validated['media_ids'], null, null)->update(['post_id' => $post->id]);
+            Media::whereIn('id', $validated['media_ids'])->update(['post_id' => $post->id]);
         }
 
-        // 5. Update Review Rating (If applicable)
         if (isset($validated['rating']) && method_exists($post, 'isReview') && $post->isReview()) {
-            if ($post->review) {
-                $post->review->update(['rating' => $validated['rating']]);
-            }
+            $post->review()->update(['rating' => $validated['rating']]);
         }
 
-        // Return a JSON success response for our fetch() script
+        // Refresh all relationship logic for clean compilation
+        $post->load(['author', 'media', 'review', 'hub']);
+        if (auth()->check()) {
+            $post->loadExists(['likes as liked_by_auth' => function ($q) {
+                $q->where('user_id', auth()->id());
+            }]);
+        }
+
+        /**
+         * THE MULTI-VIEW WORKFLOW:
+         * If this entry has a parent_id, it's a comment! Send back comment HTML.
+         * If it does NOT have a parent_id, it's a root post! Send back the full card HTML.
+         */
+        if ($post->parent_id) {
+            $html = view('components.post.comment', ['comment' => $post])->render();
+        } else {
+            $html = view('components.post.index', compact('post'))->render();
+        }
+
         return response()->json([
-            'message' => 'Post updated successfully!',
-            'post' => $post->fresh(['media', 'review']) // Send back fresh data just in case
+            'message' => 'Updated successfully!',
+            'html' => $html
         ], 200);
     }
 
     /**
-     * Remove the specified resource from storage (AJAX Request).
+     * Remove the specified resource.
      */
     public function destroy(Post $post)
     {
-        // Authorization check
         if (auth()->id() !== $post->user_id) {
             abort(403, 'Unauthorized.');
         }
 
-        // Delete the post
-        $post->delete($post->id);
+        $post->delete();
 
-        // Redirect back to the previous page (e.g., the post feed or single post view)
-        // You can also use redirect()->route('posts.index') if you want to go to a specific page.
         return redirect()->back()->with('success', 'Post deleted successfully.');
     }
 
-
+    /**
+     * Asynchronously fetch additional reply segments (Infinite Comment Scrolling).
+     */
     public function getReplies(Request $request, Post $post)
     {
-        // Eager load author & media to prevent N+1
         $replies = $post->replies()
             ->with(['author', 'media'])
+            ->when(auth()->check(), function ($query) {
+                $query->withExists(['likes as liked_by_auth' => function ($q) {
+                    $q->where('user_id', auth()->id());
+                }]);
+            })
             ->latest()
-            ->paginate(1);
+            ->paginate(10); // Changed from 1 to 10 for clean chunks
 
-        // Return everything as a clean API JSON packet
-            
         return response()->json([
             'html' => view('components.post.replies-list', compact('replies'))->render(),
             'next_page_url' => $replies->nextPageUrl(),
