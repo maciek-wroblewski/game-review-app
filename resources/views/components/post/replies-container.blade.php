@@ -1,10 +1,10 @@
 @props(['postId'])
 
-<div class="js-comment-list-container overflow-hidden bg-white border-top border-light"
+<div class="js-comment-list-container bg-white border-top border-light overflow-y-auto overflow-x-hidden"
      data-post-id="{{ $postId }}"
      data-open="false"
      data-loaded="false"
-     style="max-height: 0; opacity: 0; transition: max-height 0.3s ease-out, opacity 0.3s ease-out;"
+     style="max-height: 0vh; opacity: 0; transition: max-height 0.3s ease-out, opacity 0.3s ease-out;"
      {{ $attributes }}>
     <div class="p-3">
         {{ $slot }}
@@ -15,12 +15,11 @@
 <script>
 document.addEventListener('toggle-replies', async (e) => {
     const container = e.target;
-    const btn = e.detail?.btn; // Optional chaining prevents crashes if btn is undefined
+    const btn = e.detail?.btn; 
     const contentArea = container.querySelector('.js-replies-content');
     
     if (!contentArea) return;
 
-    // Safety fallback initialization for state trackers
     if (!container.dataset.open) container.dataset.open = 'false';
     if (!container.dataset.loaded) container.dataset.loaded = 'false';
 
@@ -33,7 +32,6 @@ document.addEventListener('toggle-replies', async (e) => {
             contentArea.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-muted"></div></div>';
             
             try {
-                // Fetch using the container's own post ID attribute (much safer than the button)
                 const postId = container.dataset.postId;
                 const res = await fetch(`/posts/${postId}/replies`, {
                     headers: { 
@@ -45,12 +43,10 @@ document.addEventListener('toggle-replies', async (e) => {
                 if (res.ok) {
                     const contentType = res.headers.get('content-type');
                     
-                    // Support both JSON payloads and plain HTML payloads seamlessly
                     if (contentType && contentType.includes('application/json')) {
                         const data = await res.json();
                         contentArea.innerHTML = data.html;
                         
-                        // Update load-more pagination values if applicable
                         const loadMoreBtn = container.querySelector('.js-load-more-btn');
                         const loadMoreWrapper = container.querySelector('.js-load-more-wrapper');
                         if (loadMoreBtn && loadMoreWrapper && data.next_page_url) {
@@ -70,8 +66,9 @@ document.addEventListener('toggle-replies', async (e) => {
             }
         }
 
+        // Apply the 60vh height directly
         container.offsetHeight; // Force layout reflow
-        container.style.maxHeight = container.scrollHeight + 'px';
+        container.style.maxHeight = '60vh';
         container.style.opacity = '1';
         container.dataset.open = 'true';
         
@@ -82,19 +79,10 @@ document.addEventListener('toggle-replies', async (e) => {
             if (icon) icon.classList.replace('bi-chevron-down', 'bi-chevron-up');
         }
 
-        container.addEventListener('transitionend', function handler(event) {
-            if (event.propertyName === 'max-height' && container.dataset.open === 'true') {
-                container.style.maxHeight = 'none';
-            }
-            container.removeEventListener('transitionend', handler);
-        });
-
     // --- ANIMATION: CLOSING ---
     } else {
-        container.style.maxHeight = container.scrollHeight + 'px';
-        container.offsetHeight; // Force layout reflow
-
-        container.style.maxHeight = '0';
+        // Drop straight down to 0vh
+        container.style.maxHeight = '0vh';
         container.style.opacity = '0';
         container.dataset.open = 'false';
         

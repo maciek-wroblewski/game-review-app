@@ -1,7 +1,7 @@
 @props(['replies' => null])
 
 <div class="js-replies-wrapper">
-    <div class="js-replies-content overflow-y-auto overflow-x-hidden" style="max-height: 60vh;">
+    <div class="js-replies-content">
         @if($replies)
             {{-- Direct Mode: Render items immediately on first load --}}
             <x-post.replies-items :replies="$replies" />
