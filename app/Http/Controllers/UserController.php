@@ -2,49 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    public function show($username)
+    public function show(User $user)
     {
-        $user = User::where('username', $username)
-            ->with('settings')
-            ->withCount(['followers', 'following', 'posts', 'playlists'])
-            ->firstOrFail();
+        // Leverage explicit model binding & load counts smoothly
+        $user->loadCount(['followers', 'following', 'posts', 'playlists'])
+             ->load('settings');
 
         if (!$user->canViewProfile(Auth::user())) {
             return view('users.private', ['user' => $user]);
         }
 
-        // Delegate the relationship check to SQL using withExists subqueries
+        // Clean, readable, and highly optimized via Post model query scopes
         $recentPosts = $user->posts()
             ->latest()
-            ->with([
-                'author',
-                'media',
-                'review',
-                'hub',
-                'parent' => function ($query) {
-                    $query->withCount('replies')
-                        ->with(['author', 'media', 'review', 'hub'])
-                        ->when(auth()->check(), function ($q) {
-                            $q->withExists(['likes as liked_by_auth' => function ($sq) {
-                                $sq->where('user_id', auth()->id());
-                            }]);
-                        });
-                },
-            ])
-            ->withCount('replies')
-            ->when(auth()->check(), function ($query) {
-                $query->withExists(['likes as liked_by_auth' => function ($q) {
-                    $q->where('user_id', auth()->id());
-                }]);
-            })
-            ->paginate(10); // <-- Paginate to keep memory footprint safe and fixed
+            ->withFeedRelations()
+            ->paginate(10);
 
         $user->setRelation('posts', $recentPosts);
 
@@ -71,7 +48,13 @@ class UserController extends Controller
 
     public function reviews(User $user)
     {
-        $reviews = $user->posts()->with(['review.game'])->latest()->paginate(15);
+        // OPTIMIZATION: Ensure we strictly pull items that have an associated review record
+        $reviews = $user->posts()
+            ->has('review')
+            ->with(['review.game'])
+            ->latest()
+            ->paginate(15);
+
         return view('users.reviews', compact('user', 'reviews'));
     }
 }

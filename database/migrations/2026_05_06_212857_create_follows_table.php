@@ -18,6 +18,7 @@ return new class extends Migration
             $table->morphs('followable');
             $table->timestamps();
             $table->unique(['user_id', 'followable_id', 'followable_type']);
+            $table->index(['followable_type', 'followable_id', 'user_id']);
         });
     }
 

@@ -45,7 +45,7 @@ class Post extends Model
     {
         return $this->belongsTo(Post::class, 'parent_id');
     }
-    
+
     public function media()
     {
         return $this->hasMany(Media::class);
@@ -72,7 +72,7 @@ class Post extends Model
         if (!empty($changes['attached'])) {
             $this->increment('likes_count', 1);
         }
-        
+
         // If a record was detached (deleted), decrement the cache
         if (!empty($changes['detached'])) {
             $this->decrement('likes_count', 1);
@@ -85,7 +85,7 @@ class Post extends Model
     }
 
     // Helper to check if this post is a review/article
-    
+
     public function isReview(): bool
     {
         if ($this->relationLoaded('review')) {
@@ -93,5 +93,34 @@ class Post extends Model
         }
 
         return $this->review()->exists();
+    }
+
+    public function scopeWithFeedRelations($query)
+    {
+        return $query->with([
+            'author',
+            'media',
+            'review',
+            'hub',
+            'parent' => function ($q) {
+                $q->withCount('replies')
+                    ->with(['author', 'media', 'review', 'hub'])
+                    ->withLikedByAuth();
+            },
+        ])
+            ->withCount('replies')
+            ->withLikedByAuth();
+    }
+
+    /**
+     * Scope a query to dynamically check if the authenticated user has liked the posts.
+     */
+    public function scopeWithLikedByAuth($query)
+    {
+        return $query->when(auth()->check(), function ($q) {
+            $q->withExists(['likes as liked_by_auth' => function ($sq) {
+                $sq->where('user_id', auth()->id());
+            }]);
+        });
     }
 }

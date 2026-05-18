@@ -4,7 +4,7 @@
 $isCompact = $layout === 'compact';
 @endphp
 
-<div class="user-card-component mb-4">
+<div class="user-card-component mb-4 d-flex flex-column row-gap-4">
     <div class="card shadow-sm border-0 overflow-hidden">
 
         <x-user.banner :user="$user" :layout="$layout" />
