@@ -45,9 +45,9 @@
                 <select id="playlist_select" class="form-select form-select-sm border-0 bg-light" required
                     onchange="updatePlaylistButtonState()">
                     @foreach($playlists as $list)
-                    <option value="{{ $list->id }}"
-                        data-in-list="{{ $list->games->contains($game->id) ? 'true' : 'false' }}">{{
-                        $list->name }}</option>
+                    <option value="{{ $list->id }}" data-in-list="{{ $list->games->isNotEmpty() ? 'true' : 'false' }}">
+                        {{ $list->name }}
+                    </option>
                     @endforeach
                 </select>
                 <button id="playlist_submit_btn" type="submit"

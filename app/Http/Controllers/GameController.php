@@ -32,8 +32,12 @@ class GameController extends Controller
         }]);
 
         $userId = auth()->id() ?? null;
-        $user = \App\Models\User::find($userId, 'id');
-        $playlists = $user ? $user->playlists : collect();
+        $user = auth()->user();
+        $playlists = $user 
+            ? $user->playlists()->with(['games' => function ($query) use ($game) {
+                $query->where('games.id', $game->id); // Only loads pivot data for this specific game
+            }])->get()
+            : collect();
 
         // 2. Fetch user's specific review first using the optimized feed scope
         $userReviewPost = $userId 
