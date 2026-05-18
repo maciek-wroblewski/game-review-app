@@ -12,6 +12,7 @@ use App\Http\Controllers\FollowController;
 use App\Http\Controllers\MediaController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\AvatarController;
 
 
 Route::get('/', function () {
@@ -95,5 +96,8 @@ Route::post('/notifications/read-all', function () {
     return back();
 
 })->middleware('auth');
+
+Route::post('/avatar/upload', [AvatarController::class, 'upload'])
+    ->middleware('auth');
 
 require __DIR__.'/auth.php';

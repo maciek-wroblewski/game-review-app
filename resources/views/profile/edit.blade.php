@@ -23,7 +23,7 @@
                             <!-- Avatar -->
                             <div class="rounded-circle bg-primary text-white
                                         d-flex align-items-center justify-content-center
-                                        shadow border border-4 border-white"
+                                        shadow border border-4 border-white overflow-hidden"
                                  style="
                                     width: 140px;
                                     height: 140px;
@@ -32,7 +32,17 @@
                                     flex-shrink: 0;
                                  ">
 
-                                {{ strtoupper(substr(auth()->user()->username, 0, 1)) }}
+                                @if(auth()->user()->avatar_url)
+
+                                    <img src="{{ auth()->user()->avatar_url }}"
+                                         alt="Avatar"
+                                         class="w-100 h-100 object-fit-cover">
+
+                                @else
+
+                                    {{ strtoupper(substr(auth()->user()->username, 0, 1)) }}
+
+                                @endif
 
                             </div>
 
@@ -73,6 +83,50 @@
                         </div>
 
                         @include('profile.partials.update-profile-information-form')
+
+                    </div>
+
+                </div>
+
+                <!-- Avatar Upload -->
+                <div class="card shadow-sm border-0 mb-4">
+
+                    <div class="card-body p-4 p-lg-5">
+
+                        <div class="mb-4">
+
+                            <h3 class="fw-bold mb-1">
+                                Avatar
+                            </h3>
+
+                            <p class="text-muted mb-0">
+                                Upload your profile picture
+                            </p>
+
+                        </div>
+
+                        <form action="/avatar/upload"
+                              method="POST"
+                              enctype="multipart/form-data">
+
+                            @csrf
+
+                            <div class="mb-4">
+
+                                <input type="file"
+                                       name="file"
+                                       class="form-control">
+
+                            </div>
+
+                            <button type="submit"
+                                    class="btn btn-primary">
+
+                                Upload Avatar
+
+                            </button>
+
+                        </form>
 
                     </div>
 

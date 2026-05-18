@@ -38,7 +38,7 @@
                     @else
                         <div class="rounded-circle text-white d-flex align-items-center justify-content-center shadow border border-4 border-white {{ $isCompact ? 'mx-auto' : '' }}"
                             style="width: {{ $avatarSize }}; height: {{ $avatarSize }}; font-size: {{ $avatarFontSize }}; margin-top: {{ $avatarMargin }}; flex-shrink: 0; background-color: {{ $avatarColor }}; position: relative; z-index: 2;">
-                            {{ strtoupper(substr($user->username, 0, 1)) }}
+                            (substr($user->username, 0, 1)) }}
                         </div>
                     @endif
                 </div>
