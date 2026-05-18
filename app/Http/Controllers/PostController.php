@@ -16,17 +16,15 @@ class PostController extends Controller
         $posts = Post::query()
             ->with(['author', 'media', 'hub', 'review'])
             ->withCount('replies')
-            ->whereNull('parent_id') // Top-level posts only
+            ->whereNull('parent_id')
             ->when(auth()->check(), function ($query) {
-                // Pre-check if logged-in user liked these posts
                 $query->withExists(['likes as liked_by_auth' => function ($q) {
                     $q->where('user_id', auth()->id());
                 }]);
             })
             ->latest()
-            ->paginate(10);
+            ->cursorPaginate(10); // <-- Switch from paginate() to cursorPaginate()
 
-        // AJAX requests fetch the raw loop fragment for infinite scroll/feed appending
         if ($request->ajax()) {
             return view('components.post.items', compact('posts'))->render();
         }
@@ -197,7 +195,7 @@ class PostController extends Controller
                 }]);
             })
             ->latest()
-            ->paginate(10); // Changed from 1 to 10 for clean chunks
+            ->cursorPaginate(10); // <-- Switch here too for comment infinite scrolls
 
         return response()->json([
             'html' => view('components.post.replies-list', compact('replies'))->render(),

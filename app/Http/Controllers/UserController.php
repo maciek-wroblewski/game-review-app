@@ -17,13 +17,10 @@ class UserController extends Controller
             ->firstOrFail();
 
         if (!$user->canViewProfile(Auth::user())) {
-
-            return view('users.private', [
-                'user' => $user
-            ]);
+            return view('users.private', ['user' => $user]);
         }
 
-        // Preload the user's recent posts with the relations used by the post component
+        // Delegate the relationship check to SQL using withExists subqueries
         $recentPosts = $user->posts()
             ->latest()
             ->with([
@@ -33,74 +30,48 @@ class UserController extends Controller
                 'hub',
                 'parent' => function ($query) {
                     $query->withCount('replies')
-                          ->with(['author', 'media', 'review', 'hub']);
+                        ->with(['author', 'media', 'review', 'hub'])
+                        ->when(auth()->check(), function ($q) {
+                            $q->withExists(['likes as liked_by_auth' => function ($sq) {
+                                $sq->where('user_id', auth()->id());
+                            }]);
+                        });
                 },
             ])
             ->withCount('replies')
-            ->get();
+            ->when(auth()->check(), function ($query) {
+                $query->withExists(['likes as liked_by_auth' => function ($q) {
+                    $q->where('user_id', auth()->id());
+                }]);
+            })
+            ->paginate(10); // <-- Paginate to keep memory footprint safe and fixed
 
-        if (Auth::check()) {
-            Auth::user()->loadMissing('following');
-
-            $likedPostIds = Auth::user()
-                ->likedPosts()
-                ->pluck('posts.id')
-                ->all();
-
-            $recentPosts->each(function ($post) use ($likedPostIds) {
-                $post->setAttribute('liked_by_auth', in_array($post->id, $likedPostIds, true));
-                if ($post->relationLoaded('parent') && $post->parent) {
-                    $post->parent->setAttribute('liked_by_auth', in_array($post->parent->id, $likedPostIds, true));
-                }
-            });
-        }
-
-        // Attach the loaded collection to the user so the view can use $user->posts without extra queries
         $user->setRelation('posts', $recentPosts);
 
-        return view('users.show', [
-            'user' => $user
-        ]);
+        return view('users.show', ['user' => $user]);
     }
 
     public function followers(User $user)
     {
-        $followers = $user->followers()->latest()->get();
-
-        return view('users.followers', [
-            'user' => $user,
-            'followers' => $followers,
-        ]);
+        $followers = $user->followers()->latest()->paginate(20);
+        return view('users.followers', compact('user', 'followers'));
     }
 
     public function following(User $user)
     {
-        $following = $user->following()->latest()->get();
-
-        return view('users.following', [
-            'user' => $user,
-            'following' => $following,
-        ]);
-
+        $following = $user->following()->latest()->paginate(20);
+        return view('users.following', compact('user', 'following'));
     }
 
     public function playlists(User $user)
     {
-        $playlists = $user->playlists()->latest()->get();
-
-        return view('users.playlists', [
-            'user' => $user,
-            'playlists' => $playlists, 
-        ]);
+        $playlists = $user->playlists()->latest()->paginate(20);
+        return view('users.playlists', compact('user', 'playlists'));
     }
 
     public function reviews(User $user)
     {
-        $reviews = $user->posts()->with(['review.game'])->latest()->get();
-
-        return view('users.reviews', [
-            'user' => $user,
-            'reviews' => $reviews,
-        ]);
+        $reviews = $user->posts()->with(['review.game'])->latest()->paginate(15);
+        return view('users.reviews', compact('user', 'reviews'));
     }
 }
