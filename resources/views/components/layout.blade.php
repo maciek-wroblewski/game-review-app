@@ -68,6 +68,11 @@
 
                 </ul>
 
+                <!-- Search Bar -->
+                <form class="d-flex mx-auto col-12 col-lg-5 mb-3 mb-lg-0" role="search" action="/search" method="GET">
+                    <input class="form-control rounded-pill bg-light border-0 px-4" type="search" name="q" placeholder="Search games, users..." aria-label="Search" value="{{ request('q') }}">
+                </form>
+
                 <!-- Right Side -->
                 <ul class="navbar-nav align-items-lg-center gap-lg-2">
 
