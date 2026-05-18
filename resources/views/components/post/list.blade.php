@@ -10,7 +10,6 @@
     <x-load-more 
         :paginator="$posts" 
         target="#post-container" 
-        button-class="btn btn-outline-primary w-100" 
         text="Load More" 
     />
 </div>

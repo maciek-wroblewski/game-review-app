@@ -40,15 +40,21 @@ class UserController extends Controller
         return view('users.show', ['user' => $user]);
     }
 
-    public function followers(Request $request, User $user)
+public function followers(Request $request, User $user)
     {
         $followers = $user->followers()->latest()->paginate(20);
 
         // Intercept async pagination queries
         if ($request->ajax()) {
+            $html = '';
+            foreach ($followers as $follower) {
+                // Loop and render the exact partial template required for followers
+                $html .= view('users.partials.follower-card-wrapper', compact('follower'))->render();
+            }
+
             return response()->json([
-                'html' => view('components.post.items', compact('posts'))->render(), // for reviews
-                'next_page_url' => $posts->nextPageUrl()
+                'html' => $html,
+                'next_page_url' => $followers->nextPageUrl()
             ]);
         }
 
@@ -61,9 +67,15 @@ class UserController extends Controller
 
         // Intercept async pagination queries
         if ($request->ajax()) {
+            $html = '';
+            foreach ($following as $followedUser) {
+                // Loop and render the exact partial template required for following
+                $html .= view('users.partials.following-card-wrapper', compact('followedUser'))->render();
+            }
+
             return response()->json([
-                'html' => view('components.post.items', compact('posts'))->render(), // for reviews
-                'next_page_url' => $posts->nextPageUrl()
+                'html' => $html,
+                'next_page_url' => $following->nextPageUrl()
             ]);
         }
 
@@ -76,32 +88,36 @@ class UserController extends Controller
 
         // Intercept async pagination queries
         if ($request->ajax()) {
+            $html = '';
+            foreach ($playlists as $playlist) {
+                // Loop and render the exact partial template required for playlists
+                $html .= view('users.partials.playlist-card-wrapper', compact('playlist'))->render();
+            }
+
             return response()->json([
-                'html' => view('components.post.items', compact('posts'))->render(), // for reviews
-                'next_page_url' => $posts->nextPageUrl()
+                'html' => $html,
+                'next_page_url' => $playlists->nextPageUrl()
             ]);
         }
+        
         return view('users.playlists', compact('user', 'playlists'));
     }
 
     public function reviews(Request $request, User $user)
     {
-        // 1. Query only posts containing review records, using your unified feed relationship scope
         $posts = $user->posts()
             ->has('review')
-            ->withFeedRelations() // Loads author, media, review, game hub, parent thread info, likes, etc.
+            ->withFeedRelations()
             ->latest()
-            ->paginate(5); // Works perfectly with the 'page=X' logic in your component's JS
+            ->paginate(5);
 
-        // 2. Intercept AJAX pagination requests from the <x-post.list> JS script
         if ($request->ajax()) {
             return response()->json([
-                'html' => view('components.post.items', compact('posts'))->render(), // for reviews
+                'html' => view('components.post.items', compact('posts'))->render(),
                 'next_page_url' => $posts->nextPageUrl()
             ]);
         }
 
-        // 3. Normal page loading falls back here
         return view('users.reviews', compact('user', 'posts'));
     }
 }

@@ -17,7 +17,6 @@
     <x-load-more 
         :paginator="$replies" 
         target=".js-replies-content" 
-        button-class="btn btn-sm btn-outline-primary w-100" 
         text="Load More Replies" 
     />
 </div>
