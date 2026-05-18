@@ -27,52 +27,7 @@
         </div>
 
         @forelse($reviews as $post)
-
-            <div class="card shadow-sm border-0 mb-4">
-
-                <div class="card-body p-4">
-
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-
-                        <div>
-
-                            <h3 class="fw-bold mb-1">
-
-                                {{ $post->review->game->title ?? 'Unknown Game' }}
-
-                            </h3>
-
-                            <small class="text-muted">
-
-                                Posted {{ $post->created_at->diffForHumans() }}
-
-                            </small>
-
-                        </div>
-
-                        @if($post->review)
-
-                            <span class="badge bg-primary fs-6 px-3 py-2 rounded-pill">
-
-                                {{ $post->review->rating }}/10
-
-                            </span>
-
-                        @endif
-
-                    </div>
-
-                    <p class="fs-5 text-secondary mb-0"
-                       style="white-space: pre-line;">
-
-                        {{ $post->body }}
-
-                    </p>
-
-                </div>
-
-            </div>
-
+        <x-post.index :post='$post/>
         @empty
 
             <div class="alert alert-info border-0 shadow-sm p-4 text-center">
