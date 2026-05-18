@@ -105,11 +105,11 @@ class PostController extends Controller
                 }]);
             })
             ->latest()
-            ->paginate(10); // Changed from 1 to 10 for standard production behavior
+            ->paginate(10)
+            ->withPath(url("/posts/{$post->id}/replies")); // <--- FIX: Redirects pagination clicks to the dedicated replies method
 
         return view('posts.show', compact('post', 'replies'));
     }
-
     /**
      * Update the specified post or comment inline via AJAX.
      */
