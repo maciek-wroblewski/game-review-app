@@ -83,4 +83,17 @@ Route::post('/notifications/{notification}/read', function (\App\Models\Notifica
 Route::patch('/profile/privacy', [ProfileController::class, 'updatePrivacy'])
     ->middleware('auth');
 
+Route::post('/notifications/read-all', function () {
+
+    auth()->user()
+        ->notifications()
+        ->where('read', false)
+        ->update([
+            'read' => true
+        ]);
+
+    return back();
+
+})->middleware('auth');
+
 require __DIR__.'/auth.php';
