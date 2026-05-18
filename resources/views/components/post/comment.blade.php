@@ -10,11 +10,11 @@
     {{-- Background Container --}}
     <div class="position-relative w-100"
         style="background-image: url('{{ $post->author->banner ?? '' }}'); background-size: cover; background-position: center;">
+
+        <div class="edit_form_collapsable">
         <div class="position-absolute top-0 start-0 w-100 h-100"
             style="background: linear-gradient(to right, rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0.945) 40%, rgba(255, 255, 255, 0.59) 100%); pointer-events: none;">
         </div>
-
-        <div class="edit_form_collapsable">
 
 
             {{-- View Mode wrapped in Clickable Card --}}
