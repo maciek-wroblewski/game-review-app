@@ -10,21 +10,7 @@
 
                     <div class="card-body p-5">
 
-                        <div class="mb-4">
-
-                            <div class="rounded-circle bg-dark text-white
-                                        d-inline-flex align-items-center justify-content-center shadow"
-                                 style="
-                                    width: 120px;
-                                    height: 120px;
-                                    font-size: 3rem;
-                                 ">
-
-                                {{ strtoupper(substr($user->username, 0, 1)) }}
-
-                            </div>
-
-                        </div>
+                        <x-user.static-avatar :user="$user"/>
 
                         <h1 class="fw-bold mb-2">
                             {{ $user->username }}
