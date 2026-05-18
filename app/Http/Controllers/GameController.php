@@ -35,22 +35,34 @@ class GameController extends Controller
             }
         ]);
 
-        $reviews = \App\Models\Post::whereMorphRelation('hub', Game::class, 'id', $game->id)
-            ->has('review')
-            ->with(['author', 'review'])
-            ->latest()
-            ->paginate(10);
-
         $userId = auth()->id() ?? null;
         $user = \App\Models\User::find($userId, 'id');
         $playlists = $user ? $user->playlists : collect();
 
-        $userReviewPost = $reviews->firstWhere('user_id', $userId);
+        // 1. Find the user's specific review first (if logged in)
+        $userReviewPost = $userId 
+            ? \App\Models\Post::whereMorphRelation('hub', Game::class, 'id', $game->id)
+                ->where('user_id', $userId)
+                ->has('review')
+                ->with(['author', 'review'])
+                ->first()
+            : null;
+
+        // 2. Fetch all OTHER reviews for the pagination
+        $posts = \App\Models\Post::whereMorphRelation('hub', Game::class, 'id', $game->id)
+            ->has('review')
+            ->with(['author', 'review'])
+            ->when($userId, function ($query) use ($userId) {
+                // This excludes the user's post from the paginated list
+                $query->where('user_id', '!=', $userId);
+            })
+            ->latest()
+            ->paginate(10);
 
             if ($request->ajax()) {
-                return view('components.post-items', compact('posts'))->render();
+                return view('components.post.items', compact('posts'))->render();
             }
-        return view('games.show', compact('game', 'playlists', 'userReviewPost'));
+        return view('games.show', compact('game', 'playlists', 'userReviewPost', 'posts'));
     }
    
     public function loadMore(Request $request)

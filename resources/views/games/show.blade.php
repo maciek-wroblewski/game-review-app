@@ -51,18 +51,7 @@
                 <h3 class="mb-4 fw-bold">Player Reviews <span class="text-muted fs-5 fw-normal">({{
                         $game->posts->count() }})</span></h3>
 
-                @forelse($game->posts as $post)
-                @php
-                $post->review->setRelation('post', $post);
-                @endphp
-                @continue($post == $userReviewPost)
-                <x-post :post="$post" />
-                @empty
-                <div class="alert alert-info border-0 shadow-sm p-4 text-center">
-                    <h5 class="mb-0">No reviews yet! Be the first to share your thoughts above.</h5>
-                </div>
-                @endforelse
-
+                <x-post.list :posts="$posts" />
             </div>
         </div>
     </div>
