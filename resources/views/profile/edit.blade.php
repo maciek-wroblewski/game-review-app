@@ -68,6 +68,50 @@
 
                 </div>
 
+                <!-- Avatar Upload -->
+                <div class="card shadow-sm border-0 mb-4">
+
+                    <div class="card-body p-4 p-lg-5">
+
+                        <div class="mb-4">
+
+                            <h3 class="fw-bold mb-1">
+                                Avatar
+                            </h3>
+
+                            <p class="text-muted mb-0">
+                                Upload your profile picture
+                            </p>
+
+                        </div>
+
+                        <form action="/avatar/upload"
+                              method="POST"
+                              enctype="multipart/form-data">
+
+                            @csrf
+
+                            <div class="mb-4">
+
+                                <input type="file"
+                                       name="file"
+                                       class="form-control">
+
+                            </div>
+
+                            <button type="submit"
+                                    class="btn btn-primary">
+
+                                Upload Avatar
+
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
                 <!-- Privacy Settings -->
                 <div class="card shadow-sm border-0 mb-4">
 
