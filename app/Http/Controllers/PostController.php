@@ -23,10 +23,13 @@ class PostController extends Controller
                 }]);
             })
             ->latest()
-            ->cursorPaginate(10); // <-- Switch from paginate() to cursorPaginate()
+            ->cursorPaginate(10);
 
         if ($request->ajax()) {
-            return view('components.post.items', compact('posts'))->render();
+            return response()->json([
+                'html' => view('components.post.items', compact('posts'))->render(),
+                'next_page_url' => $posts->nextPageUrl(),
+            ]);
         }
 
         return view('posts.index', compact('posts'));

@@ -17,6 +17,19 @@ class GameController extends Controller
             ->withCount('posts')
             ->orderBy('average_rating', 'desc')
             ->paginate(12);
+
+        // If it's an AJAX pagination request, return raw HTML row grids directly
+        if ($request->ajax()) {
+        $html = '';
+        foreach ($games as $game) {
+            $html .= view('games.partials.game-card-wrapper', compact('game'))->render();
+        }
+        return response()->json([
+            'html' => $html,
+            'next_page_url' => $games->nextPageUrl()
+        ]);
+    }
+
         return view('games.index', compact('games'));
     }
 
@@ -33,19 +46,19 @@ class GameController extends Controller
 
         $userId = auth()->id() ?? null;
         $user = auth()->user();
-        $playlists = $user 
+        $playlists = $user
             ? $user->playlists()->with(['games' => function ($query) use ($game) {
                 $query->where('games.id', $game->id); // Only loads pivot data for this specific game
             }])->get()
             : collect();
 
         // 2. Fetch user's specific review first using the optimized feed scope
-        $userReviewPost = $userId 
+        $userReviewPost = $userId
             ? \App\Models\Post::whereMorphRelation('hub', Game::class, 'id', $game->id)
-                ->where('user_id', $userId)
-                ->has('review')
-                ->withFeedRelations() // <-- Added optimized feed relations
-                ->first()
+            ->where('user_id', $userId)
+            ->has('review')
+            ->withFeedRelations() // <-- Added optimized feed relations
+            ->first()
             : null;
 
         // 3. Fetch all other reviews using the optimized feed scope
@@ -64,7 +77,7 @@ class GameController extends Controller
         }
         return view('games.show', compact('game', 'playlists', 'userReviewPost', 'posts'));
     }
-   
+
     public function loadMore(Request $request)
     {
         $page = $request->get('page', 1);
