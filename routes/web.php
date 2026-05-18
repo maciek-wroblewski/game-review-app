@@ -10,7 +10,6 @@ use App\Http\Controllers\PostLikeController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PostController;
-use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,7 +35,7 @@ Route::get('/users/{user:username}/reviews', [UserController::class, 'reviews'])
 Route::middleware('auth')->group(function () {
     Route::post('/upload', [MediaController::class, 'upload'])->name('upload');
     
-    Route::get('/dashboard', function () { return view('dashboard'); })->name('dashboard'); // Consider adding verified back if needed
+    Route::get('/dashboard', function () { return view('dashboard'); })->name('dashboard');
 
     // Posts
     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
@@ -58,10 +57,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/profile/privacy', [ProfileController::class, 'updatePrivacy']);
+    Route::patch('/profile/media', [ProfileController::class, 'updateMedia'])->name('profile.media.update');
     Route::post('/users/{user}/follow', [FollowController::class, 'toggle']);
 
     // Notifications
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
