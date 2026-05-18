@@ -11,7 +11,10 @@ class UserController extends Controller
 {
     public function show($username)
     {
-        $user = User::where('username', $username)->firstOrFail();
+        $user = User::where('username', $username)
+            ->with('settings')
+            ->withCount(['followers', 'following', 'posts', 'playlists'])
+            ->firstOrFail();
 
         if (!$user->canViewProfile(Auth::user())) {
 
@@ -19,6 +22,41 @@ class UserController extends Controller
                 'user' => $user
             ]);
         }
+
+        // Preload the user's recent posts with the relations used by the post component
+        $recentPosts = $user->posts()
+            ->latest()
+            ->with([
+                'author',
+                'media',
+                'review',
+                'hub',
+                'parent' => function ($query) {
+                    $query->withCount('replies')
+                          ->with(['author', 'media', 'review', 'hub']);
+                },
+            ])
+            ->withCount('replies')
+            ->get();
+
+        if (Auth::check()) {
+            Auth::user()->loadMissing('following');
+
+            $likedPostIds = Auth::user()
+                ->likedPosts()
+                ->pluck('posts.id')
+                ->all();
+
+            $recentPosts->each(function ($post) use ($likedPostIds) {
+                $post->setAttribute('liked_by_auth', in_array($post->id, $likedPostIds, true));
+                if ($post->relationLoaded('parent') && $post->parent) {
+                    $post->parent->setAttribute('liked_by_auth', in_array($post->parent->id, $likedPostIds, true));
+                }
+            });
+        }
+
+        // Attach the loaded collection to the user so the view can use $user->posts without extra queries
+        $user->setRelation('posts', $recentPosts);
 
         return view('users.show', [
             'user' => $user
@@ -58,7 +96,7 @@ class UserController extends Controller
 
     public function reviews(User $user)
     {
-        $reviews = $user->posts()->latest()->get();
+        $reviews = $user->posts()->with(['review.game'])->latest()->get();
 
         return view('users.reviews', [
             'user' => $user,

@@ -4,8 +4,18 @@
 <form action="/posts/{{ $post->id }}/like" method="POST" class="m-0 ajax-like-form d-inline-block" data-post-id="{{ $post->id }}">
 @csrf
 @php
-    $hasLiked = $post->likes()->where('user_id', auth()->id())->exists();
-    $count = $post->likes_count ?? 0;
+    $authId = auth()->id();
+    $hasLiked = false;
+    if ($authId) {
+        if ($post->getAttribute('liked_by_auth') !== null) {
+            $hasLiked = (bool) $post->getAttribute('liked_by_auth');
+        } elseif ($post->relationLoaded('likes')) {
+            $hasLiked = $post->likes->contains('id', $authId);
+        } else {
+            $hasLiked = $post->likes()->where('user_id', $authId)->exists();
+        }
+    }
+    $count = $post->likes_count ?? ($post->relationLoaded('likes') ? $post->likes->count() : 0);
 @endphp
     <button type="submit" 
         class="btn btn-sm rounded-pill border-0 small d-flex align-items-center gap-2 like-btn {{ $hasLiked ? 'btn-primary is-liked' : 'btn-light' }}">

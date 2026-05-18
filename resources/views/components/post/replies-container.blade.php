@@ -1,14 +1,13 @@
-@props(['post'])
+@props(['postId'])
 
 <div class="js-comment-list-container overflow-hidden bg-white border-top border-light"
-     style="max-height: 0; opacity: 0; transition: max-height 0.3s ease-out, opacity 0.3s ease-out;">
+     data-post-id="{{ $postId }}"
+     data-open="false"
+     data-loaded="false"
+     style="max-height: 0; opacity: 0; transition: max-height 0.3s ease-out, opacity 0.3s ease-out;"
+     {{ $attributes }}>
     <div class="p-3">
-        {{-- Added max-height and overflow-y-auto here --}}
-        <div class="js-replies-content overflow-y-auto overflow-x-hidden" style="max-height: 60vh;">
-            <div class="text-center text-muted small py-4">
-                <i class="bi bi-chat-dots me-1"></i> Click to load replies
-            </div>
-        </div>
+        {{ $slot }}
     </div>
 </div>
 
@@ -16,40 +15,73 @@
 <script>
 document.addEventListener('toggle-replies', async (e) => {
     const container = e.target;
-    const btn = e.detail.btn;
+    const btn = e.detail?.btn; // Optional chaining prevents crashes if btn is undefined
     const contentArea = container.querySelector('.js-replies-content');
+    
+    if (!contentArea) return;
+
+    // Safety fallback initialization for state trackers
+    if (!container.dataset.open) container.dataset.open = 'false';
+    if (!container.dataset.loaded) container.dataset.loaded = 'false';
+
     const isOpen = container.dataset.open === 'true';
     const isLoaded = container.dataset.loaded === 'true';
 
+    // --- ANIMATION: OPENING ---
     if (!isOpen) {
         if (!isLoaded) {
             contentArea.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-muted"></div></div>';
+            
             try {
-                const res = await fetch(`/posts/${btn.dataset.postId}/replies`, {
-                    headers: { 'Accept': 'text/html', 'X-Requested-With': 'XMLHttpRequest' }
+                // Fetch using the container's own post ID attribute (much safer than the button)
+                const postId = container.dataset.postId;
+                const res = await fetch(`/posts/${postId}/replies`, {
+                    headers: { 
+                        'Accept': 'application/json, text/html', 
+                        'X-Requested-With': 'XMLHttpRequest' 
+                    }
                 });
+                
                 if (res.ok) {
-                    contentArea.innerHTML = await res.text();
+                    const contentType = res.headers.get('content-type');
+                    
+                    // Support both JSON payloads and plain HTML payloads seamlessly
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await res.json();
+                        contentArea.innerHTML = data.html;
+                        
+                        // Update load-more pagination values if applicable
+                        const loadMoreBtn = container.querySelector('.js-load-more-btn');
+                        const loadMoreWrapper = container.querySelector('.js-load-more-wrapper');
+                        if (loadMoreBtn && loadMoreWrapper && data.next_page_url) {
+                            loadMoreBtn.setAttribute('data-next-url', data.next_page_url);
+                            loadMoreWrapper.classList.remove('d-none');
+                        }
+                    } else {
+                        contentArea.innerHTML = await res.text();
+                    }
                     container.dataset.loaded = 'true';
                 } else {
                     contentArea.innerHTML = '<div class="text-center text-danger small py-3">Failed to load replies</div>';
                 }
             } catch (err) {
+                console.error('Error fetching replies:', err);
                 contentArea.innerHTML = '<div class="text-center text-danger small py-3">Network error</div>';
             }
         }
 
-        // Animate Open
-        container.offsetHeight; // Force reflow
+        container.offsetHeight; // Force layout reflow
         container.style.maxHeight = container.scrollHeight + 'px';
         container.style.opacity = '1';
         container.dataset.open = 'true';
         
-        btn.querySelector('.btn-text').textContent = 'Hide Replies';
-        btn.querySelector('i').classList.replace('bi-chevron-down', 'bi-chevron-up');
+        if (btn) {
+            const btnText = btn.querySelector('.btn-text');
+            if (btnText) btnText.textContent = 'Hide Replies';
+            const icon = btn.querySelector('i');
+            if (icon) icon.classList.replace('bi-chevron-down', 'bi-chevron-up');
+        }
 
-        // NEW: Once the animation is done, remove the max-height limit. 
-        // This allows the div to grow/shrink dynamically if content inside changes!
         container.addEventListener('transitionend', function handler(event) {
             if (event.propertyName === 'max-height' && container.dataset.open === 'true') {
                 container.style.maxHeight = 'none';
@@ -57,20 +89,21 @@ document.addEventListener('toggle-replies', async (e) => {
             container.removeEventListener('transitionend', handler);
         });
 
+    // --- ANIMATION: CLOSING ---
     } else {
-        // NEW: Before we can animate closed, we must swap 'none' back to explicit pixels.
         container.style.maxHeight = container.scrollHeight + 'px';
-        
-        // Force reflow so the browser registers the pixel value
-        container.offsetHeight; 
+        container.offsetHeight; // Force layout reflow
 
-        // Animate Closed
         container.style.maxHeight = '0';
         container.style.opacity = '0';
         container.dataset.open = 'false';
         
-        btn.querySelector('.btn-text').textContent = 'Show Replies';
-        btn.querySelector('i').classList.replace('bi-chevron-up', 'bi-chevron-down');
+        if (btn) {
+            const btnText = btn.querySelector('.btn-text');
+            if (btnText) btnText.textContent = 'Show Replies';
+            const icon = btn.querySelector('i');
+            if (icon) icon.classList.replace('bi-chevron-up', 'bi-chevron-down');
+        }
     }
 });
 </script>

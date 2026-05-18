@@ -10,15 +10,16 @@
     {{-- Background Container --}}
     <div class="position-relative w-100"
         style="background-image: url('{{ $post->author->banner ?? '' }}'); background-size: cover; background-position: center;">
+        <div class="position-absolute top-0 start-0 w-100 h-100"
+            style="background: linear-gradient(to right, rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0.945) 40%, rgba(255, 255, 255, 0.59) 100%); pointer-events: none;">
+        </div>
 
         <div class="edit_form_collapsable">
-            {{-- Gradient Overlay --}}
-            <div class="position-absolute top-0 start-0 w-100 h-100"
-                style="background: linear-gradient(to right, rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0.945) 40%, rgba(255, 255, 255, 0.59) 100%); pointer-events: none;">
-            </div>
+
 
             {{-- View Mode wrapped in Clickable Card --}}
             <x-clickable-card :link="'/posts/' . $post->id">
+
                 <div class="js-view-mode position-relative d-flex flex-row w-100 p-3 gap-3">
                     <x-user.avatar :user="$post->author" :size="'36px'" />
 
@@ -58,9 +59,14 @@
                     </div>
                 </div>
             </x-clickable-card>
-            <x-post.reply-container :post="$post" />
+            <x-post.reply-container :post="$post">
+                <x-post.comment-create :hubType="$post->hubable_type ?? $post->hub_type"
+                    :hubId="$post->hubable_id ?? $post->hub_id" :parentId="$post->id" />
+            </x-post.reply-container>
 
-            <x-post.replies-container :post="$post" />
+            <x-post.replies-container :postId="$post->id" id="accordion-{{ $post->id }}">
+                <x-post.replies-list />
+            </x-post.replies-container>
         </div>
         <x-post.edit-form :post="$post" />
     </div>

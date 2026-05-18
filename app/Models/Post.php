@@ -88,6 +88,10 @@ class Post extends Model
     
     public function isReview(): bool
     {
+        if ($this->relationLoaded('review')) {
+            return $this->review !== null;
+        }
+
         return $this->review()->exists();
     }
 }

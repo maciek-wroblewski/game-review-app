@@ -27,38 +27,29 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const initNestedCards = () => {
-        document.querySelectorAll('[data-card-link]:not([data-card-initialized])').forEach(card => {
-            card.setAttribute('data-card-initialized', 'true');
+// We use dynamic event delegation so cards added via AJAX/Livewire work instantly!
+document.addEventListener('click', (e) => {
+    // Find if the click occurred on or inside a nested-card
+    const card = e.target.closest('[data-card-link]');
+    if (!card) return;
 
-            card.addEventListener('click', (e) => {
-                // 1. Elements that should bypass the background link entirely
-                const bypassSelector = 'a, button, input, select, textarea, label, .dropdown-menu, [data-card-bypass]';
-                
-                if (e.target.closest(bypassSelector)) {
-                    // DO NOT stop propagation here. Let it bubble up to document listeners!
-                    return;
-                }
+    // Elements that should bypass the background link click action entirely
+    const bypassSelector = 'a, button, input, select, textarea, label, .dropdown-menu, [data-card-bypass]';
+    if (e.target.closest(bypassSelector)) {
+        return;
+    }
 
-                // 2. Only stop propagation if it's a real background click intended for THIS card.
-                // This stops parent nested cards from triggering.
-                e.stopPropagation();
+    // Only stop propagation if it's a real background click intended for THIS card.
+    e.stopPropagation();
 
-                const url = card.getAttribute('data-card-link');
-                if (!url || url === '#') return;
+    const url = card.getAttribute('data-card-link');
+    if (!url || url === '#') return;
 
-                if (e.ctrlKey || e.metaKey || e.button === 1) {
-                    window.open(url, '_blank');
-                } else {
-                    window.location.href = url;
-                }
-            });
-        });
-    };
-
-    initNestedCards();
-    document.addEventListener('livewire:navigated', initNestedCards);
+    if (e.ctrlKey || e.metaKey || e.button === 1) {
+        window.open(url, '_blank');
+    } else {
+        window.location.href = url;
+    }
 });
 </script>
 @endonce

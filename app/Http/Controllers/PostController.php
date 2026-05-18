@@ -9,20 +9,20 @@ use Illuminate\Support\Facades\Gate;
 
 class PostController extends Controller
 {
-    public function index(Request $request) 
-{
-    $posts = Post::with(['author', 'media', 'hub', 'review'])
-        ->whereNull('parent_id') // Top-level posts only
-        ->with(['author', 'hub', 'review'])
-        ->latest()
-        ->paginate(10);
+    public function index(Request $request)
+    {
+        $posts = Post::with(['author', 'media', 'hub', 'review'])
+            ->withCount('replies')
+            ->whereNull('parent_id') // Top-level posts only
+            ->latest()
+            ->paginate(10);
 
-    if ($request->ajax()) {
-        return view('components.post.items', compact('posts'))->render();
+        if ($request->ajax()) {
+            return view('components.post.items', compact('posts'))->render();
+        }
+
+        return view('posts.index', compact('posts'));
     }
-
-    return view('posts.index', compact('posts'));
-}
 
     public function store(Request $request)
     {
@@ -70,15 +70,15 @@ class PostController extends Controller
      * Display the specified resource (Single Post Page).
      */
 
-    public function show(Request $request, Post $post) 
+    public function show(Post $post)
     {
-        $posts = $post->replies()->oldest()->paginate(15);
+        // Eager-load commonly accessed relations on the single post page
+        $post->load(['author', 'media', 'review', 'hub', 'likes']);
 
-        if ($request->ajax()) {
-            return view('components.post.items', compact('posts'))->render();
-        }
+        // Eager load author & media for replies to avoid N+1 when rendering
+        $replies = $post->replies()->with(['author', 'media'])->latest()->paginate(10);
 
-        return view('posts.show', compact('post', 'posts'));
+        return view('posts.show', compact('post', 'replies'));
     }
 
     /**
@@ -151,15 +151,19 @@ class PostController extends Controller
     }
 
 
-    public function getReplies(Post $post)
+    public function getReplies(Request $request, Post $post)
     {
         // Eager load author & media to prevent N+1
         $replies = $post->replies()
             ->with(['author', 'media'])
             ->latest()
-            ->get();
+            ->paginate(1);
 
-        // Return a raw HTML view (no layout, no <html>/<body> tags)
-        return view('components.post.replies-container-content', compact('replies'));
+        // Return everything as a clean API JSON packet
+            
+        return response()->json([
+            'html' => view('components.post.replies-list', compact('replies'))->render(),
+            'next_page_url' => $replies->nextPageUrl(),
+        ]);
     }
 }

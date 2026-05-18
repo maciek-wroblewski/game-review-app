@@ -40,18 +40,8 @@
                             <div class="card-body d-flex align-items-center gap-3">
 
                                 <!-- Avatar -->
-                                <div class="rounded-circle bg-primary text-white
-                                            d-flex align-items-center justify-content-center"
-                                     style="
-                                        width: 70px;
-                                        height: 70px;
-                                        font-size: 2rem;
-                                        flex-shrink: 0;
-                                     ">
 
-                                    {{ strtoupper(substr($followedUser->username, 0, 1)) }}
-
-                                </div>
+                                <x-user.avatar :user='$followedUser'/>
 
                                 <!-- User Info -->
                                 <div>

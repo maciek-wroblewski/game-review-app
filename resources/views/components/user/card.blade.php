@@ -62,17 +62,17 @@ $isCompact = $layout === 'compact';
 
         @if($isCompact)
         <div class="card-footer bg-white border-top-0 d-flex justify-content-around py-3">
-            <div class="text-center">
-                <div class="followers-count fw-bold fs-5" data-user-id="{{ $user->id }}">{{ $user->followers->count() }}
+                <div class="text-center">
+                <div class="followers-count fw-bold fs-5" data-user-id="{{ $user->id }}">{{ $user->followers_count ?? 0 }}
                 </div>
                 <div class="text-muted small">Followers</div>
             </div>
             <div class="text-center">
-                <div class="fw-bold fs-5">{{ $user->following->count() }}</div>
+                <div class="fw-bold fs-5">{{ $user->following_count ?? 0 }}</div>
                 <div class="text-muted small">Following</div>
             </div>
             <div class="text-center">
-                <div class="fw-bold fs-5">{{ $user->posts->count() }}</div>
+                <div class="fw-bold fs-5">{{ $user->posts_count ?? 0 }}</div>
                 <div class="text-muted small">Reviews</div>
             </div>
         </div>
@@ -96,7 +96,7 @@ $isCompact = $layout === 'compact';
                         </div>
 
                         <h2 class="fw-bold display-5 mb-1 text-dark">
-                            {{ $user->posts->count() }}
+                            {{ $user->posts_count ?? 0 }}
                         </h2>
 
                         <p class="text-muted mb-0 fs-5">
@@ -125,7 +125,7 @@ $isCompact = $layout === 'compact';
                         </div>
 
                         <h2 class="fw-bold display-5 mb-1 text-dark">
-                            {{ $user->playlists->count() }}
+                            {{ $user->playlists_count ?? 0 }}
                         </h2>
 
                         <p class="text-muted mb-0 fs-5">
@@ -154,7 +154,7 @@ $isCompact = $layout === 'compact';
                         </div>
 
                         <h2 class="fw-bold display-5 mb-1 text-dark">
-                            {{ $user->following->count() }}
+                            {{ $user->following_count ?? 0 }}
                         </h2>
 
                         <p class="text-muted mb-0 fs-5">
@@ -182,9 +182,9 @@ $isCompact = $layout === 'compact';
                             <i class="bi bi-people-fill text-danger fs-1"></i>
                         </div>
 
-                        <h2 class="followers-count fw-bold display-5 mb-1 text-dark" data-user-id="{{ $user->id }}">
-                            {{ $user->followers->count() }}
-                        </h2>
+                            <h2 class="followers-count fw-bold display-5 mb-1 text-dark" data-user-id="{{ $user->id }}">
+                            {{ $user->followers_count ?? 0 }}
+                            </h2>
 
                         <p class="text-muted mb-0 fs-5">
                             Followers

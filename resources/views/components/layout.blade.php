@@ -72,6 +72,9 @@
                 <ul class="navbar-nav align-items-lg-center gap-lg-2">
 
                     @auth
+                        @php
+                            $unreadNotificationCount = auth()->user()->notifications()->where('read', false)->count();
+                        @endphp
 
                         <!-- Notifications -->
                         <li class="nav-item dropdown">
@@ -84,11 +87,11 @@
 
                                 <i class="bi bi-bell-fill fs-5"></i>
 
-                                @if(auth()->user()->notifications()->where('read', false)->count() > 0)
+                                @if($unreadNotificationCount > 0)
 
                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
 
-                                        {{ auth()->user()->notifications()->where('read', false)->count() }}
+                                        {{ $unreadNotificationCount }}
 
                                     </span>
 
