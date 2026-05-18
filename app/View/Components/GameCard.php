@@ -20,6 +20,6 @@ class GameCard extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.game-card');
+        return view('components.game.card');
     }
 }
