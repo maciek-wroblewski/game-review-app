@@ -23,7 +23,7 @@ class PostController extends Controller
                 }]);
             })
             ->latest()
-            ->cursorPaginate(10);
+            ->paginate(10); // Changed from cursorPaginate to standard pagination
 
         if ($request->ajax()) {
             return response()->json([
@@ -198,10 +198,11 @@ class PostController extends Controller
                 }]);
             })
             ->latest()
-            ->cursorPaginate(10); // <-- Switch here too for comment infinite scrolls
+            ->paginate(10); // Changed from cursorPaginate to standard pagination
 
         return response()->json([
-            'html' => view('components.post.replies-list', compact('replies'))->render(),
+            // FIX: Render replies-items HERE, not replies-list wrapper layout!
+            'html' => view('components.post.replies-items', compact('replies'))->render(),
             'next_page_url' => $replies->nextPageUrl(),
         ]);
     }

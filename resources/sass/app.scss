@@ -13,7 +13,8 @@
     will-change: opacity, transform;
 }
 
-@keyframes fadeIn {
+// FIX: Changed from fadeIn to centralFadeIn to match the rule above
+@keyframes centralFadeIn {
     from {
         opacity: 0;
         transform: translateY(12px);
