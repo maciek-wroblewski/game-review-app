@@ -12,8 +12,9 @@ class GameSeeder extends Seeder
     public function run(): void
     {
         $rawgApiKey = env('RAWG_API_KEY');
+        $gamesSeeded = false;
 
-        if ($rawgApiKey) 
+        if ($rawgApiKey) {
             $gamesResponse = Http::get('https://api.rawg.io/api/games', [
                 'key' => $rawgApiKey,
                 'page_size' => 50,
@@ -42,10 +43,11 @@ class GameSeeder extends Seeder
 
                     $this->createGameFromSteamGridDB($title, $details, $releaseDate, $publisher);
                 }
-            } else {
-                Game::factory(50)->create();
+                $gamesSeeded = true;
             }
-        } else {
+        }
+
+        if (!$gamesSeeded) {
             Game::factory(50)->create();
         }
     }
