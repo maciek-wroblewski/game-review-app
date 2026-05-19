@@ -4,9 +4,14 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <meta http-equiv="X-UA-Compatible"
+          content="ie=edge">
 
     <title>{{ $headtitle }} | VGDB</title>
 
@@ -14,20 +19,38 @@
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
-    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    @vite([
+        'resources/sass/app.scss',
+        'resources/js/app.js'
+    ])
+
 </head>
 
 <body class="bg-light d-flex flex-column min-vh-100">
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <!-- Fixed Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm"
+         style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 9999;
+            background: rgba(33, 37, 41, 0.92);
+            backdrop-filter: blur(12px);
+         ">
 
         <div class="container">
 
             <!-- Logo -->
-            <a class="navbar-brand fw-bold fs-4" href="/">
+            <a class="navbar-brand fw-bold fs-4"
+               href="/">
+
                 <i class="bi bi-controller me-2 text-primary"></i>
+
                 VG<span class="text-primary">DB</span>
+
             </a>
 
             <!-- Mobile Button -->
@@ -43,27 +66,43 @@
 
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="collapse navbar-collapse"
+                 id="navbarNav">
 
                 <!-- Left Side -->
                 <ul class="navbar-nav me-auto">
 
                     <li class="nav-item">
-                        <a class="nav-link" href="/">
+
+                        <a class="nav-link"
+                           href="/">
+
                             Home
+
                         </a>
+
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="/games">
+
+                        <a class="nav-link"
+                           href="/games">
+
                             Games
+
                         </a>
+
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="/posts">
+
+                        <a class="nav-link"
+                           href="/posts">
+
                             Community
+
                         </a>
+
                     </li>
 
                 </ul>
@@ -265,6 +304,7 @@
                                href="/users/{{ auth()->user()->username }}">
 
                                 <i class="bi bi-person-circle me-1"></i>
+
                                 {{ auth()->user()->username }}
 
                             </a>
@@ -295,6 +335,7 @@
                                         class="btn btn-primary btn-sm">
 
                                     <i class="bi bi-box-arrow-right me-1"></i>
+
                                     Log Out
 
                                 </button>
@@ -338,6 +379,9 @@
         </div>
 
     </nav>
+
+    <!-- Navbar Spacer -->
+    <div style="height: 90px;"></div>
 
     <!-- Main Content -->
     <main class="flex-grow-1 py-4">
