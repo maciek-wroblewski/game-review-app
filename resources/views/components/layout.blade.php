@@ -9,6 +9,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
     <title>{{ $headtitle }} | VGDB</title>
+    <link rel="icon" type="image/png" href="{{ asset('vgdb-favicon.png') }}">
 
     <!-- Bootstrap Icons -->
     <link rel="stylesheet"
