@@ -62,4 +62,67 @@ class AdminController extends Controller
 
         return back();
     }
+
+    public function toggleAdmin(User $user)
+    {
+        if (!auth()->check() || !auth()->user()->is_admin) {
+
+            abort(403);
+
+        }
+
+        if ($user->id === auth()->id()) {
+
+            return back();
+
+        }
+
+        $user->update([
+
+            'is_admin' => !$user->is_admin
+
+        ]);
+
+        return back();
+    }
+
+    public function toggleSuspend(User $user)
+    {
+        if (!auth()->check() || !auth()->user()->is_admin) {
+
+            abort(403);
+
+        }
+
+        if ($user->id === auth()->id()) {
+
+            return back();
+
+        }
+
+        $user->update([
+
+            'is_suspended' => !$user->is_suspended
+
+        ]);
+
+        return back();
+    }
+
+    public function togglePinned(Post $post)
+    {
+        if (!auth()->check() || !auth()->user()->is_admin) {
+
+            abort(403);
+
+        }
+
+        $post->update([
+
+            'is_pinned' => !$post->is_pinned
+
+        ]);
+
+        return back();
+    }
 }

@@ -38,6 +38,7 @@ class User extends Authenticatable
         'avatar_media_id',
         'verified',
         'is_admin',
+        'is_suspended',
     ];
 
     protected $hidden = [

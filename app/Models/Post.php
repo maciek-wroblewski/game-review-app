@@ -18,6 +18,7 @@ class Post extends Model
         'parent_id',
         'is_spoiler',
         'is_locked',
+        'is_pinned',
     ];
 
     protected function casts(): array
