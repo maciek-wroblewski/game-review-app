@@ -18,6 +18,8 @@ class Post extends Model
         'parent_id',
         'is_spoiler',
         'is_locked',
+        'is_pinned',
+        'is_locked',
     ];
 
     protected function casts(): array
@@ -147,5 +149,10 @@ class Post extends Model
             // You can also delete media here if you want to clean up files!
             // if ($post->media) { $post->media()->delete(); }
         });
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

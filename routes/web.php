@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\GameReviewController;
 use App\Http\Controllers\GameController;
@@ -33,38 +34,48 @@ Route::get('/users/{user:username}/followers', [UserController::class, 'follower
 Route::get('/users/{user:username}/following', [UserController::class, 'following']);
 Route::get('/users/{user:username}/playlists', [UserController::class, 'playlists']);
 Route::get('/users/{user:username}/reviews', [UserController::class, 'reviews']);
+Route::get('/users/{user:username}/posts', [UserController::class, 'posts']);
 
 // Authenticated Routes Group
 Route::middleware('auth')->group(function () {
-    Route::post('/upload', [MediaController::class, 'upload'])->name('upload');
+Route::post('/upload', [MediaController::class, 'upload'])->name('upload');
     
-    Route::get('/dashboard', function () { return view('dashboard'); })->name('dashboard');
+Route::get('/dashboard', function () { return view('dashboard'); })->name('dashboard');
 
-    // Posts
-    Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
-    Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
-    Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
-    Route::post('/posts/{post}/like', [PostLikeController::class, 'store']);
+// Posts
+Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
+Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+Route::post('/posts/{post}/like', [PostLikeController::class, 'store']);
 
-    // Reviews & Playlists
-    Route::get('/games/{game}/review', [GameReviewController::class, 'create']);
-    Route::post('/games/{game}/reviews', [GameReviewController::class, 'store']);
-    Route::put('/reviews/{review}', [GameReviewController::class, 'update']);
-    Route::delete('/reviews/{review}', [GameReviewController::class, 'destroy']);
-    Route::get('/playlists/{playlist}', [PlaylistController::class, 'show']);
-    Route::post('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'store']);
-    Route::delete('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'destroy']);
+// Reviews & Playlists
+Route::get('/games/{game}/review', [GameReviewController::class, 'create']);
+Route::post('/games/{game}/reviews', [GameReviewController::class, 'store']);
+Route::put('/reviews/{review}', [GameReviewController::class, 'update']);
+Route::delete('/reviews/{review}', [GameReviewController::class, 'destroy']);
+Route::get('/playlists/{playlist}', [PlaylistController::class, 'show']);
+Route::post('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'store']);
+Route::delete('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'destroy']);
 
-    // Profiles & Socials
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::patch('/profile/privacy', [ProfileController::class, 'updatePrivacy']);
-    Route::patch('/profile/media', [ProfileController::class, 'updateMedia'])->name('profile.media.update');
-    Route::post('/users/{user}/follow', [FollowController::class, 'toggle']);
+// Profiles & Socials
+Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+Route::patch('/profile/privacy', [ProfileController::class, 'updatePrivacy']);
+Route::patch('/profile/media', [ProfileController::class, 'updateMedia'])->name('profile.media.update');
+Route::post('/users/{user}/follow', [FollowController::class, 'toggle']);
 
-    // Notifications
-    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+// Admin
+Route::get('/admin', [AdminController::class, 'index']);
+Route::post('/admin/users/{user}/verify', [AdminController::class, 'verifyUser']);
+Route::post('/admin/users/{user}/admin', [AdminController::class, 'toggleAdmin']);
+Route::post('/admin/users/{user}/suspend', [AdminController::class, 'toggleSuspend']);
+Route::post('/admin/posts/{post}/pin', [AdminController::class, 'togglePinned']);
+Route::post('/admin/posts/{post}/lock', [AdminController::class, 'toggleLock']);
+
+// Notifications
+Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 });
 
 require __DIR__ . '/auth.php';
