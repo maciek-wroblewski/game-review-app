@@ -17,19 +17,29 @@ class UserController extends Controller
         $user->loadMissing('settings');
 
         if (! $user->canViewProfile(Auth::user())) {
-            // Abort with 403 Forbidden or redirect to a standard restricted template view
+
             abort(403, 'This profile is private.');
         }
     }
 
     public function show(User $user)
     {
-        // 1. Eager load both settings AND avatar to satisfy the profile header card instantly
-        $user->loadCount(['followers', 'following', 'posts', 'playlists'])
-            ->load(['settings', 'avatar']);
+        $user->loadCount([
+                'followers',
+                'following',
+                'posts',
+                'playlists'
+            ])
+            ->load([
+                'settings',
+                'avatar'
+            ]);
 
         if (! $user->canViewProfile(Auth::user())) {
-            return view('users.private', ['user' => $user]);
+
+            return view('users.private', [
+                'user' => $user
+            ]);
         }
 
         $recentPosts = $user->posts()
@@ -39,13 +49,12 @@ class UserController extends Controller
 
         $user->setRelation('posts', $recentPosts);
 
-        // 2. Apply withFeedRelations() here to prevent an N+1 disaster in <x-hub-comments>
         $posts = Post::query()
             ->where('hub_type', 'user')
             ->where('hub_id', $user->id)
             ->whereNull('parent_id')
             ->latest()
-            ->withFeedRelations() // ⚡ Critical Optimization
+            ->withFeedRelations()
             ->paginate(10);
 
         return view('users.show', compact('user', 'posts'));
@@ -53,14 +62,20 @@ class UserController extends Controller
 
     public function followers(Request $request, User $user)
     {
-        $followers = $user->followers()->latest()->paginate(20);
+        $followers = $user->followers()
+            ->latest()
+            ->paginate(20);
 
-        // Intercept async pagination queries
         if ($request->ajax()) {
+
             $html = '';
+
             foreach ($followers as $follower) {
-                // Loop and render the exact partial template required for followers
-                $html .= view('users.partials.follower-card-wrapper', compact('follower'))->render();
+
+                $html .= view(
+                    'users.partials.follower-card-wrapper',
+                    compact('follower')
+                )->render();
             }
 
             return response()->json([
@@ -74,14 +89,20 @@ class UserController extends Controller
 
     public function following(Request $request, User $user)
     {
-        $following = $user->following()->latest()->paginate(20);
+        $following = $user->following()
+            ->latest()
+            ->paginate(20);
 
-        // Intercept async pagination queries
         if ($request->ajax()) {
+
             $html = '';
+
             foreach ($following as $followedUser) {
-                // Loop and render the exact partial template required for following
-                $html .= view('users.partials.following-card-wrapper', compact('followedUser'))->render();
+
+                $html .= view(
+                    'users.partials.following-card-wrapper',
+                    compact('followedUser')
+                )->render();
             }
 
             return response()->json([
@@ -95,14 +116,20 @@ class UserController extends Controller
 
     public function playlists(Request $request, User $user)
     {
-        $playlists = $user->playlists()->latest()->paginate(20);
+        $playlists = $user->playlists()
+            ->latest()
+            ->paginate(20);
 
-        // Intercept async pagination queries
         if ($request->ajax()) {
+
             $html = '';
+
             foreach ($playlists as $playlist) {
-                // Loop and render the exact partial template required for playlists
-                $html .= view('users.partials.playlist-card-wrapper', compact('playlist'))->render();
+
+                $html .= view(
+                    'users.partials.playlist-card-wrapper',
+                    compact('playlist')
+                )->render();
             }
 
             return response()->json([
@@ -117,12 +144,13 @@ class UserController extends Controller
     public function reviews(Request $request, User $user)
     {
         $posts = $user->posts()
-            ->has('review')
-            ->withFeedRelations()
+            ->whereNull('parent_id')
             ->latest()
+            ->withFeedRelations()
             ->paginate(5);
 
         if ($request->ajax()) {
+
             return response()->json([
                 'html' => view('components.post.items', compact('posts'))->render(),
                 'next_page_url' => $posts->nextPageUrl(),
