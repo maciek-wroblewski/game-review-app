@@ -3,44 +3,50 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Notification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class FollowController extends Controller
 {
     public function toggle(User $user, Request $request)
     {
-        $currentUser = request()->user();
+        $currentUser = auth()->user();
 
         if ($currentUser->id === $user->id) {
             return back();
         }
 
-        $isFollowing = $currentUser
-            ->following()
+        $existingFollow = DB::table('follows')
+            ->where('user_id', $currentUser->id)
             ->where('followable_id', $user->id)
-            ->exists();
+            ->where('followable_type', User::class)
+            ->first();
 
-        if ($isFollowing) {
-            $currentUser->following()->detach($user->id);
-            $status = 'unfollowed'; // Track status for JSON
+        if ($existingFollow) {
+
+            DB::table('follows')
+                ->where('user_id', $currentUser->id)
+                ->where('followable_id', $user->id)
+                ->where('followable_type', User::class)
+                ->delete();
+
+            $status = 'unfollowed';
+
         } else {
-            $currentUser->following()->attach($user->id, [
-                'followable_type' => User::class
+
+            DB::table('follows')->insert([
+                'user_id' => $currentUser->id,
+                'followable_id' => $user->id,
+                'followable_type' => User::class,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
-            Notification::create([
-                'user_id' => $user->id,
-                'from_user_id' => $currentUser->id,
-                'type' => 'follow',
-                'message' => $currentUser->username . ' started following you.',
-            ]);
-            
-            $status = 'followed'; // Track status for JSON
+            $status = 'followed';
         }
 
-        // Return JSON if requested via AJAX
         if ($request->wantsJson()) {
+
             return response()->json([
                 'status' => $status
             ]);
