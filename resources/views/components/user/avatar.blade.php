@@ -15,7 +15,7 @@
 
     {{-- Popover Content --}}
     <div class="popover-template d-none">
-        <x-user.card :user="$user" layout="compact" :interactive="false" />
+        <x-user.card :user="$user" layout="compact" />
     </div>
     
 </div>
