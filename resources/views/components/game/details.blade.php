@@ -79,9 +79,6 @@
                             document.addEventListener('DOMContentLoaded', updatePlaylistButtonState);
             </script>
             @endif
-            <hr class="mt-4 mb-3">
-            <p> View relevant <a href="/games/{{ $game->id }}/hub"> Discussions</a></p>
-
         </div>
     </div>
 </div>

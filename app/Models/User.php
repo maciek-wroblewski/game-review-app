@@ -119,28 +119,6 @@ class User extends Authenticatable
         return $this->belongsToMany(Conversation::class, 'conversation_user')->withPivot('last_read_at')->withTimestamps();
     }
 
-    protected static function booted(): void
-    {
-        static::created(function ($user) {
-            DB::transaction(function () use ($user) {
-                $user->settings()->create([
-                    'comments' => 'everyone',
-                    'dms' => 'mutuals',
-                ]);
-
-                $defaultPlaylists = ['Playing', 'Completed', 'Dropped', 'Wishlist'];
-                foreach ($defaultPlaylists as $name) {
-                    $playlist = \App\Models\Playlist::create([
-                        'name' => $name,
-                        'is_system' => true,
-                        'is_public' => true,
-                    ]);
-                    $user->playlists()->attach($playlist->id, ['role' => 'owner']);
-                }
-            });
-        });
-    }
-
     public function notifications()
     {
         return $this->hasMany(Notification::class)

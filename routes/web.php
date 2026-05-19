@@ -19,6 +19,7 @@ Route::get('/hub', function () { return view('welcome'); });
 
 Route::get('/games', [GameController::class, 'index']);
 Route::get('/games/{game}', [GameController::class, 'show']);
+Route::get('/games/{game}/discussions', [GameController::class, 'discussions']);
 
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{post}', [PostController::class, 'show']);

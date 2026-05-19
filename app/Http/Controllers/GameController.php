@@ -102,4 +102,36 @@ class GameController extends Controller
             'nextPage' => $games->currentPage() + 1,
         ]);
     }
+
+    public function discussions(Request $request, Game $game)
+    {
+        // 1. Eager load simple relations and an efficient COUNT of discussion posts
+        $game->load(['genres', 'credits']);
+        $game->loadCount(['posts' => function ($query) {
+            $query->doesntHave('review'); // Filter out reviews for the count
+        }]);
+
+        $userId = auth()->id() ?? null;
+        $user = auth()->user();
+        
+        $playlists = $user
+            ? $user->playlists()->with(['games' => function ($query) use ($game) {
+                $query->where('games.id', $game->id);
+            }])->get()
+            : collect();
+
+        // 2. Fetch all discussion posts (excluding reviews) using the optimized feed scope
+        $posts = $game->posts()
+            ->doesntHave('review') // Get general discussions, not reviews
+            ->withFeedRelations()
+            ->latest()
+            ->paginate(10);
+
+        // 3. Handle AJAX pagination
+        if ($request->ajax()) {
+            return view('components.post.items', compact('posts'))->render();
+        }
+
+        return view('games.discussions', compact('game', 'playlists', 'posts'));
+    }
 }

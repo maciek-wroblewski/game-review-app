@@ -32,5 +32,17 @@ class UserObserver
                 $user->playlists()->attach($playlist->id, ['role' => 'owner']);
             }
         });
+
+    }
+    public function deleting(User $user): void
+    {
+        // Find all playlists where this user is the "owner"
+        $ownedPlaylists = $user->playlists()->wherePivot('role', 'owner')->get();
+
+        // Delete the actual playlist records
+        // (This will also trigger the cascade to remove pivot records for other users if the list was shared)
+        foreach ($ownedPlaylists as $playlist) {
+            $playlist->delete();
+        }
     }
 }
