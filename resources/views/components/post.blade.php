@@ -254,8 +254,25 @@ class="badge bg-danger">
 
 @endif
 
-<x-post.header
-:post="$post" />
+@if($post->is_locked)
+
+<div
+class="alert
+alert-secondary
+rounded-0
+border-0
+mb-0">
+
+<i
+class="bi bi-lock-fill me-2"></i>
+
+This post is locked.
+
+Replies disabled.
+
+</div>
+
+@endif
 
 <div
 class="edit_form_collapsable">
@@ -333,23 +350,38 @@ class="bi bi-pin-angle-fill me-1"></i>
 
 @endif
 
-{{-- FUTURE LOCK --}}
-
 @if($isAdmin)
 
+<form
+method="POST"
+action="/admin/posts/{{ $post->id }}/lock">
+
+@csrf
+
 <button
-disabled
 class="btn
 btn-sm
-btn-outline-secondary
+
+{{ $post->is_locked
+? 'btn-secondary'
+: 'btn-outline-secondary' }}
+
 admin-tool-btn">
 
 <i
-class="bi bi-lock-fill me-1"></i>
+class="bi
+{{ $post->is_locked
+? 'bi-unlock-fill'
+: 'bi-lock-fill' }}
+me-1"></i>
 
-Lock Soon™
+{{ $post->is_locked
+? 'Unlock'
+: 'Lock' }}
 
 </button>
+
+</form>
 
 @endif
 
@@ -367,10 +399,14 @@ Lock Soon™
 <x-post.reply-container
 :post="$post">
 
+@if(!$post->is_locked)
+
 <x-post.comment-create
 :hubType="$post->hubable_type ?? $post->hub_type"
 :hubId="$post->hubable_id ?? $post->hub_id"
 :parentId="$post->id" />
+
+@endif
 
 </x-post.reply-container>
 

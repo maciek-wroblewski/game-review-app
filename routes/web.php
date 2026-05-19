@@ -71,6 +71,7 @@ Route::post('/admin/users/{user}/verify', [AdminController::class, 'verifyUser']
 Route::post('/admin/users/{user}/admin', [AdminController::class, 'toggleAdmin']);
 Route::post('/admin/users/{user}/suspend', [AdminController::class, 'toggleSuspend']);
 Route::post('/admin/posts/{post}/pin', [AdminController::class, 'togglePinned']);
+Route::post('/admin/posts/{post}/lock', [AdminController::class, 'toggleLock']);
 
 // Notifications
 Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);

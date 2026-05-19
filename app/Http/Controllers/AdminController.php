@@ -125,4 +125,24 @@ class AdminController extends Controller
 
         return back();
     }
+
+    public function toggleLock(Post $post)
+    {
+        if (
+            !auth()->check() ||
+            !auth()->user()->is_admin
+        ) {
+
+            abort(403);
+
+        }
+
+        $post->update([
+
+            'is_locked' => !$post->is_locked
+
+        ]);
+
+        return back();
+    }
 }
