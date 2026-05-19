@@ -41,6 +41,13 @@
                             {{ $game->release_date ? $game->release_date->format('M d, Y') : 'Unknown' }}
                         </p>
                         
+                        @if($game->publisher)
+                        <p class="mb-2">
+                            <strong>Publisher:</strong> <br>
+                            {{ $game->publisher }}
+                        </p>
+                        @endif
+                        
                         <div class="mb-3">
                             <strong>Developers & Credits:</strong> <br>
                             @forelse($game->credits as $credit)
