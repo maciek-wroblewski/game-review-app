@@ -25,9 +25,7 @@ class FollowController extends Controller
             $currentUser->following()->detach($user->id);
             $status = 'unfollowed'; // Track status for JSON
         } else {
-            $currentUser->following()->attach($user->id, [
-                'followable_type' => User::class
-            ]);
+            $currentUser->following()->attach($user->id);
 
             Notification::create([
                 'user_id' => $user->id,

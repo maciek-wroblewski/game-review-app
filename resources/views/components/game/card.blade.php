@@ -57,6 +57,11 @@
 
         <!-- Footer -->
         <div class="card-footer bg-transparent border-top-0 pb-3 pt-0">
+            @if($game->publisher)
+                <small class="text-muted d-block mb-1" style="font-size: 0.75rem;">
+                    <strong>Publisher:</strong> {{ $game->publisher }}
+                </small>
+            @endif
             <small class="text-muted" style="font-size: 0.75rem; font-style: italic;">
                 By: 
                 @foreach($game->credits as $user)
