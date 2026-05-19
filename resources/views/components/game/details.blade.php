@@ -12,6 +12,13 @@
                 {{ $game->release_date ? $game->release_date->format('M d, Y') : 'Unknown' }}
             </p>
 
+            @if($game->publisher)
+            <p class="mb-2">
+                <strong>Publisher:</strong> <br>
+                {{ $game->publisher }}
+            </p>
+            @endif
+
             <div class="mb-3">
                 <strong>Developers & Credits:</strong> <br>
                 @forelse($game->credits as $credit)
@@ -45,14 +52,13 @@
                 <select id="playlist_select" class="form-select form-select-sm border-0 bg-light" required
                     onchange="updatePlaylistButtonState()">
                     @foreach($playlists as $list)
-                    <option value="{{ $list->id }}" data-in-list="{{ $list->games->isNotEmpty() ? 'true' : 'false' }}">
-                        {{ $list->name }}
+                    <option value="{{ $list->id }}"
+                        data-in-list="{{ $list->games->contains($game->id) ? 'true' : 'false' }}">{{ $list->name }}
                     </option>
                     @endforeach
                 </select>
                 <button id="playlist_submit_btn" type="submit"
-                    class="btn btn-sm btn-outline-primary text-nowrap fw-bold shadow-sm">+ Add to
-                    List</button>
+                    class="btn btn-sm btn-outline-primary text-nowrap fw-bold shadow-sm">+ Add to List</button>
             </form>
 
             <script>
