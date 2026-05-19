@@ -1,13 +1,13 @@
 <?php
 
-namespace App\View\Components;
+namespace App\View\Components\Game;
 
 use App\Models\Game;
 use Illuminate\View\Component;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Collection;
 
-class TrendingGames extends Component
+class Trending extends Component
 {
     public Collection $trendingGames;
 
@@ -85,6 +85,6 @@ class TrendingGames extends Component
 
     public function render()
     {
-        return view('components.trending-games');
+        return view('components.game.trending');
     }
 }

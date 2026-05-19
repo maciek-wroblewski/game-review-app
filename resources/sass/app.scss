@@ -1,8 +1,21 @@
-// Fonts
 @import url('https://fonts.bunny.net/css?family=Nunito');
-
-// Variables
 @import 'variables';
+@import '~bootstrap/scss/bootstrap';
+    
+/* Shared utility class for asynchronous content reveals */
+.animate-fade-in {
+    animation: centralFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    will-change: opacity, transform;
+}
 
-// Bootstrap
-@import 'bootstrap/scss/bootstrap';
+// FIX: Changed from fadeIn to centralFadeIn to match the rule above
+@keyframes centralFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

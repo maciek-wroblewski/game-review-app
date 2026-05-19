@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use Illuminate\Validation\Rule;
+use App\Models\Media;
 
 class ProfileController extends Controller
 {
@@ -34,6 +35,37 @@ class ProfileController extends Controller
         }
 
         $request->user()->save();
+
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    /**
+     * Update the user's avatar or banner via uploaded media IDs.
+     */
+    public function updateMedia(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'avatar_media_id' => ['nullable', 'exists:media,id'],
+            'banner_media_id' => ['nullable', 'exists:media,id'],
+        ]);
+
+        $user = $request->user();
+
+        if (!empty($validated['avatar_media_id'])) {
+            $media = Media::find($validated['avatar_media_id']);
+            if ($media) {
+                $user->avatar = $media->file_path;
+            }
+        }
+
+        if (!empty($validated['banner_media_id'])) {
+            $media = Media::find($validated['banner_media_id']);
+            if ($media) {
+                $user->banner = $media->file_path;
+            }
+        }
+
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }

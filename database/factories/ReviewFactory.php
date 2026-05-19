@@ -11,8 +11,8 @@ class ReviewFactory extends Factory
     {
         return [
             'post_id' => Post::factory()->state([
-                'hub_type' => 'App\Models\Game',
-                'hub_id' => Game::factory(), // Creates a new game if one isn't provided
+                'hub_type' => 'game',
+                'hub_id' => Game::factory(),
             ]),
             'type' => $this->faker->randomElement(['recommendation', 'article', 'patch_note']),
             'rating' => $this->faker->numberBetween(0, 10)
