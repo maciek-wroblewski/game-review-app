@@ -24,15 +24,24 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        // 1. Eager load both settings AND avatar to satisfy the profile header card instantly
-        $user->loadCount(['followers', 'following', 'posts', 'playlists'])
-            ->load(['settings', 'avatar']);
+
+        $user->loadCount([
+                'followers',
+                'following',
+                'reviews',
+                'communityPosts',
+                'playlists'
+            ])
+            ->load([
+                'settings',
+                'avatar'
+            ]);
 
         if (! $user->canViewProfile(Auth::user())) {
             return view('users.private', ['user' => $user]);
         }
 
-        $recentPosts = $user->posts()
+        $recentPosts = $user->reviews()
             ->latest()
             ->withFeedRelations()
             ->paginate(10);
@@ -116,8 +125,8 @@ class UserController extends Controller
 
     public function reviews(Request $request, User $user)
     {
-        $posts = $user->posts()
-            ->has('review')
+        $posts = $user->reviews()
+            ->latest()
             ->withFeedRelations()
             ->latest()
             ->paginate(5);
@@ -130,5 +139,23 @@ class UserController extends Controller
         }
 
         return view('users.reviews', compact('user', 'posts'));
+    }
+
+    public function posts(Request $request, User $user)
+    {
+        $posts = $user->communityPosts()
+            ->latest()
+            ->withFeedRelations()
+            ->paginate(10);
+
+        if ($request->ajax()) {
+
+            return response()->json([
+                'html' => view('components.post.items', compact('posts'))->render(),
+                'next_page_url' => $posts->nextPageUrl(),
+            ]);
+        }
+
+        return view('users.posts', compact('user', 'posts'));
     }
 }

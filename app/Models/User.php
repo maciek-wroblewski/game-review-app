@@ -59,6 +59,20 @@ class User extends Authenticatable
         return $this->hasMany(Post::class);
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(Post::class)
+            ->where('hub_type', 'game')
+            ->whereNull('parent_id');
+    }
+
+    public function communityPosts()
+    {
+        return $this->hasMany(Post::class)
+            ->where('hub_type', 'user')
+            ->whereNull('parent_id');
+    }
+
     // --- Blocks ---
     public function blockedUsers()
     {

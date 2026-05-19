@@ -33,6 +33,7 @@ Route::get('/users/{user:username}/followers', [UserController::class, 'follower
 Route::get('/users/{user:username}/following', [UserController::class, 'following']);
 Route::get('/users/{user:username}/playlists', [UserController::class, 'playlists']);
 Route::get('/users/{user:username}/reviews', [UserController::class, 'reviews']);
+Route::get('/users/{user:username}/posts', [UserController::class, 'posts']);
 
 // Authenticated Routes Group
 Route::middleware('auth')->group(function () {
