@@ -4,14 +4,11 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Media;
 use App\Models\Notification;
-use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -31,6 +28,7 @@ class User extends Authenticatable
             'verified' => 'boolean',
         ];
     }
+
     protected $fillable = [
         'username',
         'email',
@@ -60,71 +58,128 @@ class User extends Authenticatable
     }
 
     // --- Blocks ---
+
     public function blockedUsers()
     {
-        return $this->belongsToMany(User::class, 'blocks', 'blocker_user_id', 'blocked_user_id')->withTimestamps();
+        return $this->belongsToMany(
+            User::class,
+            'blocks',
+            'blocker_user_id',
+            'blocked_user_id'
+        )->withTimestamps();
     }
 
     public function blockers()
     {
-        return $this->belongsToMany(User::class, 'blocks', 'blocked_user_id', 'blocker_user_id')->withTimestamps();
+        return $this->belongsToMany(
+            User::class,
+            'blocks',
+            'blocked_user_id',
+            'blocker_user_id'
+        )->withTimestamps();
     }
 
     // --- Followers / Mutuals ---
+
     public function following()
     {
-        // Users this user is following
-        return $this->morphedByMany(User::class, 'followable', 'follows', 'user_id', 'followable_id')->withTimestamps();
+        return $this->belongsToMany(
+            User::class,
+            'follows',
+            'user_id',
+            'followable_id'
+        )
+        ->wherePivot('followable_type', User::class)
+        ->withTimestamps();
     }
 
     public function followers()
     {
-        return $this->morphToMany(User::class, 'followable', 'follows', 'followable_id', 'user_id')->withTimestamps();
+        return $this->belongsToMany(
+            User::class,
+            'follows',
+            'followable_id',
+            'user_id'
+        )
+        ->wherePivot('followable_type', User::class)
+        ->withTimestamps();
     }
 
     public function mutuals()
     {
         return $this->following()
             ->whereIn('users.id', function ($query) {
+
                 $query->select('user_id')
                     ->from('follows')
                     ->where('followable_type', static::class)
                     ->where('followable_id', $this->id);
+
             });
     }
 
     public function isMutualWith(User $targetUser): bool
     {
-        return $this->mutuals()->where('users.id', $targetUser->id)->exists();
+        return $this->mutuals()
+            ->where('users.id', $targetUser->id)
+            ->exists();
     }
 
     // --- Likes ---
+
     public function likedPosts()
     {
-        return $this->morphedByMany(Post::class, 'likeable', 'likes')->withTimestamps();
+        return $this->morphedByMany(
+            Post::class,
+            'likeable',
+            'likes'
+        )->withTimestamps();
     }
 
     // --- Game Hubs & Lists ---
+
     public function creditedGames()
     {
-        return $this->belongsToMany(Game::class, 'credits')->withPivot('role')->withTimestamps();
+        return $this->belongsToMany(Game::class, 'credits')
+            ->withPivot('role')
+            ->withTimestamps();
     }
 
     public function playlists()
     {
-        return $this->belongsToMany(Playlist::class, 'playlist_user', 'user_id', 'playlist_id')->withPivot('role')->withTimestamps();
+        return $this->belongsToMany(
+            Playlist::class,
+            'playlist_user',
+            'user_id',
+            'playlist_id'
+        )
+        ->withPivot('role')
+        ->withTimestamps();
     }
+
     // --- Messaging ---
+
     public function conversations()
     {
-        return $this->belongsToMany(Conversation::class, 'conversation_user')->withPivot('last_read_at')->withTimestamps();
+        return $this->belongsToMany(
+            Conversation::class,
+            'conversation_user'
+        )
+        ->withPivot('last_read_at')
+        ->withTimestamps();
     }
+
+    // --- Notifications ---
 
     public function notifications()
     {
         return $this->hasMany(Notification::class)
             ->latest();
     }
+
+    // ==========================================
+    // PROFILE VISIBILITY
+    // ==========================================
 
     public function canViewProfile(?User $viewer = null): bool
     {
@@ -145,13 +200,14 @@ class User extends Authenticatable
         if ($visibility === 'followers') {
 
             return $this->followers()
-                ->where('user_id', $viewer->id)
+                ->where('users.id', $viewer->id)
                 ->exists();
         }
 
         if ($visibility === 'mutuals') {
 
             return $this->isMutualWith($viewer);
+
         }
 
         if ($visibility === 'private') {
@@ -161,9 +217,16 @@ class User extends Authenticatable
         return false;
     }
 
+    // ==========================================
+    // AVATAR
+    // ==========================================
+
     public function avatar()
     {
-        return $this->belongsTo(Media::class, 'avatar_media_id');
+        return $this->belongsTo(
+            Media::class,
+            'avatar_media_id'
+        );
     }
 
     public function getAvatarUrlAttribute()
