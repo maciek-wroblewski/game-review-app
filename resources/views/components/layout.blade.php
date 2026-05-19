@@ -68,10 +68,18 @@
 
                 </ul>
 
+                <!-- Search Bar -->
+                <form class="d-flex mx-auto col-12 col-lg-5 mb-3 mb-lg-0" role="search" action="/search" method="GET">
+                    <input class="form-control rounded-pill bg-light border-0 px-4" type="search" name="q" placeholder="Search games, users..." aria-label="Search" value="{{ request('q') }}">
+                </form>
+
                 <!-- Right Side -->
                 <ul class="navbar-nav align-items-lg-center gap-lg-2">
 
                     @auth
+                        @php
+                            $unreadNotificationCount = auth()->user()->notifications()->where('read', false)->count();
+                        @endphp
 
                         <!-- Notifications -->
                         <li class="nav-item dropdown">
@@ -84,11 +92,11 @@
 
                                 <i class="bi bi-bell-fill fs-5"></i>
 
-                                @if(auth()->user()->notifications()->where('read', false)->count() > 0)
+                                @if($unreadNotificationCount > 0)
 
                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
 
-                                        {{ auth()->user()->notifications()->where('read', false)->count() }}
+                                        {{ $unreadNotificationCount }}
 
                                     </span>
 
@@ -297,9 +305,7 @@
         </div>
 
     </footer>
-
-    <x-ui.lightbox/>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

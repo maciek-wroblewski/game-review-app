@@ -51,5 +51,7 @@
                 <p class="mb-0">There are no games in this playlist yet.</p>
             </div>
         @endif
+    <div class="mt-5 max-w-3xl">
+        <x-hub-comments hub-type="playlist" :hub-id="$playlist->id" :posts="$posts" />
     </div>
 </x-layout>

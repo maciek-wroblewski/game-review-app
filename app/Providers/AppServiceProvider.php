@@ -2,7 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Game;
+use App\Models\Playlist;
+use App\Models\User;
+use App\Observers\UserObserver;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Route;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,7 +25,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \App\Models\Review::observe(\App\Observers\ReviewObserver::class);
-}
+        User::observe(UserObserver::class);
+        Relation::morphMap([
+            'game' => Game::class,
+            'playlist' => Playlist::class,
+            'user' => User::class,
+        ]);
+        Route::bind('user', function (string $value) {
+            return User::where('id', $value)
+                ->orWhere('username', $value)
+                ->firstOrFail();
+        });
     }
-
+}

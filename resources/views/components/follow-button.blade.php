@@ -1,13 +1,15 @@
 @props(['targetUser', 'buttonClasses' => 'btn-sm rounded-pill px-3 shadow-sm'])
 
 @if(auth()->check() && auth()->id() !== $targetUser->id)
+@php
+    $authUser = auth()->user();
+    $authUser->loadMissing('following');
+    $isFollowing = $authUser->following->contains($targetUser);
+@endphp
 <!-- Added data-user-id attribute for global synchronization -->
 <form action="/users/{{ $targetUser->id }}/follow" method="POST" class="m-0 ajax-follow-form d-inline-block"
     data-user-id="{{ $targetUser->id }}">
     @csrf
-    @php
-    $isFollowing = auth()->user()->following->contains($targetUser);
-    @endphp
     <button type="submit"
         class="btn {{ $buttonClasses }} follow-btn {{ $isFollowing ? 'btn-outline-secondary' : 'btn-primary' }}">
         <span class="follow-text d-inline-block">{{ $isFollowing ? 'Unfollow' : 'Follow' }}</span>

@@ -17,12 +17,6 @@ class Review extends Model
         return $this->belongsTo(Post::class);
     }
 
-    protected function game(): \Illuminate\Database\Eloquent\Casts\Attribute
-    {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
-            get: fn () => $this->post ? $this->post->hub : null,
-        );
-    }
 
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

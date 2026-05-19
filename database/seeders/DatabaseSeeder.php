@@ -70,7 +70,7 @@ class DatabaseSeeder extends Seeder
             // Regular posts
             Post::factory(10)->create([
                 'hub_id' => $game->id,
-                'hub_type' => get_class($game),
+                'hub_type' => 'game',
             ]);
 
             // Create 5 reviews manually in a loop to avoid Collection/Closure issues
@@ -78,7 +78,7 @@ class DatabaseSeeder extends Seeder
                 // 1. Create the Post first
                 $post = Post::factory()->create([
                     'hub_id' => $game->id,
-                    'hub_type' => get_class($game),
+                    'hub_type' => 'game',
                     'user_id' => $users->random()->id,
                 ]);
 
@@ -92,7 +92,7 @@ class DatabaseSeeder extends Seeder
                 Post::factory(3)->create([
                     'parent_id' => $post->id, 
                     'hub_id' => $game->id,
-                    'hub_type' => get_class($game),
+                    'hub_type' => 'game',
                     'user_id' => $users->random()->id,
                 ]);
             }

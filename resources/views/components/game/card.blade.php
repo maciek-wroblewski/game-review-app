@@ -1,4 +1,4 @@
-<a href="/games/{{ $game->id }}" class="text-decoration-none">
+<x-clickable-card link="/games/{{ $game->id }}">
     <div class="card h-100 shadow-sm border-0 position-relative group overflow-hidden">
         
         <!-- Banner Section: Takes full width, height scales with card width -->
@@ -65,4 +65,4 @@
             </small>
         </div>
     </div>
-</a>
+</x-clickable-card>

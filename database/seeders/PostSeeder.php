@@ -21,7 +21,7 @@ class PostSeeder extends Seeder
         Post::factory(50)->create()->each(function ($post) use ($games) {
             
             // Assign this post to a random game hub
-            $post->hub_type = Game::class;
+            $post->hub_type = 'game';
             $post->hub_id = $games->random()->id;
             $post->save();
 

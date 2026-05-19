@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Media;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -43,7 +44,7 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-// ==========================================
+    // ==========================================
     // RELATIONSHIPS
     // ==========================================
 
@@ -85,17 +86,17 @@ class User extends Authenticatable
         return $this->following()
             ->whereIn('users.id', function ($query) {
                 $query->select('user_id')
-                      ->from('follows')
-                      ->where('followable_type', static::class)
-                      ->where('followable_id', $this->id);
+                    ->from('follows')
+                    ->where('followable_type', static::class)
+                    ->where('followable_id', $this->id);
             });
     }
 
-    public function isMutualWith(User $targetUser): bool 
+    public function isMutualWith(User $targetUser): bool
     {
         return $this->mutuals()->where('users.id', $targetUser->id)->exists();
     }
-    
+
     // --- Likes ---
     public function likedPosts()
     {
@@ -108,7 +109,7 @@ class User extends Authenticatable
         return $this->belongsToMany(Game::class, 'credits')->withPivot('role')->withTimestamps();
     }
 
-    public function playlists() 
+    public function playlists()
     {
         return $this->belongsToMany(Playlist::class, 'playlist_user', 'user_id', 'playlist_id')->withPivot('role')->withTimestamps();
     }
@@ -116,26 +117,6 @@ class User extends Authenticatable
     public function conversations()
     {
         return $this->belongsToMany(Conversation::class, 'conversation_user')->withPivot('last_read_at')->withTimestamps();
-    }
-
-    protected static function booted(): void
-    {
-        static::created(function ($user) {
-            $user->settings()->create([
-                'comments' => 'everyone',
-                'dms' => 'mutuals',
-            ]);
-
-            $defaultPlaylists = ['Playing', 'Completed', 'Dropped', 'Wishlist'];
-            foreach ($defaultPlaylists as $name) {
-                $playlist = \App\Models\Playlist::create([
-                    'name' => $name,
-                    'is_system' => true,
-                    'is_public' => true,
-                ]);
-                $user->playlists()->attach($playlist->id, ['role' => 'owner']);
-            }
-        });
     }
 
     public function notifications()
