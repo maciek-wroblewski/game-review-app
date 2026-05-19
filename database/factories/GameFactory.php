@@ -16,6 +16,7 @@ class GameFactory extends Factory
         return [
             'title' => $title,
             'details' => fake()->paragraphs(3, true),
+            'publisher' => fake()->company(),
             'release_date' => fake()->dateTimeBetween('-10 years', '+1 year')->format('Y-m-d'),
             
             'cover_img' => 'https://picsum.photos/seed/' . fake()->uuid() . '/400/600',
