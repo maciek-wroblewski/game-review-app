@@ -61,8 +61,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/profile/privacy', [ProfileController::class, 'updatePrivacy']);
     Route::patch('/profile/media', [ProfileController::class, 'updateMedia'])->name('profile.media.update');
-    Route::post('/users/{user}/follow', [FollowController::class, 'toggle']);
-
+    Route::post('/users/{user:id}/follow', [FollowController::class, 'toggle']);
     // Notifications
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
 });
