@@ -16,15 +16,18 @@
                 <section class="mb-5">
                     <div class="d-flex align-items-center justify-content-between mb-4">
                         <h3 class="fw-bold mb-0">🎮 Games</h3>
-                        <span class="text-muted small">{{ $games->count() }} titles found</span>
+                        <span class="text-muted small">{{ $games->total() }} titles found</span>
                     </div>
-                    <div class="row g-4">
+                    
+                    <div class="row g-4" id="games-grid">
                         @foreach($games as $game)
                             <div class="col-12 col-sm-6 col-lg-4 col-xl-3" style="transition: transform 0.2s ease;">
                                 <x-game-card :game="$game" />
                             </div>
                         @endforeach
                     </div>
+
+                    <x-load-more :paginator="$games" target="#games-grid" text="Load More Games" />
                 </section>
             @endif
 
@@ -34,12 +37,12 @@
                 <section class="mb-5">
                     <div class="d-flex align-items-center justify-content-between mb-4">
                         <h3 class="fw-bold mb-0">👥 Users</h3>
-                        <span class="text-muted small">{{ $users->count() }} users found</span>
+                        <span class="text-muted small">{{ $users->total() }} users found</span>
                     </div>
                     
                     <div class="card shadow-sm border-0">
                         <div class="card-body p-0">
-                            <div class="list-group list-group-flush border-0 d-flex flex-column row-gap-3 p-3">
+                            <div class="list-group list-group-flush border-0 d-flex flex-column row-gap-3 p-3" id="users-list">
                                 @foreach($users as $user)
                                 <x-clickable-card link='/users/{{ $user->username }}'>
                                     <div class="card shadow-sm border-0 d-flex flex-row column-gap-3 p-3 align-items-center justify-content-between">
@@ -57,6 +60,8 @@
                             </div>
                         </div>
                     </div>
+
+                    <x-load-more :paginator="$users" target="#users-list" text="Load More Users" />
                 </section>
             @endif
 
