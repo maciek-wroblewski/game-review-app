@@ -27,7 +27,8 @@ class UserController extends Controller
         $user->loadCount([
                 'followers',
                 'following',
-                'posts',
+                'reviews',
+                'communityPosts',
                 'playlists'
             ])
             ->load([
@@ -42,7 +43,7 @@ class UserController extends Controller
             ]);
         }
 
-        $recentPosts = $user->posts()
+        $recentPosts = $user->reviews()
             ->latest()
             ->withFeedRelations()
             ->paginate(10);
@@ -143,8 +144,7 @@ class UserController extends Controller
 
     public function reviews(Request $request, User $user)
     {
-        $posts = $user->posts()
-            ->whereNull('parent_id')
+        $posts = $user->reviews()
             ->latest()
             ->withFeedRelations()
             ->paginate(5);
@@ -158,5 +158,23 @@ class UserController extends Controller
         }
 
         return view('users.reviews', compact('user', 'posts'));
+    }
+
+    public function posts(Request $request, User $user)
+    {
+        $posts = $user->communityPosts()
+            ->latest()
+            ->withFeedRelations()
+            ->paginate(10);
+
+        if ($request->ajax()) {
+
+            return response()->json([
+                'html' => view('components.post.items', compact('posts'))->render(),
+                'next_page_url' => $posts->nextPageUrl(),
+            ]);
+        }
+
+        return view('users.posts', compact('user', 'posts'));
     }
 }
