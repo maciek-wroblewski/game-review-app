@@ -6,7 +6,7 @@ $isCompact = $layout === 'compact';
 
 <div class="user-card-component mb-4 d-flex flex-column row-gap-4">
 
-    <div class="card shadow-sm border-0 overflow-hidden">
+    <div class="card shadow-sm border-0 overflow-hidden d-flex flex-column">
 
         <x-user.banner :user="$user" :layout="$layout" />
 
