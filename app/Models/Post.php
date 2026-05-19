@@ -18,14 +18,18 @@ class Post extends Model
         'parent_id',
         'is_spoiler',
         'is_locked',
+        'admin_locked', // <-- Added
+        'is_pinned',    // <-- Added
     ];
 
     protected function casts(): array
     {
         return [
             'is_locked' => 'boolean',
+            'admin_locked' => 'boolean', // <-- Added
             'is_spoiler' => 'boolean',
-        ];
+            'is_pinned' => 'boolean',    // <-- Added        
+            ];
     }
 
     // Who wrote it?

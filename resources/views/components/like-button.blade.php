@@ -33,7 +33,7 @@
     @php $guestCount = $post->likes_count ?? 0; @endphp
     <button class="btn btn-sm btn-light rounded-pill border-0 small d-flex align-items-center gap-2" disabled>
         <i class="bi bi-heart"></i>
-        <span class="fw-medium">{{ $guestCount > 0 ? $guestCount : 'Like' }}</span>
+        <span class="fw-medium">{{ $guestCount > 0 ? $guestCount : 'No likes' }}</span>
     </button>
 </div>
 @endauth

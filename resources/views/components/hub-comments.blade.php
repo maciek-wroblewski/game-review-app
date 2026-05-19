@@ -12,24 +12,11 @@
         </div>
     @endauth
 
-    {{-- Unique ID targeted wrapper box matching standard application grids --}}
-    <div id="hub-posts-feed-{{ $hubType }}-{{ $hubId }}" class="post-list-wrapper d-flex flex-column gap-3">
-        @forelse($posts as $post)
-            <x-post.index :post="$post" />
-        @empty
-            <div class="text-center text-muted small py-4 bg-light rounded border border-dashed text-placeholder">
-                No posts shared in this hub yet. Be the first to start the conversation!
-            </div>
-        @endforelse
-    </div>
-
-    {{-- Utilizing your robust native pagination element block --}}
-    <div class="mt-2">
-        <x-load-more 
-            :paginator="$posts" 
-            target="#hub-posts-feed-{{ $hubType }}-{{ $hubId }}" 
-            buttonClass="btn btn-outline-primary btn-sm px-4 rounded-pill shadow-sm"
-            text="Show More Discussions" 
-        />
-    </div>
+    {{-- Pass the heavy lifting to our unified post list component! --}}
+    <x-post.list 
+        :posts="$posts" 
+        feedId="hub-posts-feed-{{ $hubType }}-{{ $hubId }}"
+        emptyMessage="No posts shared in this hub yet. Be the first to start the conversation!"
+        loadMoreText="Show More Discussions"
+    />
 </div>

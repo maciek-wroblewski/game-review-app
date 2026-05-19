@@ -21,8 +21,11 @@ return new class extends Migration
             $table->boolean('verified')->default(false);
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
+            $table->boolean('is_admin')->default(false);
+            $table->boolean('is_suspended')->default(false);
             $table->rememberToken();
             $table->timestamps();
+
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

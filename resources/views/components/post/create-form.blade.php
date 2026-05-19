@@ -5,7 +5,7 @@
     $uid = \Illuminate\Support\Str::random(8);
 @endphp
 
-<div class="js-create-post-card card shadow-sm mb-4 border-0 overflow-hidden {{ $isRecommendation ? 'd-flex flex-row align-items-stretch' : '' }}"
+<div class="animate-fade-in js-create-post-card card shadow-sm mb-4 border-0 overflow-hidden {{ $isRecommendation ? 'd-flex flex-row align-items-stretch' : '' }}"
     data-hub-type="{{ $hubType }}"
     data-hub-id="{{ $hubId }}"
     data-parent-id="{{ $parentId }}"

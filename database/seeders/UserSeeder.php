@@ -15,6 +15,7 @@ class UserSeeder extends Seeder
             'email' => 'admin@test.com',
             'password' => bcrypt('password'), // log in with email: admin@test.com, pw: password
             'verified' => true,
+            'is_admin' => true,
         ]);
 
         User::factory(20)->create();

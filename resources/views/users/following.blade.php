@@ -18,7 +18,7 @@
         @else
             <div id="following-grid-wrapper" class="row g-4">
                 @foreach($following as $followedUser)
-                    @include('users.partials.following-card-wrapper', ['followedUser' => $followedUser])
+                    @include('users.partials.compact-card-wrapper', ['user' => $followedUser])
                 @endforeach
             </div>
 

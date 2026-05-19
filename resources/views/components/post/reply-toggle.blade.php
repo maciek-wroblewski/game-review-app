@@ -1,6 +1,6 @@
 @props(['post'])
 @auth
-    @if(!$post->is_locked)
+    @if(!$post->is_locked && !$post->admin_locked)
     <button class="js-btn-reply btn btn-sm btn-light rounded-pill border-0 small"
         data-hub-type="{{ $post->hubable_type ?? $post->hub_type }}" 
         data-hub-id="{{ $post->hubable_id ?? $post->hub_id }}"
@@ -13,11 +13,6 @@
         <i class="bi bi-lock-fill me-1"></i>Locked
     </button>
     @endif
-@else
-<button class="btn btn-sm btn-light rounded-pill border-0 small text-muted disabled" disabled
-            title="This post has no comments">
-            <i class="bi bi-reply me-1"></i>Reply
-        </button>
 @endauth
 
 @once

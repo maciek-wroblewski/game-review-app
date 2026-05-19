@@ -1,5 +1,5 @@
 <x-clickable-card link="/games/{{ $game->id }}">
-    <div class="card h-100 shadow-sm border-0 position-relative group overflow-hidden">
+    <div class="animate-fade-in card h-100 shadow-sm border-0 position-relative group overflow-hidden">
         
         <!-- Banner Section: Takes full width, height scales with card width -->
         <div class="position-relative d-flex align-items-center justify-content-center overflow-hidden" style="aspect-ratio: 16 / 9; width: 100%;">

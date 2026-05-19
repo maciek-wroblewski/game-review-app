@@ -22,6 +22,7 @@ class PostController extends Controller
         $posts = Post::query()
             ->withFeedRelations() // Leveraging your built-in clean relation loader scope
             ->whereNull('parent_id')
+            ->orderByDesc('is_pinned')
             ->latest();
 
         // Context filter: Is it a specific Hub? (e.g., Playlist or Profile view)
@@ -51,6 +52,10 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
+        // Block suspended users
+        if (auth()->user()->is_suspended) {
+            abort(403, 'Your account is suspended.');
+        }
         $validated = $request->validate([
             'body' => 'required|string|max:5000',
             'hub_type' => 'nullable|string',
@@ -73,7 +78,12 @@ class PostController extends Controller
             'is_spoiler' => $validated['is_spoiler'] ?? false,
             'is_locked' => $validated['is_locked'] ?? false,
         ]);
-
+        if (!empty($validated['parent_id'])) {
+            $parentPost = Post::find($validated['parent_id']);
+            if ($parentPost && ($parentPost->is_locked || $parentPost->admin_locked)) {
+                return response()->json(['message' => 'This post is locked.'], 403);
+            }
+        }
         if (! empty($validated['review_type'])) {
             $post->review()->create([
                 'type' => $validated['review_type'],
@@ -104,7 +114,7 @@ class PostController extends Controller
 
         // If the front-end requests a single post wrapper via AJAX (e.g. to reset/cancel edit views)
         if ($request->ajax()) {
-            return view('components.post.index', compact('post'))->render();
+            return view('components.post', compact('post'))->render();
         }
 
         // 2. Fetch the initial block of replies for the thread
@@ -127,8 +137,14 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
+        if (auth()->user()->is_suspended) {
+            abort(403, 'Your account is suspended.');
+        }
         if (auth()->id() !== $post->user_id) {
             return response()->json(['message' => 'Unauthorized actions.'], 403);
+        }
+        if ($post->admin_locked && !auth()->user()->is_admin) {
+            return response()->json(['message' => 'This post is locked by an administrator.'], 403);
         }
 
         $validated = $request->validate([
@@ -174,7 +190,7 @@ class PostController extends Controller
         if ($post->parent_id) {
             $html = view('components.post.comment', ['comment' => $post])->render();
         } else {
-            $html = view('components.post.index', compact('post'))->render();
+            $html = view('components.post', compact('post'))->render();
         }
 
         return response()->json([
@@ -188,7 +204,12 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        if (auth()->id() !== $post->user_id) {
+        if (auth()->user()->is_suspended) {
+            abort(403, 'Your account is suspended.');
+        }
+        if (auth()->id() !== $post->user_id &&
+            !auth()->user()->is_admin
+            ) {
             abort(403, 'Unauthorized.');
         }
 
