@@ -42,7 +42,7 @@
                             <div class="list-group list-group-flush border-0 d-flex flex-column row-gap-3 p-3">
                                 @foreach($users as $user)
                                 <x-clickable-card link='/users/{{ $user->username }}'>
-                                    <div class="card border-0 d-flex flex-row column-gap-3 p-3 align-items-center justify-content-between">
+                                    <div class="card shadow-sm border-0 d-flex flex-row column-gap-3 p-3 align-items-center justify-content-between">
                                         <div class="d-flex flex-row column-gap-3 align-items-center">
                                             <x-user.avatar :user='$user' size='60px'/>
                                             <div>
