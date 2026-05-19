@@ -7,10 +7,8 @@ databases:
 services:
   - type: web
     name: game-review-app
-    env: php
+    env: docker
     plan: free
-    buildCommand: "bash render-build.sh"
-    startCommand: "vendor/bin/heroku-php-apache2 public/"
     envVars:
       - key: APP_KEY
         generateValue: true
