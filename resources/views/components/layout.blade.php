@@ -105,6 +105,26 @@
 
                     </li>
 
+                    @auth
+
+                        @if(auth()->user()->is_admin)
+
+                            <li class="nav-item">
+
+                                <a class="nav-link text-warning fw-semibold"
+                                   href="/admin">
+
+                                    <i class="bi bi-shield-lock-fill me-1"></i>
+                                    Admin Panel
+
+                                </a>
+
+                            </li>
+
+                        @endif
+
+                    @endauth
+
                 </ul>
 
                 <!-- Search Bar -->
@@ -307,6 +327,14 @@
 
                                 {{ auth()->user()->username }}
 
+                                @if(auth()->user()->is_admin)
+
+                                    <span class="badge bg-danger ms-1">
+                                        ADMIN
+                                    </span>
+
+                                @endif
+
                             </a>
 
                         </li>
@@ -335,7 +363,6 @@
                                         class="btn btn-primary btn-sm">
 
                                     <i class="bi bi-box-arrow-right me-1"></i>
-
                                     Log Out
 
                                 </button>

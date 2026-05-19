@@ -188,8 +188,10 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        if (auth()->id() !== $post->user_id) {
-            abort(403, 'Unauthorized.');
+        if (auth()->id() !== $post->user_id &&
+            !auth()->user()->is_admin
+            ) {
+                abort(403, 'Unauthorized.');
         }
 
         $post->delete();
