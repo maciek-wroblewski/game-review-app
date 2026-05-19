@@ -39,21 +39,20 @@
                     
                     <div class="card shadow-sm border-0">
                         <div class="card-body p-0">
-                            <div class="list-group list-group-flush border-0">
+                            <div class="list-group list-group-flush border-0 d-flex flex-column row-gap-3 p-3">
                                 @foreach($users as $user)
-                                    <a href="/users/{{ $user->username }}" class="list-group-item list-group-item-action d-flex align-items-center py-4 border-bottom border-light">
-                                        @if($user->avatar)
-                                            <img src="{{ asset($user->avatar) }}" alt="{{ $user->username }}" class="rounded-circle me-3 object-fit-cover shadow-sm" width="60" height="60">
-                                        @else
-                                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3 shadow-sm fw-bold" style="width: 60px; height: 60px; font-size: 1.5rem;">
-                                                {{ strtoupper(substr($user->username, 0, 1)) }}
+                                <x-clickable-card link='/users/{{ $user->username }}'>
+                                    <div class="card d-flex flex-row column-gap-3 p-3 align-items-center justify-content-between">
+                                        <div class="d-flex flex-row column-gap-3 align-items-center">
+                                            <x-user.avatar :user='$user' size='60px'/>
+                                            <div>
+                                                <h5 class="mb-1 fw-bold text-dark">{{ $user->username }}</h5>
+                                                <small class="text-muted">Joined {{ $user->created_at->format('M Y') }} • {{ $user->posts()->count() }} Posts</small>
                                             </div>
-                                        @endif
-                                        <div>
-                                            <h5 class="mb-1 fw-bold text-dark">{{ $user->username }}</h5>
-                                            <small class="text-muted">Joined {{ $user->created_at->format('M Y') }} • {{ $user->posts()->count() }} Posts</small>
                                         </div>
-                                    </a>
+                                        <x-follow-button :targetUser='$user'/>
+                                    </div>
+                                </x-clickable-card>
                                 @endforeach
                             </div>
                         </div>

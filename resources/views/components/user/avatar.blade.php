@@ -19,7 +19,7 @@
     </div>
     
 </div>
-
+@once
 {{-- STYLES FOR HOVER ANIMATION & POPOVER --}}
 <style>
     /* Avatar Hover Animation */
@@ -60,7 +60,7 @@
 </style>
 
 {{-- POPOVER LOGIC --}}
-@once
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.user-card-trigger').forEach(trigger => {
