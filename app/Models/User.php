@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Media;
+use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable

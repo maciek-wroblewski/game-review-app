@@ -69,16 +69,30 @@
                 </ul>
 
                 <!-- Search Bar -->
-                <form class="d-flex mx-auto col-12 col-lg-5 mb-3 mb-lg-0" role="search" action="/search" method="GET">
-                    <input class="form-control rounded-pill bg-light border-0 px-4" type="search" name="q" placeholder="Search games, users..." aria-label="Search" value="{{ request('q') }}">
+                <form class="d-flex mx-auto col-12 col-lg-5 mb-3 mb-lg-0"
+                      role="search"
+                      action="/search"
+                      method="GET">
+
+                    <input class="form-control rounded-pill bg-light border-0 px-4"
+                           type="search"
+                           name="q"
+                           placeholder="Search games, users..."
+                           aria-label="Search"
+                           value="{{ request('q') }}">
+
                 </form>
 
                 <!-- Right Side -->
                 <ul class="navbar-nav align-items-lg-center gap-lg-2">
 
                     @auth
+
                         @php
-                            $unreadNotificationCount = auth()->user()->notifications()->where('read', false)->count();
+                            $unreadNotificationCount = auth()->user()
+                                ->notifications()
+                                ->where('read', false)
+                                ->count();
                         @endphp
 
                         <!-- Notifications -->
@@ -107,6 +121,7 @@
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2"
                                 style="width: 340px; max-height: 500px; overflow-y: auto;">
 
+                                <!-- Header -->
                                 <li class="px-3 py-2 border-bottom mb-2">
 
                                     <div class="d-flex justify-content-between align-items-center">
@@ -115,7 +130,7 @@
                                             Notifications
                                         </h6>
 
-                                        @if(auth()->user()->notifications()->where('read', false)->count() > 0)
+                                        @if($unreadNotificationCount > 0)
 
                                             <form action="/notifications/read-all"
                                                   method="POST">
@@ -137,24 +152,22 @@
 
                                 </li>
 
+                                <!-- Notifications List -->
                                 @forelse(auth()->user()->notifications->take(10) as $notification)
 
                                     <li>
 
-                                        <form action="/notifications/{{ $notification->id }}/read"
-                                              method="POST">
+                                        <div class="dropdown-item rounded-3 py-3
+                                                    {{ !$notification->read ? 'bg-light' : '' }}">
 
-                                            @csrf
+                                            <div class="d-flex align-items-start gap-3">
 
-                                            <button type="submit"
-                                                    class="dropdown-item rounded-3 py-3
-                                                           {{ !$notification->read ? 'bg-light' : '' }}">
+                                                <!-- Avatar -->
+                                                <a href="/users/{{ optional($notification->fromUser)->username }}"
+                                                   class="text-decoration-none">
 
-                                                <div class="d-flex align-items-start gap-3">
-
-                                                    <!-- Avatar -->
                                                     <div class="rounded-circle bg-primary text-white
-                                                                d-flex align-items-center justify-content-center"
+                                                                d-flex align-items-center justify-content-center overflow-hidden"
                                                          style="
                                                             width: 42px;
                                                             height: 42px;
@@ -162,32 +175,72 @@
                                                             font-size: 1rem;
                                                          ">
 
-                                                        {{ strtoupper(substr(optional($notification->fromUser)->username ?? 'S', 0, 1)) }}
+                                                        @if(optional($notification->fromUser)->avatar)
+
+                                                            <img src="{{ optional($notification->fromUser)->avatar->file_path }}"
+                                                                 alt="Avatar"
+                                                                 class="w-100 h-100 object-fit-cover">
+
+                                                        @else
+
+                                                            {{ strtoupper(substr(optional($notification->fromUser)->username ?? 'S', 0, 1)) }}
+
+                                                        @endif
 
                                                     </div>
 
-                                                    <!-- Content -->
-                                                    <div class="flex-grow-1">
+                                                </a>
 
-                                                        <div class="small text-wrap">
+                                                <!-- Content -->
+                                                <div class="flex-grow-1">
 
-                                                            {{ $notification->message }}
+                                                    <div class="small text-wrap mb-1">
 
-                                                        </div>
+                                                        <a href="/users/{{ optional($notification->fromUser)->username }}"
+                                                           class="fw-semibold text-decoration-none">
 
-                                                        <small class="text-muted">
+                                                            {{ optional($notification->fromUser)->username }}
 
-                                                            {{ $notification->created_at->diffForHumans() }}
+                                                        </a>
 
-                                                        </small>
+                                                        <span class="text-dark">
+
+                                                            {{ str_replace(optional($notification->fromUser)->username, '', $notification->message) }}
+
+                                                        </span>
 
                                                     </div>
+
+                                                    <small class="text-muted">
+
+                                                        {{ $notification->created_at->diffForHumans() }}
+
+                                                    </small>
 
                                                 </div>
 
-                                            </button>
+                                                <!-- Mark as read -->
+                                                @if(!$notification->read)
 
-                                        </form>
+                                                    <form action="/notifications/{{ $notification->id }}/read"
+                                                          method="POST">
+
+                                                        @csrf
+
+                                                        <button type="submit"
+                                                                class="btn btn-sm btn-light border">
+
+                                                            <i class="bi bi-check-lg"></i>
+
+                                                        </button>
+
+                                                    </form>
+
+                                                @endif
+
+                                            </div>
+
+                                        </div>
 
                                     </li>
 
@@ -305,7 +358,9 @@
         </div>
 
     </footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 
 </html>
