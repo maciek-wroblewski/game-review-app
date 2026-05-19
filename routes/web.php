@@ -64,6 +64,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/users/{user:username}/follow', [FollowController::class, 'toggle']);
     // Notifications
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 });
 
 require __DIR__ . '/auth.php';
