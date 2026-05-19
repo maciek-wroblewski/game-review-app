@@ -6,6 +6,7 @@ use App\Http\Controllers\GameReviewController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\PlaylistController;
 use App\Http\Controllers\PlaylistGameController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\PostLikeController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\MediaController;
@@ -18,6 +19,7 @@ Route::get('/', function () { return view('index'); });
 Route::get('/hub', function () { return view('welcome'); });
 
 Route::get('/games', [GameController::class, 'index']);
+Route::get('/search', [SearchController::class, 'index']);
 Route::get('/games/{game}', [GameController::class, 'show']);
 Route::get('/games/{game}/discussions', [GameController::class, 'discussions']);
 
