@@ -148,4 +148,9 @@ class Post extends Model
             // if ($post->media) { $post->media()->delete(); }
         });
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

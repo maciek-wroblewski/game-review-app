@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\GameReviewController;
 use App\Http\Controllers\GameController;
@@ -63,7 +64,10 @@ Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.
 Route::patch('/profile/privacy', [ProfileController::class, 'updatePrivacy']);
 Route::patch('/profile/media', [ProfileController::class, 'updateMedia'])->name('profile.media.update');
 Route::post('/users/{user}/follow', [FollowController::class, 'toggle']);
+
+// Admin
 Route::get('/admin', [AdminController::class, 'index']);
+Route::post('/admin/users/{user}/verify', [AdminController::class, 'verifyUser']);
 
 // Notifications
 Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);

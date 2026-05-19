@@ -45,4 +45,21 @@ class AdminController extends Controller
 
         ]);
     }
+
+    public function verifyUser(User $user)
+    {
+        if (!auth()->check() || !auth()->user()->is_admin) {
+
+            abort(403);
+
+        }
+
+        $user->update([
+
+            'verified' => !$user->verified
+
+        ]);
+
+        return back();
+    }
 }

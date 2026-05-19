@@ -30,16 +30,43 @@ $isCompact = $layout === 'compact';
 
                         <div>
 
-                            <h1 class="{{ $isCompact ? 'h4' : 'display-4' }} fw-bold mb-1">
+                            <div class="d-flex align-items-center gap-2 {{ $isCompact ? 'justify-content-center' : '' }}">
 
-                                <a href="/users/{{ $user->username }}"
-                                   class="text-dark text-decoration-none">
+                                <h1 class="{{ $isCompact ? 'h4' : 'display-4' }} fw-bold mb-1">
 
-                                    {{ $user->username }}
+                                    <a href="/users/{{ $user->username }}"
+                                       class="text-dark text-decoration-none">
 
-                                </a>
+                                        {{ $user->username }}
 
-                            </h1>
+                                    </a>
+
+                                </h1>
+
+                                {{-- Verified Badge --}}
+                                @if($user->verified)
+
+                                    <span class="verified-badge"
+                                          title="Verified User">
+
+                                        <i class="bi bi-patch-check-fill"></i>
+
+                                    </span>
+
+                                @endif
+
+                                {{-- Admin Badge --}}
+                                @if($user->is_admin)
+
+                                    <span class="badge rounded-pill bg-danger px-3 py-2 fw-semibold shadow-sm">
+
+                                        ADMIN
+
+                                    </span>
+
+                                @endif
+
+                            </div>
 
                             <p class="text-muted {{ $isCompact ? 'small mb-2' : 'mb-3' }}">
 
@@ -49,19 +76,37 @@ $isCompact = $layout === 'compact';
 
                         </div>
 
-                        <div>
+                        <div class="d-flex flex-column align-items-lg-end gap-2">
 
                             @auth
 
                                 @if(auth()->id() === $user->id)
 
-                                    <a href="/profile"
-                                       class="btn btn-outline-primary {{ $isCompact ? 'btn-sm' : 'btn-lg px-4' }} fw-semibold shadow-sm">
+                                    <div class="d-flex gap-2 flex-wrap justify-content-center">
 
-                                        <i class="bi bi-gear-fill me-1"></i>
-                                        Edit Profile
+                                        <a href="/profile"
+                                           class="btn btn-outline-primary {{ $isCompact ? 'btn-sm' : 'btn-lg px-4' }} fw-semibold shadow-sm">
 
-                                    </a>
+                                            <i class="bi bi-gear-fill me-1"></i>
+                                            Edit Profile
+
+                                        </a>
+
+                                        {{-- Admin Panel Button --}}
+                                        @if(auth()->user()->is_admin)
+
+                                            <a href="/admin"
+                                               class="btn btn-dark {{ $isCompact ? 'btn-sm' : 'btn-lg px-4' }} fw-semibold shadow-sm">
+
+                                                <i class="bi bi-shield-lock-fill me-1"></i>
+
+                                                Admin Panel
+
+                                            </a>
+
+                                        @endif
+
+                                    </div>
 
                                 @else
 
@@ -359,6 +404,36 @@ $isCompact = $layout === 'compact';
     transform: rotateX(90deg);
 
     opacity: 0;
+}
+
+.verified-badge {
+
+    color: #0d6efd;
+
+    font-size: 1.1rem;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    transform: translateY(-2px);
+
+    filter:
+        drop-shadow(0 0 6px rgba(13,110,253,0.25));
+
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease;
+}
+
+.verified-badge:hover {
+
+    transform: translateY(-2px) scale(1.08);
+
+    filter:
+        drop-shadow(0 0 10px rgba(13,110,253,0.4));
 }
 
 </style>
