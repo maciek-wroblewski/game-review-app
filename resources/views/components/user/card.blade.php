@@ -17,6 +17,13 @@ $isCompact = $layout === 'compact';
             </div>
             @endif
         </div>
+        {{-- Suspended Banner --}}
+        @if($user->is_suspended)
+            <div class="alert alert-danger rounded-0 border-0 border-bottom mb-0 d-flex justify-content-center align-items-center py-2" style="background: linear-gradient(90deg, rgba(220,53,69,.15), rgba(220,53,69,.05));">
+                <i class="bi bi-slash-circle-fill text-danger me-2"></i> 
+                <span class="text-danger fw-bold">This account is currently suspended.</span>
+            </div>
+        @endif
 
         <div class="card-body {{ $isCompact ? 'pt-5 p-3' : 'p-4' }} position-relative">
             <div class="d-flex {{ $isCompact ? 'flex-column' : 'flex-column flex-lg-row gap-4' }}">
@@ -65,24 +72,24 @@ $isCompact = $layout === 'compact';
 
                         <div class="d-flex flex-column justify-content-center gap-2">
                             @auth
-                            @if(auth()->id() === $user->id)
-                            <div class="d-flex gap-2 flex-wrap justify-content-center">
-                                <a href="/profile" class="btn btn-outline-primary {{ $isCompact ? 'btn-sm' : 'btn-lg px-4' }} fw-semibold shadow-sm">
-                                    <i class="bi bi-gear-fill me-1"></i>
-                                    Edit Profile
-                                </a>
-
-                                {{-- Admin Panel Button --}}
-                                @if(auth()->user()->is_admin)
-                                <a href="/admin" class="btn btn-dark {{ $isCompact ? 'btn-sm' : 'btn-lg px-4' }} fw-semibold shadow-sm">
-                                    <i class="bi bi-shield-lock-fill me-1"></i>
-                                    Admin Panel
-                                </a>
+                                @if(!$user->is_suspended || auth()->user()->is_admin)
+                                    @if(auth()->id() === $user->id)
+                                        <div class="d-flex gap-2 flex-wrap justify-content-center">
+                                            <a href="/profile" class="btn btn-outline-primary {{ $isCompact ? 'btn-sm' : 'btn-lg px-4' }} fw-semibold shadow-sm">
+                                                <i class="bi bi-gear-fill me-1"></i> Edit Profile
+                                            </a>
+                                            
+                                            {{-- Admin Panel Button --}}
+                                            @if(auth()->user()->is_admin)
+                                                <a href="/admin" class="btn btn-dark {{ $isCompact ? 'btn-sm' : 'btn-lg px-4' }} fw-semibold shadow-sm">
+                                                    <i class="bi bi-shield-lock-fill me-1"></i> Admin Panel
+                                                </a>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <x-follow-button :target-user="$user" :button-classes="$isCompact ? 'btn-sm px-4 fw-semibold' : 'btn-lg px-4 fw-semibold'" />
+                                    @endif
                                 @endif
-                            </div>
-                            @else
-                            <x-follow-button :target-user="$user" :button-classes="$isCompact ? 'btn-sm px-4 fw-semibold' : 'btn-lg px-4 fw-semibold'" />
-                            @endif
                             @endauth
                         </div>
 

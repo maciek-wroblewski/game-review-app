@@ -52,6 +52,10 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
+        // Block suspended users
+        if (auth()->user()->is_suspended) {
+            abort(403, 'Your account is suspended.');
+        }
         $validated = $request->validate([
             'body' => 'required|string|max:5000',
             'hub_type' => 'nullable|string',
@@ -133,6 +137,9 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
+        if (auth()->user()->is_suspended) {
+            abort(403, 'Your account is suspended.');
+        }
         if (auth()->id() !== $post->user_id) {
             return response()->json(['message' => 'Unauthorized actions.'], 403);
         }
@@ -197,6 +204,9 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
+        if (auth()->user()->is_suspended) {
+            abort(403, 'Your account is suspended.');
+        }
         if (auth()->id() !== $post->user_id &&
             !auth()->user()->is_admin
             ) {

@@ -24,9 +24,11 @@ return new class extends Migration
             $table->text('body');
             $table->boolean('is_locked')->default(false);
             $table->boolean('is_spoiler')->default(false);
+            $table->boolean('is_pinned')->default(false);
 
             // Counter cache
             $table->integer('likes_count')->default(0);
+            $table->integer('admin_locked')->default(false);
 
             $table->softDeletes();
             $table->timestamps();
