@@ -21,9 +21,7 @@
                     
                     <div class="row g-4" id="games-grid">
                         @foreach($games as $game)
-                            <div class="col-12 col-sm-6 col-lg-4 col-xl-3" style="transition: transform 0.2s ease;">
-                                <x-game-card :game="$game" />
-                            </div>
+                            @include('games.partials.game-card-wrapper', ['game' => $game])
                         @endforeach
                     </div>
 
