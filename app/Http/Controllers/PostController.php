@@ -104,7 +104,7 @@ class PostController extends Controller
 
         // If the front-end requests a single post wrapper via AJAX (e.g. to reset/cancel edit views)
         if ($request->ajax()) {
-            return view('components.post.index', compact('post'))->render();
+            return view('components.post', compact('post'))->render();
         }
 
         // 2. Fetch the initial block of replies for the thread
@@ -174,7 +174,7 @@ class PostController extends Controller
         if ($post->parent_id) {
             $html = view('components.post.comment', ['comment' => $post])->render();
         } else {
-            $html = view('components.post.index', compact('post'))->render();
+            $html = view('components.post', compact('post'))->render();
         }
 
         return response()->json([

@@ -28,6 +28,22 @@ $isReview = method_exists($post, 'isReview') && $post->isReview() && $post->revi
         @if($post->trashed())
         <p class="card-text text-muted fst-italic p-3">[This post has been deleted]</p>
         @else
+        
+        {{-- Admin Moderation Bar --}}
+        @if(auth()->user()?->is_admin)
+        <div class="px-3 py-2 border-bottom bg-danger-subtle d-flex justify-content-between align-items-center">
+            <div class="small fw-semibold text-danger">
+                <i class="bi bi-shield-lock-fill me-1"></i>
+                ADMIN MODERATION MODE
+            </div>
+            <div>
+                <span class="badge bg-danger">
+                    POST #{{ $post->id }}
+                </span>
+            </div>
+        </div>
+        @endif
+
         <x-post.header :post="$post" />
         <div class="edit_form_collapsable">
             <x-post.content :post="$post" />
