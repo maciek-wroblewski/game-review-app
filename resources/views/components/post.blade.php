@@ -1,6 +1,7 @@
-@props(['post'])
+@props(['post', 'showReplies' => true]) {{-- <-- Added default prop here --}}
 @php
 $isReview = method_exists($post, 'isReview') && $post->isReview() && $post->review;
+
 @endphp
 <style>
     .js-post-card {
@@ -52,12 +53,15 @@ $isReview = method_exists($post, 'isReview') && $post->isReview() && $post->revi
         <x-post.edit-form :post="$post" />
         @endif
 
+        @if($showReplies)
         <x-post.reply-container :post="$post">
             <x-post.comment-create :hubType="$post->hubable_type ?? $post->hub_type"
                 :hubId="$post->hubable_id ?? $post->hub_id" :parentId="$post->id" />
         </x-post.reply-container>
         <x-post.replies-container :postId="$post->id" id="accordion-{{ $post->id }}">
-            <x-post.replies-list : />
+            <x-post.replies-list />
         </x-post.replies-container>
+        @endif
+
     </div>
 </div>

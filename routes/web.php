@@ -13,6 +13,7 @@ use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
 
 // Public Guest Routes
 Route::get('/', function () { return view('index'); });
@@ -65,6 +66,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/users/{user:username}/follow', [FollowController::class, 'toggle']);
 
     Route::get('/admin', [AdminController::class, 'index']);
+    oute::post('/admin/users/{user}/admin', [AdminController::class, 'toggleAdmin']);
+    Route::post('/admin/users/{user}/suspend', [AdminController::class, 'toggleSuspend']);
+    Route::post('/admin/posts/{post}/pin', [AdminController::class, 'togglePinned']);
 
     // Notifications
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
