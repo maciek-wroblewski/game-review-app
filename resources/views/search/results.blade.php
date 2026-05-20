@@ -40,28 +40,13 @@
                         <span class="text-muted small">{{ $users->total() }} users found</span>
                     </div>
                     
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body p-0">
-                            <div class="list-group list-group-flush border-0 d-flex flex-column row-gap-3 p-3" id="users-list">
-                                @foreach($users as $user)
-                                <x-clickable-card link='/users/{{ $user->username }}'>
-                                    <div class="card shadow-sm border-0 d-flex flex-row column-gap-3 p-3 align-items-center justify-content-between">
-                                        <div class="d-flex flex-row column-gap-3 align-items-center">
-                                            <x-user.avatar :user='$user' size='60px'/>
-                                            <div>
-                                                <h5 class="mb-1 fw-bold text-dark">{{ $user->username }}</h5>
-                                                <small class="text-muted">Joined {{ $user->created_at->format('M Y') }} • {{ $user->posts()->count() }} Posts</small>
-                                            </div>
-                                        </div>
-                                        <x-follow-button :targetUser='$user'/>
-                                    </div>
-                                </x-clickable-card>
-                                @endforeach
-                            </div>
-                        </div>
+                    <div class="row g-4" id="users-grid">
+                        @foreach($users as $user)
+                            @include('users.partials.compact-card-wrapper', ['user' => $user])
+                        @endforeach
                     </div>
 
-                    <x-load-more :paginator="$users" target="#users-list" text="Load More Users" />
+                    <x-load-more :paginator="$users" target="#users-grid" text="Load More Users" />
                 </section>
             @endif
 

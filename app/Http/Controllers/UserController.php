@@ -26,15 +26,15 @@ class UserController extends Controller
     {
 
         $user->loadCount([
-                'followers',
-                'following',
-                'reviews',
-                'communityPosts',
-                'playlists'
-            ])
+            'followers',
+            'following',
+            'reviews',
+            'communityPosts',
+            'playlists',
+        ])
             ->load([
                 'settings',
-                'avatar'
+                'avatar',
             ]);
 
         if (! $user->canViewProfile(Auth::user())) {
@@ -68,8 +68,8 @@ class UserController extends Controller
         if ($request->ajax()) {
             $html = '';
             foreach ($followers as $follower) {
-                // Loop and render the exact partial template required for followers
-                $html .= view('users.partials.follower-card-wrapper', compact('follower'))->render();
+                // Fix: Map '$follower' variable explicitly to 'user' expected by the compact partial
+                $html .= view('users.partials.compact-card-wrapper', ['user' => $follower])->render();
             }
 
             return response()->json([
@@ -89,8 +89,8 @@ class UserController extends Controller
         if ($request->ajax()) {
             $html = '';
             foreach ($following as $followedUser) {
-                // Loop and render the exact partial template required for following
-                $html .= view('users.partials.following-card-wrapper', compact('followedUser'))->render();
+                // Fix: Map '$followedUser' variable explicitly to 'user' expected by the compact partial
+                $html .= view('users.partials.compact-card-wrapper', ['user' => $followedUser])->render();
             }
 
             return response()->json([

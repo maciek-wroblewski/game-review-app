@@ -12,7 +12,7 @@ class SearchController extends Controller
     {
         $query = $request->input('q');
 
-        if (!$query) {
+        if (! $query) {
             return view('search.results', [
                 'query' => $query,
                 'games' => collect(),
@@ -20,27 +20,44 @@ class SearchController extends Controller
             ]);
         }
 
-        // Paginate games independently using 'page_games'
+        // Fix: Eager load relations and post counts to avoid N+1 on search results
         $games = Game::where('title', 'like', "%{$query}%")
-                     ->orderBy('title', 'asc')
-                     ->paginate(12, ['*'], 'page_games')
-                     ->appends(['q' => $query]);
+            ->with(['genres', 'credits'])
+            ->withCount('posts')
+            ->orderBy('title', 'asc')
+            ->paginate(12, ['*'], 'page_games')
+            ->appends(['q' => $query]);
 
         // Paginate users independently using 'page_users'
         $users = User::where('username', 'like', "%{$query}%")
-                     ->orderBy('username', 'asc')
-                     ->paginate(10, ['*'], 'page_users')
-                     ->appends(['q' => $query]);
+            ->orderBy('username', 'asc')
+            ->paginate(10, ['*'], 'page_users')
+            ->appends(['q' => $query]);
 
         // AJAX Optimization Framework for Infinite Scroll Elements
         if ($request->ajax()) {
-            // Check if the AJAX fetch call belongs to the games pagination tracker
             if ($request->has('page_games')) {
-                return view('games.partials.game-card-wrapper', compact('games'))->render();
+                $html = '';
+                foreach ($games as $game) {
+                    $html .= view('games.partials.game-card-wrapper', compact('game'))->render();
+                }
+
+                return response()->json([
+                    'html' => $html,
+                    'next_page_url' => $games->nextPageUrl(),
+                ]);
             }
-            // Check if the AJAX fetch call belongs to the users pagination tracker
+
             if ($request->has('page_users')) {
-                return view('users.partials.follower-card-wrapper', compact('users'))->render();
+                $html = '';
+                foreach ($users as $user) {
+                    $html .= view('users.partials.compact-card-wrapper', compact('user'))->render();
+                }
+
+                return response()->json([
+                    'html' => $html,
+                    'next_page_url' => $users->nextPageUrl(),
+                ]);
             }
         }
 
