@@ -128,6 +128,7 @@ class UserController extends Controller
         $posts = $user->reviews()
             ->latest()
             ->withFeedRelations()
+            ->orderByDesc('is_pinned')
             ->latest()
             ->paginate(5);
 

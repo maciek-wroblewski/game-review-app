@@ -1,7 +1,7 @@
 @props(['post'])
 
 @auth
-@if(auth()->id() === $post->user_id && !$post->trashed())
+@if(auth()->id() === $post->user_id && !$post->trashed() && !auth()->user()->is_suspended)
 <div class="d-flex align-items-center gap-2 public-post-actions">
     <button class="js-btn-edit btn btn-sm btn-light rounded-pill border-0 small btn-outline-secondary" data-post-id="{{ $post->id }}">
         <i class="bi bi-pencil me-1"></i><span>Edit</span>

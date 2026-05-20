@@ -8,11 +8,24 @@
     $uid = \Illuminate\Support\Str::random(8);
 @endphp
 
-<div class="js-create-comment-card card shadow-sm mb-3 border-0 overflow-hidden bg-white"
+{{-- Added position-relative --}}
+<div class="position-relative js-create-comment-card card shadow-sm mb-3 border-0 overflow-hidden bg-white"
     data-hub-type="{{ $hubType }}"
     data-hub-id="{{ $hubId }}"
     data-parent-id="{{ $parentId }}">
 
+    {{-- Suspended Overlay --}}
+    @if(auth()->check() && auth()->user()->is_suspended)
+        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center z-3" style="background: rgba(255,255,255,0.7); backdrop-filter: blur(3px);">
+            <div class="alert alert-danger border-0 m-0 shadow-sm">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <strong>Your account is currently suspended.</strong>
+                </div>
+            </div>
+        </div>
+    @endif
+    
     <div class="p-3">
         <div class="mb-3">
             <label class="form-label fw-bold text-muted small">Reply as a comment...</label>

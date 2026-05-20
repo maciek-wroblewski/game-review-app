@@ -22,7 +22,6 @@ class PostController extends Controller
         $posts = Post::query()
             ->withFeedRelations() // Leveraging your built-in clean relation loader scope
             ->whereNull('parent_id')
-            ->orderByDesc('is_pinned')
             ->latest();
 
         // Context filter: Is it a specific Hub? (e.g., Playlist or Profile view)
@@ -126,6 +125,7 @@ class PostController extends Controller
                 }]);
             })
             ->latest()
+            ->orderByDesc('is_pinned')
             ->paginate(10)
             ->withPath(url("/posts/{$post->id}/replies")); // <--- FIX: Redirects pagination clicks to the dedicated replies method
 

@@ -68,8 +68,8 @@ class GameController extends Controller
                 // This excludes the user's post from the paginated list
                 $query->where('user_id', '!=', $userId);
             })
-            ->latest()
             ->orderByDesc('is_pinned')
+            ->latest()
             ->paginate(10);
 
         if ($request->ajax()) {
@@ -125,8 +125,8 @@ class GameController extends Controller
         $posts = $game->posts()
             ->doesntHave('review') // Get general discussions, not reviews
             ->withFeedRelations()
-            ->latest()
             ->orderByDesc('is_pinned')
+            ->latest()
             ->paginate(10);
 
         // 3. Handle AJAX pagination
