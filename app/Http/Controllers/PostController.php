@@ -22,6 +22,7 @@ class PostController extends Controller
         $posts = Post::query()
             ->withFeedRelations() // Leveraging your built-in clean relation loader scope
             ->whereNull('parent_id')
+            ->orderByDesc('is_pinned')
             ->latest();
 
         // Context filter: Is it a specific Hub? (e.g., Playlist or Profile view)
@@ -73,7 +74,12 @@ class PostController extends Controller
             'is_spoiler' => $validated['is_spoiler'] ?? false,
             'is_locked' => $validated['is_locked'] ?? false,
         ]);
-
+        if (!empty($validated['parent_id'])) {
+            $parentPost = Post::find($validated['parent_id']);
+            if ($parentPost && ($parentPost->is_locked || $parentPost->admin_locked)) {
+                return response()->json(['message' => 'This post is locked.'], 403);
+            }
+        }
         if (! empty($validated['review_type'])) {
             $post->review()->create([
                 'type' => $validated['review_type'],
@@ -129,6 +135,9 @@ class PostController extends Controller
     {
         if (auth()->id() !== $post->user_id) {
             return response()->json(['message' => 'Unauthorized actions.'], 403);
+        }
+        if ($post->admin_locked && !auth()->user()->is_admin) {
+            return response()->json(['message' => 'This post is locked by an administrator.'], 403);
         }
 
         $validated = $request->validate([
