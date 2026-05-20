@@ -63,6 +63,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile/privacy', [ProfileController::class, 'updatePrivacy']);
     Route::patch('/profile/media', [ProfileController::class, 'updateMedia'])->name('profile.media.update');
     Route::post('/users/{user:username}/follow', [FollowController::class, 'toggle']);
+
+    Route::get('/admin', [AdminController::class, 'index']);
+
     // Notifications
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);

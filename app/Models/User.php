@@ -29,6 +29,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'verified' => 'boolean',
+            'is_admin' => 'boolean',
+
         ];
     }
     protected $fillable = [
@@ -38,6 +40,7 @@ class User extends Authenticatable
         'bio',
         'avatar_media_id',
         'verified',
+        'is_admin',
     ];
 
     protected $hidden = [
