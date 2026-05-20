@@ -40,6 +40,10 @@ Route::get('/users/{user:username}/posts', [UserController::class, 'posts']);
 Route::middleware('auth')->group(function () {
     Route::post('/upload', [MediaController::class, 'upload'])->name('upload');
     
+    // Edit Game
+    Route::get('/games/{game}/edit', [GameController::class, 'edit'])->name('games.edit');
+    Route::patch('/games/{game}', [GameController::class, 'update'])->name('games.update');
+        
     Route::get('/dashboard', function () { return view('dashboard'); })->name('dashboard');
 
     // Posts
