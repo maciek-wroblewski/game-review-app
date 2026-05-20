@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -22,14 +23,13 @@ class UserController extends Controller
         }
     }
 
-    public function show(User $user)
+    public function show(Request $request, User $user)
     {
-
         $user->loadCount([
             'followers',
             'following',
             'reviews',
-            'communityPosts',
+            'posts',
             'playlists',
         ])
             ->load([
@@ -41,23 +41,52 @@ class UserController extends Controller
             return view('users.private', ['user' => $user]);
         }
 
-        $recentPosts = $user->reviews()
+        // 1. Authored Posts
+        $posts = $user->posts()
             ->latest()
-            ->withFeedRelations()
-            ->paginate(10);
+            ->withFeedRelations(['review' => false, 'author' => false]) 
+            ->paginate(10, ['*'], 'posts_page');
 
-        $user->setRelation('posts', $recentPosts);
+        // Manually attach the author AND tell it there is no review
+        $posts->getCollection()->each(function ($post) use ($user) {
+            $post->setRelation('author', $user);
+            $post->setRelation('review', null); // Fixes the N+1
+        });
 
-        // 2. Apply withFeedRelations() here to prevent an N+1 disaster in <x-hub-comments>
-        $posts = Post::query()
+        // 2. Profile Comments
+        $comments = Post::query()
             ->where('hub_type', 'user')
             ->where('hub_id', $user->id)
             ->whereNull('parent_id')
+            ->orderByDesc('is_pinned')
             ->latest()
-            ->withFeedRelations() // ⚡ Critical Optimization
-            ->paginate(10);
+            ->withFeedRelations(['hub' => false, 'review' => false]) 
+            ->paginate(10, ['*'], 'comments_page');
 
-        return view('users.show', compact('user', 'posts'));
+        // Manually attach the hub AND tell it there is no review
+        $comments->getCollection()->each(function ($comment) use ($user) {
+            $comment->setRelation('hub', $user);
+            $comment->setRelation('review', null); // Fixes the N+1
+        });
+
+        // 3. Handle AJAX Requests for loading more posts/comments dynamically
+        if ($request->ajax()) {
+            if ($request->has('posts_page')) {
+                return response()->json([
+                    'html' => view('components.post.items', compact('posts'))->render(),
+                    'next_page_url' => $posts->nextPageUrl(),
+                ]);
+            }
+
+            if ($request->has('comments_page')) {
+                return response()->json([
+                    'html' => view('components.post.items', ['posts' => $comments])->render(),
+                    'next_page_url' => $comments->nextPageUrl(),
+                ]);
+            }
+        }
+        Log::info('Viewing profile: '.$user->username.' (ID: '.$user->id.') by '.(Auth::check() ? Auth::user()->username : 'guest'));
+        return view('users.show', compact('user', 'posts', 'comments'));
     }
 
     public function followers(Request $request, User $user)
@@ -104,14 +133,18 @@ class UserController extends Controller
 
     public function playlists(Request $request, User $user)
     {
-        $playlists = $user->playlists()->latest()->paginate(20);
+        $playlists = $user->playlists()
+        ->with('users')       // Eager load users to prevent N+1 on ownership check
+        ->withCount('games')  // Perform the count in SQL natively
+        ->latest()
+        ->paginate(20);
 
         // Intercept async pagination queries
         if ($request->ajax()) {
             $html = '';
             foreach ($playlists as $playlist) {
                 // Loop and render the exact partial template required for playlists
-                $html .= view('users.partials.playlist-card-wrapper', compact('playlist'))->render();
+                $html .= view('components.playlist.card', ['playlist' => $playlist, 'layout' => 'compact'])->render();
             }
 
             return response()->json([
@@ -128,6 +161,7 @@ class UserController extends Controller
         $posts = $user->reviews()
             ->latest()
             ->withFeedRelations()
+            ->orderByDesc('is_pinned')
             ->latest()
             ->paginate(5);
 
@@ -143,13 +177,12 @@ class UserController extends Controller
 
     public function posts(Request $request, User $user)
     {
-        $posts = $user->communityPosts()
+        $posts = $user->posts()
             ->latest()
             ->withFeedRelations()
             ->paginate(10);
 
         if ($request->ajax()) {
-
             return response()->json([
                 'html' => view('components.post.items', compact('posts'))->render(),
                 'next_page_url' => $posts->nextPageUrl(),

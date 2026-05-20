@@ -1,4 +1,4 @@
-<x-layout headtitle="Dashboard">
+<x-layout headtitle="{{ __('dashboard.title') }}">
 
     <div class="container py-5">
 
@@ -13,11 +13,11 @@
                     <div class="col-lg-8">
 
                         <h1 class="display-5 fw-bold mb-3">
-                            Welcome back, {{ auth()->user()->username }}
+                            {{ __('dashboard.welcome_back', ['username' => auth()->user()->username]) }}
                         </h1>
 
                         <p class="fs-5 text-light opacity-75 mb-0">
-                            Ready to discover new games and share your reviews?
+                            {{ __('dashboard.ready_to_discover') }}
                         </p>
 
                     </div>
@@ -50,7 +50,7 @@
                         </h2>
 
                         <p class="text-muted mb-0">
-                            Reviews Posted
+                            {{ __('dashboard.reviews_posted') }}
                         </p>
 
                     </div>
@@ -72,7 +72,7 @@
                         </h2>
 
                         <p class="text-muted mb-0">
-                            Playlists Created
+                            {{ __('dashboard.playlists_created') }}
                         </p>
 
                     </div>
@@ -94,7 +94,7 @@
                         </h2>
 
                         <p class="text-muted mb-0">
-                            Following
+                            {{ __('dashboard.following') }}
                         </p>
 
                     </div>
@@ -111,7 +111,7 @@
             <div class="card-body p-5">
 
                 <h2 class="fw-bold mb-4">
-                    Quick Actions
+                    {{ __('dashboard.quick_actions') }}
                 </h2>
 
                 <div class="d-flex flex-wrap gap-3">
@@ -120,7 +120,7 @@
                        class="btn btn-primary btn-lg">
 
                         <i class="bi bi-search me-2"></i>
-                        Browse Games
+                        {{ __('dashboard.browse_games') }}
 
                     </a>
 
@@ -128,7 +128,7 @@
                        class="btn btn-outline-dark btn-lg">
 
                         <i class="bi bi-person-circle me-2"></i>
-                        View Profile
+                        {{ __('dashboard.view_profile') }}
 
                     </a>
 
@@ -136,7 +136,7 @@
                        class="btn btn-outline-primary btn-lg">
 
                         <i class="bi bi-gear-fill me-2"></i>
-                        Edit Profile
+                        {{ __('dashboard.edit_profile') }}
 
                     </a>
 

@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Game;
+use App\Models\Genre;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class GameController extends Controller
 {
@@ -16,7 +19,6 @@ class GameController extends Controller
             ->orderBy('average_rating', 'desc')
             ->paginate(12);
 
-        // If it's an AJAX pagination request, return raw HTML row grids directly
         if ($request->ajax()) {
             $html = '';
             foreach ($games as $game) {
@@ -32,12 +34,8 @@ class GameController extends Controller
         return view('games.index', compact('games'));
     }
 
-    /**
-     * Display the specified game.
-     */
     public function show(Request $request, Game $game)
     {
-        // 1. Eager load simple relations and an efficient COUNT of posts/reviews
         $game->load(['genres', 'credits']);
         $game->loadCount(['posts' => function ($query) {
             $query->whereHas('review');
@@ -47,34 +45,32 @@ class GameController extends Controller
         $user = auth()->user();
         $playlists = $user
             ? $user->playlists()->with(['games' => function ($query) use ($game) {
-                $query->where('games.id', $game->id); // Only loads pivot data for this specific game
+                $query->where('games.id', $game->id);
             }])->get()
             : collect();
 
-        // 2. Fetch user's specific review first using the optimized feed scope
         $userReviewPost = $userId
-                    ? $game->posts() // <-- Query directly through the relationship
+                    ? $game->posts()
                         ->where('user_id', $userId)
                         ->has('review')
                         ->withFeedRelations()
                         ->first()
                     : null;
 
-        // 3. Fetch all other reviews using the optimized feed scope
-        $posts = $game->posts() // <-- Query directly through the relationship
+        $posts = $game->posts()
             ->has('review')
             ->withFeedRelations()
             ->when($userId, function ($query) use ($userId) {
-                // This excludes the user's post from the paginated list
                 $query->where('user_id', '!=', $userId);
             })
-            ->latest()
             ->orderByDesc('is_pinned')
+            ->latest()
             ->paginate(10);
 
         if ($request->ajax()) {
             return view('components.post.items', compact('posts'))->render();
         }
+        Log::info('Viewing game: '.$game->title.' (ID: '.$game->id.') by user ID: '.($userId ?? 'guest'));
 
         return view('games.show', compact('game', 'playlists', 'userReviewPost', 'posts'));
     }
@@ -92,7 +88,6 @@ class GameController extends Controller
 
         $html = '';
 
-        // CHANGE: Render the partial that includes the column wrapper
         foreach ($games as $game) {
             $html .= view('games.partials.game-card-wrapper', ['game' => $game])->render();
         }
@@ -106,10 +101,9 @@ class GameController extends Controller
 
     public function discussions(Request $request, Game $game)
     {
-        // 1. Eager load simple relations and an efficient COUNT of discussion posts
         $game->load(['genres', 'credits']);
         $game->loadCount(['posts' => function ($query) {
-            $query->doesntHave('review'); // Filter out reviews for the count
+            $query->doesntHave('review');
         }]);
 
         $userId = auth()->id() ?? null;
@@ -121,19 +115,185 @@ class GameController extends Controller
             }])->get()
             : collect();
 
-        // 2. Fetch all discussion posts (excluding reviews) using the optimized feed scope
+        // 1. Fetch posts, turning off the redundant eager loads
         $posts = $game->posts()
-            ->doesntHave('review') // Get general discussions, not reviews
-            ->withFeedRelations()
-            ->latest()
+            ->doesntHave('review')
+            ->withFeedRelations(['hub' => false, 'review' => false]) // <-- Turn off hub and review
             ->orderByDesc('is_pinned')
+            ->latest()
             ->paginate(10);
 
-        // 3. Handle AJAX pagination
+        // 2. Manually map the data to prevent N+1 fallbacks
+        $posts->getCollection()->each(function ($post) use ($game) {
+            // Attach the hub we already fetched
+            $post->setRelation('hub', $game);
+            
+            // Tell Laravel there is no review to block N+1 on $post->isReview()
+            $post->setRelation('review', null); 
+
+            // If this post is a reply, the parent also shares the same hub
+            if ($post->relationLoaded('parent') && $post->parent) {
+                $post->parent->setRelation('hub', $game);
+                
+                // Assuming parent posts in this view also aren't reviews
+                $post->parent->setRelation('review', null);
+            }
+        });
+
         if ($request->ajax()) {
             return view('components.post.items', compact('posts'))->render();
         }
 
         return view('games.discussions', compact('game', 'playlists', 'posts'));
+    }
+
+    public function edit(Game $game)
+    {
+        if (!auth()->check() || (!auth()->user()->is_admin && !$game->credits->contains('id', auth()->id()))) {
+            abort(403, __('You do not have permission to edit this game.'));
+        }
+
+        $genres = Genre::orderBy('name')->get(); // Added genres fetch
+
+        return view('games.edit', compact('game', 'genres')); // Passed to view
+    }
+
+    public function update(Request $request, Game $game)
+    {
+        if (!auth()->check() || (!auth()->user()->is_admin && !$game->credits->contains('id', auth()->id()))) {
+            abort(403, __('You do not have permission to edit this game.'));
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'publisher' => 'nullable|string|max:255',
+            'release_date' => 'nullable|date',
+            'details' => 'nullable|string',
+            'banner_img' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'cover_img' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'logo' => 'nullable|image|mimes:jpeg,png,webp|max:1024',
+            'genres' => 'nullable|array', // Removed the strict ID exists check
+        ]);
+
+        // Process file uploads
+        if ($request->hasFile('banner_img')) {
+            $path = $request->file('banner_img')->store('games/banners', 'public');
+            $validated['banner_img'] = '/storage/' . $path;
+        }
+
+        if ($request->hasFile('cover_img')) {
+            $path = $request->file('cover_img')->store('games/covers', 'public');
+            $validated['cover_img'] = '/storage/' . $path;
+        }
+
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('games/logos', 'public');
+            $validated['logo'] = '/storage/' . $path;
+        }
+
+        // Update the game record
+        $game->update($validated);
+
+        // --- NEW GENRE LOGIC & SYNC ---
+        $syncIds = [];
+        if ($request->has('genres')) {
+            foreach ($request->input('genres') as $genreItem) {
+                if (is_numeric($genreItem)) {
+                    // Existing genre ID
+                    $syncIds[] = (int) $genreItem;
+                } else {
+                    // New genre string - find it or create it
+                    // Your Genre model already auto-generates the slug in the boot() method!
+                    $newGenre = Genre::firstOrCreate([
+                        'name' => trim($genreItem)
+                    ]);
+                    $syncIds[] = $newGenre->id;
+                }
+            }
+        }
+        
+        $game->genres()->sync($syncIds);
+
+        // --- GARBAGE COLLECTION ---
+        // Delete any genres that are no longer attached to any games
+        Genre::doesntHave('games')->delete();
+
+        return redirect('/games/' . $game->id)->with('success', 'Game information updated successfully.');
+    }
+    
+    // --- API METHODS ---
+
+    public function apiIndex(Request $request)
+    {
+        $query = Game::select('id', 'title', 'publisher', 'release_date', 'average_rating', 'cover_img')
+            ->with(['genres:id,name']); // Only grab the ID and name of the genre
+
+        // Optional: Allow filtering by genre (e.g., /api/v1/games?genre=RPG)
+        if ($request->has('genre')) {
+            $query->whereHas('genres', function ($q) use ($request) {
+                $q->where('name', $request->query('genre'));
+            });
+        }
+
+        // Use pagination instead of ->take(10) so clients can load more pages
+        $games = $query->orderBy('average_rating', 'desc')->paginate(15);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Fetched games successfully.',
+            'data' => $games
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+
+    public function apiShow(Game $game)
+    {
+        // Load relationships, restricting the fields to prevent leaking sensitive user data
+        $game->load([
+            'genres:id,name', 
+            'credits' => function ($query) {
+                $query->select('users.id', 'username')->withPivot('role');
+            }
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $game
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+
+    public function apiReviews(Game $game)
+    {
+        $reviews = $game->posts()
+            ->has('review')
+            ->with([
+                'author:id,username,avatar_media_id', // Only get public author info
+                'author.avatar', // Assuming you have an avatar relation
+                'review'         // Get the actual review data (rating, type)
+            ])
+            ->latest()
+            ->paginate(10);
+
+        // Map over the results to format them nicely for the API consumer
+        $formattedReviews = $reviews->getCollection()->map(function ($post) {
+            return [
+                'id' => $post->id,
+                'author' => $post->author->username,
+                'avatar_url' => $post->author->avatar_url ?? null,
+                'rating' => $post->review->rating,
+                'type' => $post->review->type,
+                'body' => $post->body,
+                'is_spoiler' => $post->is_spoiler,
+                'likes_count' => $post->likes_count ?? 0,
+                'created_at' => $post->created_at->toIso8601String(),
+            ];
+        });
+
+        // Replace the unformatted collection with the clean one
+        $reviews->setCollection($formattedReviews);
+
+        return response()->json([
+            'success' => true,
+            'data' => $reviews
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 }

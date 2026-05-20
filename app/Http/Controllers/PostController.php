@@ -5,6 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Media;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use App\Models\Notification;
+use App\Mail\NewPostMail;
+use App\Mail\NewCommentMail;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class PostController extends Controller
 {
@@ -22,7 +27,6 @@ class PostController extends Controller
         $posts = Post::query()
             ->withFeedRelations() // Leveraging your built-in clean relation loader scope
             ->whereNull('parent_id')
-            ->orderByDesc('is_pinned')
             ->latest();
 
         // Context filter: Is it a specific Hub? (e.g., Playlist or Profile view)
@@ -52,7 +56,6 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        // Block suspended users
         if (auth()->user()->is_suspended) {
             abort(403, 'Your account is suspended.');
         }
@@ -78,24 +81,63 @@ class PostController extends Controller
             'is_spoiler' => $validated['is_spoiler'] ?? false,
             'is_locked' => $validated['is_locked'] ?? false,
         ]);
+
+        $currentUser = auth()->user();
+
         if (!empty($validated['parent_id'])) {
-            $parentPost = Post::find($validated['parent_id']);
+            $parentPost = Post::with('author')->find($validated['parent_id']);
+            Log::info("User {$currentUser->id} commented on Post {$parentPost->id} (New Comment ID: {$post->id})");
+            
             if ($parentPost && ($parentPost->is_locked || $parentPost->admin_locked)) {
                 return response()->json(['message' => 'This post is locked.'], 403);
             }
+
+            if ($parentPost && $parentPost->user_id && $parentPost->user_id !== $currentUser->id) {
+                // 1. Zapis do bazy z linkiem (target_url)
+                Notification::create([
+                    'user_id' => $parentPost->user_id,
+                    'from_user_id' => $currentUser->id,
+                    'type' => 'comment',
+                    'message' => __(':username commented on your post.', ['username' => $currentUser->username]),
+                    'target_url' => url('/posts/' . $parentPost->id),
+                ]);
+
+                if ($parentPost->author && $parentPost->author->email) {
+                    Mail::to($parentPost->author->email)->queue(new NewCommentMail($currentUser, $post, $parentPost));
+                }
+            }
+        } 
+        else {
+            $followers = $currentUser->followers;
+
+            foreach ($followers as $follower) {
+                Notification::create([
+                    'user_id' => $follower->id,
+                    'from_user_id' => $currentUser->id,
+                    'type' => 'new_post',
+                    'message' => __(':username just posted a new post.', ['username' => $currentUser->username]),
+                    'target_url' => url('/posts/' . $post->id), // Link do nowego posta
+                ]);
+
+                Mail::to($follower->email)->queue(new \App\Mail\NewPostMail($currentUser, $post));
+            }
         }
+
+        Log::info("User {$currentUser->id} created Post {$post->id}");
+
         if (! empty($validated['review_type'])) {
             $post->review()->create([
                 'type' => $validated['review_type'],
                 'rating' => $validated['review_type'] === 'recommendation' ? $validated['rating'] : null,
             ]);
+            Log::info("User {$currentUser->id} created Review for Post {$post->id}");
         }
 
         if (! empty($validated['media_ids'])) {
             Media::whereIn('id', $validated['media_ids'])->update(['post_id' => $post->id]);
+            Log::info("User {$currentUser->id} attached Media to Post {$post->id}");
         }
 
-        // Return a JSON response. If it's a comment, you could optionally return HTML here too!
         return response()->json(['message' => 'Post created successfully', 'post' => $post]);
     }
 
@@ -105,7 +147,8 @@ class PostController extends Controller
     public function show(Request $request, Post $post)
     {
         // 1. Load data for the main post card
-        $post->load(['author', 'media', 'review', 'hub']);
+        $post->load(['author', 'media', 'review', 'hub'])->loadCount('replies');
+        Log::info("User " . auth()->id() . " viewed Post {$post->id}");
         if (auth()->check()) {
             $post->loadExists(['likes as liked_by_auth' => function ($q) {
                 $q->where('user_id', auth()->id());
@@ -120,14 +163,16 @@ class PostController extends Controller
         // 2. Fetch the initial block of replies for the thread
         $replies = $post->replies()
             ->with(['author', 'media'])
+            ->withCount('replies')
             ->when(auth()->check(), function ($query) {
                 $query->withExists(['likes as liked_by_auth' => function ($q) {
                     $q->where('user_id', auth()->id());
                 }]);
             })
             ->latest()
+            ->orderByDesc('is_pinned')
             ->paginate(10)
-            ->withPath(url("/posts/{$post->id}/replies")); // <--- FIX: Redirects pagination clicks to the dedicated replies method
+            ->withPath(url("/posts/{$post->id}/replies"));
 
         return view('posts.show', compact('post', 'replies'));
     }

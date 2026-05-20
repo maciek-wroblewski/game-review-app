@@ -9,7 +9,7 @@
        data-bs-trigger="manual">
        
         {{-- Base Avatar --}}
-        <x-user.static-avatar :user="$user" :size="$size" layout="compact" />
+        <x-user.static-avatar :user="$user" :size="$size" />
         
     </span>
 
@@ -36,6 +36,7 @@
     .user-card-trigger:hover img {
         transform: scale(1.06);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        cursor: pointer;
     }
 
     /* Popover Styling */

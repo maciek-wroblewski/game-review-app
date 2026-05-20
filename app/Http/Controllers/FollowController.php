@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NewFollowerMail;
+use Illuminate\Support\Facades\Log;
 
 class FollowController extends Controller
 {
@@ -24,6 +27,7 @@ class FollowController extends Controller
         if ($isFollowing) {
             $currentUser->following()->detach($user->id);
             $status = 'unfollowed'; // Track status for JSON
+            Log::info("User {$currentUser->id} unfollowed User {$user->id}");
         } else {
             $currentUser->following()->attach($user->id);
 
@@ -31,9 +35,11 @@ class FollowController extends Controller
                 'user_id' => $user->id,
                 'from_user_id' => $currentUser->id,
                 'type' => 'follow',
-                'message' => $currentUser->username . ' started following you.',
+                'message' => __(':username started following you.', ['username' => $currentUser->username]),
+                'target_url' => url('/users/' . $currentUser->id),
             ]);
-            
+            Mail::to($user->email)->send(new NewFollowerMail($currentUser));
+            Log::info("User {$currentUser->id} followed User {$user->id}");
             $status = 'followed'; // Track status for JSON
         }
 

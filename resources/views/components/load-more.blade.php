@@ -2,7 +2,7 @@
 'paginator',
 'target',
 'buttonClass' => 'btn btn-primary px-4 py-2 rounded-pill shadow-sm',
-'text' => 'Load More'
+'text' => __('common.load_more')
 ])
 
 @if($paginator && $paginator->hasMorePages())
@@ -13,7 +13,7 @@
     </button>
 
     <div class="js-load-more-spinner d-none spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+        <span class="visually-hidden">{{ __('common.loading') }}</span>
     </div>
 
 </div>

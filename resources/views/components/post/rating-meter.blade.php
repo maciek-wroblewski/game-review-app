@@ -9,10 +9,12 @@
 @endphp
 
 <style>
-    /* Magically show the drag overlay when the parent post enters edit mode */
+    .js-meter-overlay {
+        cursor: ns-resize;
+    }
+
     .is-editing .js-meter-overlay {
         display: block !important;
-        cursor: crosshair;
     }
 </style>
 
@@ -26,7 +28,7 @@
         <span class="js-meter-text" style="font-size: 0.85rem;">{{ $rating }} / 10</span>
     </div>
 
-    <div class="js-meter-overlay position-absolute top-0 start-0 w-100 h-100 cursor-crosshair" 
+    <div class="js-meter-overlay position-absolute top-0 start-0 w-100 h-100" 
          style="z-index: 10; {{ $editable ? '' : 'display: none;' }}" 
          title="Click and drag to set rating"></div>
 </div>
@@ -83,8 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('touchmove', (e) => { if(isDragging) updateRating(e); }, { passive: false });
         document.addEventListener('touchend', toggleDrag(false));
 
-        // --- Context-Specific Behavior ---
-
         if (createCard) {
             overlay.style.display = 'block';
             createCard.addEventListener('click', (e) => {
@@ -95,10 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } 
         
         else if (editCard) {
-            // Listen to the custom broadcast bubbling up from the edit form!
             editCard.addEventListener('toggle-edit', (e) => {
                 
-                // We use setTimeout to let the edit-form finish its logic before we read the final state
                 setTimeout(() => {
                     const editContainer = e.target;
                     const isEditing = editContainer.dataset.open === 'true';

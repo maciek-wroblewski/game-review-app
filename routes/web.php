@@ -33,13 +33,21 @@ Route::get('/users/{user:username}', [UserController::class, 'show']);
 Route::get('/users/{user:username}/followers', [UserController::class, 'followers']);
 Route::get('/users/{user:username}/following', [UserController::class, 'following']);
 Route::get('/users/{user:username}/playlists', [UserController::class, 'playlists']);
+Route::get('/playlists/{playlist}', [PlaylistController::class, 'show']);
 Route::get('/users/{user:username}/reviews', [UserController::class, 'reviews']);
 Route::get('/users/{user:username}/posts', [UserController::class, 'posts']);
+
+// Locale Switcher
+Route::get('/lang/{locale}', [\App\Http\Controllers\LocaleController::class, 'setLocale'])->name('lang.switch');
 
 // Authenticated Routes Group
 Route::middleware('auth')->group(function () {
     Route::post('/upload', [MediaController::class, 'upload'])->name('upload');
     
+    // Edit Game
+    Route::get('/games/{game}/edit', [GameController::class, 'edit'])->name('games.edit');
+    Route::patch('/games/{game}', [GameController::class, 'update'])->name('games.update');
+        
     Route::get('/dashboard', function () { return view('dashboard'); })->name('dashboard');
 
     // Posts
@@ -53,7 +61,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/games/{game}/reviews', [GameReviewController::class, 'store']);
     Route::put('/reviews/{review}', [GameReviewController::class, 'update']);
     Route::delete('/reviews/{review}', [GameReviewController::class, 'destroy']);
-    Route::get('/playlists/{playlist}', [PlaylistController::class, 'show']);
+
+    // Playlist Create/Store MUST come before {playlist} bindings
+    Route::get('/playlists/create', [PlaylistController::class, 'create']);
+    Route::post('/playlists', [PlaylistController::class, 'store']);
+
+    Route::get('/playlists/{playlist}/edit', [PlaylistController::class, 'edit']);
+    Route::put('/playlists/{playlist}', [PlaylistController::class, 'update']);
+    Route::delete('/playlists/{playlist}', [PlaylistController::class, 'destroy']);
+    
     Route::post('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'store']);
     Route::delete('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'destroy']);
 
@@ -74,7 +90,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/posts/{post}/lock', [AdminController::class, 'toggleLock']);
     // Notifications
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+});
+// public API
+
+Route::prefix('api')->group(function () {
+    Route::get('/games/top', [GameController::class, 'apiIndex']);
 });
 
 require __DIR__ . '/auth.php';

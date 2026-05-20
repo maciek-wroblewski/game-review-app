@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use Illuminate\Validation\Rule;
-use App\Models\Media;
 
 class ProfileController extends Controller
 {
@@ -39,35 +38,28 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    /**
-     * Update the user's avatar or banner via uploaded media IDs.
-     */
     public function updateMedia(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'avatar_media_id' => ['nullable', 'exists:media,id'],
-            'banner_media_id' => ['nullable', 'exists:media,id'],
+        $request->validate([
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+            'banner' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'],
         ]);
 
         $user = $request->user();
 
-        if (!empty($validated['avatar_media_id'])) {
-            $media = Media::find($validated['avatar_media_id']);
-            if ($media) {
-                $user->avatar = $media->file_path;
-            }
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->store('users/avatars', 'public');
+            $user->avatar = '/storage/' . $path;
         }
 
-        if (!empty($validated['banner_media_id'])) {
-            $media = Media::find($validated['banner_media_id']);
-            if ($media) {
-                $user->banner = $media->file_path;
-            }
+        if ($request->hasFile('banner')) {
+            $path = $request->file('banner')->store('users/banners', 'public');
+            $user->banner = '/storage/' . $path;
         }
 
         $user->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.edit')->with('status', 'profile-media-updated');
     }
 
     public function updatePrivacy(Request $request): RedirectResponse

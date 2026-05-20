@@ -51,8 +51,8 @@
                     :clearClass="'js-btn-cancel'"
                     :submitClass="'js-btn-save'"
                     :spinnerClass="'js-save-spinner'"
-                    :clearLabel="'Cancel'"
-                    :submitLabel="'Save Changes'"
+                    :clearLabel="__('common.cancel')"
+                    :submitLabel="__('common.save_changes')"
                 />
             </div>
         </div>

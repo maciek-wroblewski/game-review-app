@@ -1,6 +1,6 @@
 @props(['targetUser', 'buttonClasses' => 'btn-sm rounded-pill px-3 shadow-sm'])
 
-@if(auth()->check() && auth()->id() !== $targetUser->id)
+@if(auth()->check() && auth()->id() !== $targetUser->id && !$targetUser->is_suspended)
 @php
     $authUser = auth()->user();
     $authUser->loadMissing('following');
@@ -12,7 +12,7 @@
     @csrf
     <button type="submit"
         class="btn {{ $buttonClasses }} follow-btn {{ $isFollowing ? 'btn-outline-secondary' : 'btn-primary' }}">
-        <span class="follow-text d-inline-block">{{ $isFollowing ? 'Unfollow' : 'Follow' }}</span>
+        <span class="follow-text d-inline-block">{{ $isFollowing ? __('common.unfollow') : __('common.follow') }}</span>
     </button>
 </form>
 @endif
@@ -86,10 +86,10 @@
 
                             if (data.status === 'followed') {
                                 btn.classList.replace('btn-primary', 'btn-outline-secondary');
-                                text.textContent = 'Unfollow';
+                                text.textContent = '{{ __('common.unfollow') }}';
                             } else {
                                 btn.classList.replace('btn-outline-secondary', 'btn-primary');
-                                text.textContent = 'Follow';
+                                text.textContent = '{{ __('common.follow') }}';
                             }
 
                             // Remove text scaling state to drop it cleanly back into view
