@@ -1,6 +1,6 @@
 @props(['targetUser', 'buttonClasses' => 'btn-sm rounded-pill px-3 shadow-sm'])
 
-@if(auth()->check() && auth()->id() !== $targetUser->id)
+@if(auth()->check() && auth()->id() !== $targetUser->id && !$targetUser->is_suspended)
 @php
     $authUser = auth()->user();
     $authUser->loadMissing('following');
