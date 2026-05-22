@@ -79,7 +79,7 @@
             
             <div class="edit_form_collapsable">
                 <x-post.content :post="$post" />
-                <x-post.footer :post="$post" />
+                <x-post.footer :post="$post" showReplies="{{ $showReplies }}" />
                 
                 {{-- Moderation Controls --}}
                 @if($canModerate)
@@ -116,7 +116,7 @@
             <x-post.edit-form :post="$post" />
         @endif
 
-        @if($showReplies)
+        
             <x-post.reply-container :post="$post">
                 {{-- Only allow comments if NOT locked by user and NOT locked by admin --}}
                 @if(!$post->is_locked && !$post->admin_locked)
@@ -124,7 +124,7 @@
                         :hubId="$post->hubable_id ?? $post->hub_id" :parentId="$post->id" />
                 @endif
             </x-post.reply-container>
-            
+        @if($showReplies)
             <x-post.replies-container :postId="$post->id" id="accordion-{{ $post->id }}">
                 <x-post.replies-list />
             </x-post.replies-container>

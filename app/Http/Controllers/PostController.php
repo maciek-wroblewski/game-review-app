@@ -104,7 +104,7 @@ class PostController extends Controller
     public function show(Request $request, Post $post)
     {
         // 1. Load data for the main post card
-        $post->load(['author', 'media', 'review', 'hub']);
+        $post->load(['author', 'media', 'review', 'hub'])->loadCount('replies');
         if (auth()->check()) {
             $post->loadExists(['likes as liked_by_auth' => function ($q) {
                 $q->where('user_id', auth()->id());
@@ -119,6 +119,7 @@ class PostController extends Controller
         // 2. Fetch the initial block of replies for the thread
         $replies = $post->replies()
             ->with(['author', 'media'])
+            ->withCount('replies')
             ->when(auth()->check(), function ($query) {
                 $query->withExists(['likes as liked_by_auth' => function ($q) {
                     $q->where('user_id', auth()->id());
@@ -127,7 +128,7 @@ class PostController extends Controller
             ->latest()
             ->orderByDesc('is_pinned')
             ->paginate(10)
-            ->withPath(url("/posts/{$post->id}/replies")); // <--- FIX: Redirects pagination clicks to the dedicated replies method
+            ->withPath(url("/posts/{$post->id}/replies"));
 
         return view('posts.show', compact('post', 'replies'));
     }

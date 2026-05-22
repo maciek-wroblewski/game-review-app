@@ -1,8 +1,7 @@
 @props(['post'])
 
 <div class="js-replies-container">
-    @if (($post->replies_count ?? null) ? $post->replies_count > 0 : $post->replies()->count() > 0)
-        {{-- Removed data-target-container --}}
+    @if (($post->replies_count ?? $post->replies()->count()) > 0)
         <button class="js-btn-show-replies btn btn-sm btn-light rounded-pill border-0 small"
             data-post-id="{{ $post->id }}">
             <i class="bi bi-chevron-down me-1"></i>

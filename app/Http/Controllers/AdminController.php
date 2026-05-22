@@ -29,7 +29,7 @@ class AdminController extends Controller
             ->get();
 
         $latestPosts = Post::latest()
-            ->with('user')
+            ->with('author') // <--- Change 'user' to 'author'
             ->take(5)
             ->get();
 

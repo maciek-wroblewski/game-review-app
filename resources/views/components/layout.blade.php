@@ -192,10 +192,15 @@
                     @auth
 
                         @php
-                            $unreadNotificationCount = auth()->user()
-                                ->notifications()
-                                ->where('read', false)
-                                ->count();
+                            $user = auth()->user();
+                            $unreadNotificationCount = $user->notifications()->where('read', false)->count();
+                            
+                            // Fetch ONLY 10 from the database, and eager load the sender + avatar!
+                            $recentNotifications = $user->notifications()
+                                                    ->with('fromUser.avatar')
+                                                    ->latest()
+                                                    ->take(10)
+                                                    ->get();
                         @endphp
 
                         <li class="nav-item dropdown">
@@ -229,7 +234,7 @@
                                     </div>
                                 </li>
 
-                                @forelse(auth()->user()->notifications->take(10) as $notification)
+                                @forelse($recentNotifications as $notification)
                                     <li>
                                         <div class="dropdown-item rounded-4 py-3 {{ !$notification->read ? 'bg-light' : '' }}">
                                             <div class="d-flex align-items-start gap-3">
