@@ -104,8 +104,8 @@
                             {{-- Lock --}}
                             <form method="POST" action="/admin/posts/{{ $post->id }}/lock">
                                 @csrf
-                                <button class="btn btn-sm {{ $post->is_locked ? 'btn-secondary' : 'btn-outline-secondary' }} admin-tool-btn">
-                                    <i class="bi {{ $post->is_locked ? 'bi-unlock-fill' : 'bi-lock-fill' }} me-1"></i> {{ $post->is_locked ? 'Unlock' : 'Lock' }}
+                                <button class="btn btn-sm {{ $post->admin_locked ? 'btn-secondary' : 'btn-outline-secondary' }} admin-tool-btn">
+                                    <i class="bi {{ $post->admin_locked ? 'bi-unlock-fill' : 'bi-lock-fill' }} me-1"></i> {{ $post->admin_locked ? 'Unlock' : 'Lock' }}
                                 </button>
                             </form>
                         @endif

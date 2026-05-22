@@ -98,30 +98,39 @@ class Post extends Model
         return $this->review()->exists();
     }
 
-    public function scopeWithFeedRelations($query)
+    public function scopeWithFeedRelations($query, array $options = [])
     {
-        return $query->with([
-            // ⚡ Eager load the author's avatar AND pre-compute all 3 popover aggregate counters
+        $loadReview = $options['review'] ?? true;
+        $loadHub = $options['hub'] ?? true;
+
+        $relations = [
             'author' => function ($q) {
                 $q->with('avatar')->withCount(['followers', 'following', 'posts']);
             },
             'media',
-            'review',
-            'hub',
-            // ⚡ Apply the exact same optimization to parent/quoted posts to satisfy their popovers too
-            'parent' => function ($q) {
+            'parent' => function ($q) use ($loadReview, $loadHub) {
                 $q->withCount('replies')
                     ->with([
                         'author' => function ($sq) {
                             $sq->with('avatar')->withCount(['followers', 'following', 'posts']);
                         },
                         'media',
-                        'review',
-                        'hub'
                     ])
+                    ->when($loadReview, fn($q) => $q->with('review'))
+                    ->when($loadHub, fn($q) => $q->with('hub'))
                     ->withLikedByAuth();
             },
-        ])
+        ];
+
+        if ($loadReview) {
+            $relations[] = 'review';
+        }
+        
+        if ($loadHub) {
+            $relations[] = 'hub';
+        }
+
+        return $query->with($relations)
             ->withCount('replies')
             ->withLikedByAuth();
     }

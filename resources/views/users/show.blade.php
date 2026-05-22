@@ -97,23 +97,11 @@
                                 </form>
                             @endif
                         </div>
-
-                        {{-- Suspended Warning --}}
-                        @if($user->is_suspended)
-                            <div class="alert alert-danger border-0 mt-4 mb-0">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-exclamation-triangle-fill"></i>
-                                    <strong>
-                                        This account is currently suspended.
-                                    </strong>
-                                </div>
-                            </div>
-                        @endif
                     </div>
                 </div>
             @endif
         @endauth
-
+        @if (!$user->is_suspended)
         <!-- Grid Row -->
         <div class="row g-4">
             <!-- Recent Posts -->
@@ -171,5 +159,6 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 </x-layout>
