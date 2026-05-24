@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NewFollowerMail;
 
 class FollowController extends Controller
 {
@@ -33,7 +35,7 @@ class FollowController extends Controller
                 'type' => 'follow',
                 'message' => $currentUser->username . ' started following you.',
             ]);
-            
+            Mail::to($user->email)->send(new NewFollowerMail($currentUser));
             $status = 'followed'; // Track status for JSON
         }
 

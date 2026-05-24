@@ -29,7 +29,7 @@
                             <div class="d-flex align-items-center gap-2">
                                 <span class="fw-bold small">{{ $post->author->username }}</span>
                                 <span class="text-muted small" style="font-size: 0.75rem;">{{
-                                    $post->updated_at->diffForHumans() }}</span>
+                                    $post->created_at->diffForHumans() }}</span>
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 @if($post->author)

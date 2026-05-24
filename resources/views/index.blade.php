@@ -1,5 +1,5 @@
 <x-layout headtitle="Home">
-    hello bro
+    {{ __('hello bro') }}
 
    <div class="container mt-4">
         <!-- The Upload Form -->
@@ -9,7 +9,7 @@
                 <input type="file" name="file" class="form-control" id="fileInput" required>
                 <button class="btn btn-primary" type="submit" id="uploadBtn">
                     <span class="spinner-border spinner-border-sm d-none" id="uploadSpinner" role="status" aria-hidden="true"></span>
-                    Upload
+                    {{ __('Upload') }}
                 </button>
             </div>
         </form>
@@ -69,12 +69,12 @@
                 form.reset();
             } else {
                 // Handle validation errors from Laravel
-                alert(data.message || 'Something went wrong during the upload.');
+                alert(data.message || '{{ __('Something went wrong during the upload.') }}');
             }
 
         } catch (error) {
             console.error('Error uploading file:', error);
-            alert('An unexpected error occurred.');
+            alert('{{ __('An unexpected error occurred.') }}');
         } finally {
             // 4. Reset loading state
             uploadBtn.disabled = false;

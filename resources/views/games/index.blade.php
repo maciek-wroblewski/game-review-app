@@ -1,4 +1,4 @@
-<x-layout headtitle="Browse Games">
+<x-layout headtitle="{{ __('Browse Games') }}">
     <div class="container-xl py-5">
 
         <section class="trending-section mb-5">
@@ -11,8 +11,8 @@
 
         <section class="grid-section">
             <div class="d-flex align-items-center justify-content-between mb-4">
-                <h2 class="fw-bold mb-0">🎮 Explore Games</h2>
-                <span class="text-muted small">{{ $games->total() }} titles found</span>
+                <h2 class="fw-bold mb-0">🎮 {{ __('Explore Games') }}</h2>
+                <span class="text-muted small">{{ $games->total() }} {{ __('titles found') }}</span>
             </div>
 
             <div id="games-grid-wrapper" class="row g-4">

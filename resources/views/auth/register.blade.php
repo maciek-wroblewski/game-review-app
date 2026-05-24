@@ -1,4 +1,4 @@
-<x-layout headtitle="Register">
+<x-layout headtitle="{{ __('Register') }}">
 
     <div class="container py-5">
 
@@ -14,11 +14,11 @@
                         <i class="bi bi-controller display-3 text-primary"></i>
 
                         <h1 class="fw-bold mt-3 mb-2">
-                            Create Account
+                            {{ __('Create Account') }}
                         </h1>
 
                         <p class="text-secondary mb-0">
-                            Join the VGDB community
+                            {{ __('Join the VGDB community') }}
                         </p>
 
                     </div>
@@ -37,7 +37,7 @@
                                 <label for="username"
                                        class="form-label fw-semibold">
 
-                                    Username
+                                    {{ __('Username') }}
 
                                 </label>
 
@@ -65,7 +65,7 @@
                                 <label for="email"
                                        class="form-label fw-semibold">
 
-                                    Email Address
+                                    {{ __('Email Address') }}
 
                                 </label>
 
@@ -92,7 +92,7 @@
                                 <label for="password"
                                        class="form-label fw-semibold">
 
-                                    Password
+                                    {{ __('Password') }}
 
                                 </label>
 
@@ -118,7 +118,7 @@
                                 <label for="password_confirmation"
                                        class="form-label fw-semibold">
 
-                                    Confirm Password
+                                    {{ __('Confirm Password') }}
 
                                 </label>
 
@@ -136,7 +136,7 @@
                                 <a href="{{ route('login') }}"
                                    class="text-decoration-none">
 
-                                    Already registered?
+                                    {{ __('Already registered?') }}
 
                                 </a>
 
@@ -144,7 +144,7 @@
                                         class="btn btn-primary btn-lg px-4">
 
                                     <i class="bi bi-person-plus-fill me-2"></i>
-                                    Create Account
+                                    {{ __('Create Account') }}
 
                                 </button>
 

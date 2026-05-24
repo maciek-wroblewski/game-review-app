@@ -61,16 +61,6 @@ $isAdmin = auth()->user()?->is_admin ?? false;
         </div>
         @endif
 
-        {{-- LOCKED STATUS BANNERS --}}
-        @if($post->admin_locked)
-        <div class="alert alert-danger rounded-0 border-0 mb-0">
-            <i class="bi bi-shield-lock-fill me-2"></i> This post was locked by an Admin. Replies disabled.
-        </div>
-        @elseif($post->is_locked)
-        <div class="alert alert-secondary rounded-0 border-0 mb-0">
-            <i class="bi bi-lock-fill me-2"></i> The author locked this post. Replies disabled.
-        </div>
-        @endif
         {{-- Admin Moderation Bar --}}
         @if($isAdmin)
         <div class="px-3 py-2 border-bottom bg-danger-subtle d-flex justify-content-between align-items-center">

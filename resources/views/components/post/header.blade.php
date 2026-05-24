@@ -34,10 +34,6 @@
                     @endif
                     <div class="text-muted small d-flex flex-wrap gap-2">
                         <span>{{ $post->created_at->diffForHumans(null, true, true) }}</span>
-                        @if($post->created_at->ne($post->updated_at))
-                            <span class="fst-italic"
-                                  title="Edited on {{ $post->updated_at->diffForHumans(null, true, true) }}">(Edited)</span>
-                        @endif
                         @if($post->hub)
                             <span class="text-secondary">&bull;</span>
                             <span>Posted in <a href="/{{ $post->hub->getTable() }}/{{ $post->hub_id }}">{{ $post->hub->title ?? $post->hub->name ?? $post->hub->username ?? 'Hub' }}</a></span>

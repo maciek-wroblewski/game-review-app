@@ -1,4 +1,4 @@
-<x-layout headtitle="{{ $game->title }} - Discussions">
+<x-layout headtitle="{{ $game->title }} - {{ __('Discussions') }}">
     <div class="container-fluid p-0 mb-5"
         style="height: 400px; overflow: hidden; position: relative; background-color: #1a1a1a;">
         @if($game->banner_img)
@@ -17,7 +17,7 @@
             style="background: linear-gradient(transparent, rgba(0,0,0,0.9)); z-index: 3;">
             <div>
                 <h1 class="display-3 fw-bold text-white mb-0">{{ $game->title }}</h1>
-                <p class="text-light fs-4 mb-0 opacity-75">Community Discussions</p>
+                <p class="text-light fs-4 mb-0 opacity-75">{{ __('Community Discussions') }}</p>
             </div>
         </div>
     </div>
@@ -30,11 +30,11 @@
                 
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h3 class="m-0 fw-bold">
-                        Discussions
+                        {{ __('Discussions') }}
                         <span class="text-muted fs-5 fw-normal">({{ $game->posts_count }})</span>
                     </h3>
                     <a href="/games/{{ $game->id }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left me-1"></i> Back to Reviews
+                        <i class="bi bi-arrow-left me-1"></i> {{ __('Back to Reviews') }}
                     </a>
                 </div>
 

@@ -36,6 +36,9 @@ Route::get('/users/{user:username}/playlists', [UserController::class, 'playlist
 Route::get('/users/{user:username}/reviews', [UserController::class, 'reviews']);
 Route::get('/users/{user:username}/posts', [UserController::class, 'posts']);
 
+// Locale Switcher
+Route::get('/lang/{locale}', [\App\Http\Controllers\LocaleController::class, 'setLocale'])->name('lang.switch');
+
 // Authenticated Routes Group
 Route::middleware('auth')->group(function () {
     Route::post('/upload', [MediaController::class, 'upload'])->name('upload');
