@@ -193,4 +193,18 @@ class GameController extends Controller
 
         return redirect('/games/' . $game->id)->with('success', 'Game information updated successfully.');
     }
+    
+    public function apiIndex()
+    {
+        $games = Game::select('id', 'title', 'publisher', 'release_date', 'average_rating')
+            ->orderBy('average_rating', 'desc')
+            ->take(10)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pobrano listę najlepszych gier',
+            'data' => $games
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
 }

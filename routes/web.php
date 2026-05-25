@@ -83,5 +83,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 });
+// public API
+
+Route::prefix('api')->group(function () {
+    Route::get('/games/top', [GameController::class, 'apiIndex']);
+});
 
 require __DIR__ . '/auth.php';
