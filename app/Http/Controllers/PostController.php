@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Media;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use App\Models\Notification;
+use App\Mail\NewPostMail;
+use App\Mail\NewCommentMail;
+use Illuminate\Support\Facades\Mail;
 
 class PostController extends Controller
 {
@@ -77,12 +81,47 @@ class PostController extends Controller
             'is_spoiler' => $validated['is_spoiler'] ?? false,
             'is_locked' => $validated['is_locked'] ?? false,
         ]);
+
+        $currentUser = auth()->user();
+
         if (!empty($validated['parent_id'])) {
-            $parentPost = Post::find($validated['parent_id']);
+            $parentPost = Post::with('author')->find($validated['parent_id']); // Pobieramy z relacją 'author' (by mieć maila)
+            
             if ($parentPost && ($parentPost->is_locked || $parentPost->admin_locked)) {
                 return response()->json(['message' => 'This post is locked.'], 403);
             }
+
+            if ($parentPost && $parentPost->user_id && $parentPost->user_id !== $currentUser->id) {
+                // 1. Zapis do bazy z linkiem (target_url)
+                Notification::create([
+                    'user_id' => $parentPost->user_id,
+                    'from_user_id' => $currentUser->id,
+                    'type' => 'comment',
+                    'message' => __(':username skomentował twój post.', ['username' => $currentUser->username]),
+                    'target_url' => url('/posts/' . $parentPost->id), // Link do posta głównego
+                ]);
+
+                if ($parentPost->author && $parentPost->author->email) {
+                    Mail::to($parentPost->author->email)->queue(new NewCommentMail($currentUser, $post, $parentPost));
+                }
+            }
+        } 
+        else {
+            $followers = $currentUser->followers;
+
+            foreach ($followers as $follower) {
+                Notification::create([
+                    'user_id' => $follower->id,
+                    'from_user_id' => $currentUser->id,
+                    'type' => 'new_post',
+                    'message' => __(':username właśnie opublikował nowy post.', ['username' => $currentUser->username]),
+                    'target_url' => url('/posts/' . $post->id), // Link do nowego posta
+                ]);
+
+                Mail::to($follower->email)->queue(new \App\Mail\NewPostMail($currentUser, $post));
+            }
         }
+
         if (! empty($validated['review_type'])) {
             $post->review()->create([
                 'type' => $validated['review_type'],
@@ -94,7 +133,6 @@ class PostController extends Controller
             Media::whereIn('id', $validated['media_ids'])->update(['post_id' => $post->id]);
         }
 
-        // Return a JSON response. If it's a comment, you could optionally return HTML here too!
         return response()->json(['message' => 'Post created successfully', 'post' => $post]);
     }
 

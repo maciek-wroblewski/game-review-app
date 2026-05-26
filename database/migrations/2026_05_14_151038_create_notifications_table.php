@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('type');
 
             $table->text('message');
-
+            $table->string('target_url')->nullable();
             $table->boolean('read')
                 ->default(false);
 

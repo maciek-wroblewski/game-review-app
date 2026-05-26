@@ -33,7 +33,8 @@ class FollowController extends Controller
                 'user_id' => $user->id,
                 'from_user_id' => $currentUser->id,
                 'type' => 'follow',
-                'message' => $currentUser->username . ' started following you.',
+                'message' => __(':username started following you.', ['username' => $currentUser->username]),
+                'target_url' => url('/users/' . $currentUser->id),
             ]);
             Mail::to($user->email)->send(new NewFollowerMail($currentUser));
             $status = 'followed'; // Track status for JSON

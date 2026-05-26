@@ -64,5 +64,7 @@
     "Profile updated successfully": "Profil został pomyślnie zaktualizowany",
     "Password updated successfully": "Hasło zostało pomyślnie zaktualizowane",
     "Invalid current password": "Nieprawidłowe aktualne hasło",
-    "Locale switched successfully": "Język został pomyślnie zmieniony"
+    "Locale switched successfully": "Język został pomyślnie zmieniony",
+    ":username commented on your post.": ":username skomentował twój post.",
+    ":username just published a new post.": ":username właśnie opublikował nowy post."
 }

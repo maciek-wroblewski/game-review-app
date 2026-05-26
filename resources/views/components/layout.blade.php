@@ -110,6 +110,19 @@
             max-height: 500px;
             overflow-y: auto;
             border-radius: 18px;
+            display: block !important;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease;
+            pointer-events: none;
+        }
+
+        .notification-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            pointer-events: auto;
         }
 
         /* --- MOBILE SPECIFIC FIXES --- */
@@ -226,7 +239,7 @@
 
                             @forelse($recentNotifications as $notification)
                             <li>
-                                <div class="dropdown-item rounded-4 py-3 {{ !$notification->read ? 'bg-light' : '' }}">
+                                <x-clickable-card href="{{ $notification->target_url ?? '#' }}" class="dropdown-item rounded-4 py-3 {{ !$notification->read ? 'bg-light' : '' }}">
                                     <div class="d-flex align-items-start gap-3">
                                         <a href="/users/{{ optional($notification->fromUser)->username }}"
                                             class="text-decoration-none">
@@ -258,7 +271,7 @@
                                             </small>
                                         </div>
                                     </div>
-                                </div>
+                                </x-clickable-card>
                             </li>
                             @empty
                             <li class="px-3 py-4 text-center text-muted">
