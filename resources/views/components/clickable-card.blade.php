@@ -39,7 +39,9 @@ document.addEventListener('click', (e) => {
 
     // Elements that should bypass the background link click action entirely
     const bypassSelector = 'a, button, input, select, textarea, label, .dropdown-menu, [data-card-bypass]';
-    if (e.target.closest(bypassSelector)) {
+    const closestBypass = e.target.closest(bypassSelector);
+    
+    if (closestBypass && card.contains(closestBypass)) {
         return;
     }
 
