@@ -9,7 +9,7 @@ $fallbackColor = '#' . substr($avatarHash, 0, 6);
 $avatarUrl = $user->avatar ? asset($user->avatar) : null;
 $id = $user->username;
 @endphp
-<a href="/users/{{ $id }}">
+<a href="/users/{{ $id }}" style="text-decoration: none;">
     @if($user->is_suspended)
     <div class="rounded-circle text-white d-flex align-items-center justify-content-center shadow border border-4 border-white {{ $isCompact ? 'mx-auto' : '' }}"
         style="width: {{ $size }}; height: {{ $size }}; font-size: {{ $fontSize }}; background-color: black; z-index: 2;"
