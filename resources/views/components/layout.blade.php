@@ -239,7 +239,7 @@
 
                             @forelse($recentNotifications as $notification)
                             <li>
-                                <x-clickable-card href="{{ $notification->target_url ?? '#' }}" class="dropdown-item rounded-4 py-3 {{ !$notification->read ? 'bg-light' : '' }}">
+                                <x-clickable-card href="{{ $notification->target_url }}" class="dropdown-item rounded-4 py-3 {{ !$notification->read ? 'bg-light' : '' }}">
                                     <div class="d-flex align-items-start gap-3">
                                         <a href="/users/{{ optional($notification->fromUser)->username }}"
                                             class="text-decoration-none">

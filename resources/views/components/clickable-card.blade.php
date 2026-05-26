@@ -1,6 +1,10 @@
-@props(['link' => '#'])
+@props(['link' => null, 'href' => null])
 
-<div class="nested-card" data-card-link="{{ $link }}">
+@php
+    $url = $link ?? $href ?? '#';
+@endphp
+
+<div {{ $attributes->merge(['class' => 'nested-card']) }} data-card-link="{{ $url }}">
     {{ $slot }}
 </div>
 
