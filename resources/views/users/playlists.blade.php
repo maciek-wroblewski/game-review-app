@@ -1,22 +1,21 @@
 <x-layout headtitle="{{ $user->username }} Playlists">
     <div class="container py-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-5">
             <div>
                 <h1 class="fw-bold mb-1">Playlists</h1>
-                <p class="text-muted mb-0">Public playlists created by {{ $user->username }}</p>
+                <p class="text-muted mb-0">Game collections created by {{ $user->username }}</p>
             </div>
-
-            @auth
-            @if(auth()->id() === $user->id)
-            <a href="/playlists/create" class="btn btn-primary">
-                <i class="bi bi-plus-lg me-2"></i> Create New Playlist
-            </a>
-            @endif
-            @endauth
-
-            <a href="/users/{{ $user->username }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-2"></i> Back to Profile
-            </a>
+            
+            <div class="d-flex gap-2">
+                @if(auth()->id() === $user->id)
+                    <a href="/playlists/create" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i> Create Playlist
+                    </a>
+                @endif
+                <a href="/users/{{ $user->username }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Profile
+                </a>
+            </div>
         </div>
 
         @if($playlists->isEmpty())

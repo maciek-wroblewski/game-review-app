@@ -8,6 +8,30 @@ use Illuminate\Http\Request;
 
 class PlaylistController extends Controller
 {
+
+
+    public function create()
+    {
+        return view('playlists.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        // Checkboxes only send data if checked
+        $validated['is_public'] = $request->has('is_public');
+
+        $playlist = Playlist::create($validated);
+        
+        // Attach the playlist to the currently authenticated user
+        $playlist->users()->attach(auth()->id());
+
+        return redirect("/playlists/{$playlist->id}")->with('success', 'Playlist created successfully!');
+    }
     public function show(Request $request, Playlist $playlist)
     {
         // 1. Paginate games (custom page name: 'games_page')
@@ -67,22 +91,13 @@ class PlaylistController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'is_public' => 'boolean',
+            'description' => 'nullable|string|max:1000',
         ]);
+
+        $validated['is_public'] = $request->has('is_public');
 
         $playlist->update($validated);
 
         return redirect("/playlists/{$playlist->id}")->with('success', 'Playlist updated!');
-    }
-
-    public function destroy(Playlist $playlist)
-    {
-        if (!$playlist->users->contains(auth()->id())) {
-            abort(403);
-        }
-
-        $playlist->delete();
-
-        return redirect('/users/' . auth()->id() . '/playlists')->with('success', 'Playlist deleted.');
     }
 }

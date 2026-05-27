@@ -132,6 +132,7 @@ $isCompact = $layout === 'compact';
                 <div class="followers-count fw-bold fs-5" data-user-id="{{ $user->id }}">
                     {{ $user->followers_count ?? 0 }}
                 </div>
+        </div>
                 <div class="text-muted small">Followers</div>
             </div>
 
