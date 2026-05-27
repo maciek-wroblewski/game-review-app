@@ -99,7 +99,7 @@ class UserController extends Controller
             $html = '';
             foreach ($playlists as $playlist) {
                 // Loop and render the exact partial template required for playlists
-                $html .= view('users.partials.playlist-card-wrapper', compact('playlist'))->render();
+                $html .= view('components.playlist.card', ['playlist' => $playlist, 'layout' => 'compact'])->render();
             }
 
             return response()->json([

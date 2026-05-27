@@ -26,7 +26,7 @@
         @else
         <div id="playlists-grid-wrapper" class="row g-4">
             @foreach($playlists as $playlist)
-            @include('users.partials.playlist-card-wrapper', ['playlist' => $playlist])
+            <x-playlist.card :playlist="$playlist" layout="compact" />
             @endforeach
         </div>
 

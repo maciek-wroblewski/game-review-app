@@ -1,38 +1,6 @@
 <x-layout headtitle="{{ $playlist->name }}">
-    <div class="container py-5">
-        <div class="d-flex justify-content-between align-items-start mb-4">
-            <div class="d-flex gap-4 align-items-center">
-                @if($playlist->cover)
-                <img src="{{ asset('storage/' . $playlist->cover) }}" alt="{{ $playlist->name }}"
-                    class="rounded shadow-sm"
-                    style="width: 120px; height: 120px; object-fit: cover; aspect-ratio: 1/1;">
-                @else
-                <div class="rounded shadow-sm bg-light d-flex align-items-center justify-content-center text-muted border"
-                    style="width: 120px; height: 120px; aspect-ratio: 1/1;">
-                    <i class="bi bi-collection-play" style="font-size: 3rem; opacity: 0.5;"></i>
-                </div>
-                @endif
-
-                <div>
-                    <h1 class="fw-bold mb-1">{{ $playlist->name }}</h1>
-                    <p class="text-muted mb-0">{{ $playlist->description ?? 'A collection of games' }}</p>
-                    @if($playlist->users->count() > 0)
-                    <small class="text-muted">Created by <a href="/users/{{ $playlist->users->first()->username }}"
-                            class="text-decoration-none">{{ $playlist->users->first()->username }}</a></small>
-                    @endif
-                </div>
-            </div>
-
-            @if($playlist->users->count() > 0)
-            <a href="/users/{{ $playlist->users->first()->username }}/playlists" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-2"></i> Back to Playlists
-            </a>
-            @else
-            <a href="javascript:history.back()" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-2"></i> Back
-            </a>
-            @endif
-        </div>
+    <div class="container py-5 d-flex flex-column gap-3">
+        <x-playlist.card :playlist="$playlist" layout="full" />
 
         @if($playlist->games->count() > 0)
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">

@@ -14,7 +14,7 @@ class PlaylistFactory extends Factory
             'is_system' => false,
             'is_public' => fake()->boolean(90),
             'description' => fake()->paragraph(),
-            'cover' => fake()->imageUrl(640, 480, 'abstract', true),
+            'cover' => 'https://picsum.photos/seed/' . fake()->uuid() . '/600/600',
         ];
     }
 }
