@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 class PlaylistController extends Controller
 {
 
-
     public function create()
     {
         return view('playlists.create');
@@ -26,12 +25,13 @@ class PlaylistController extends Controller
         $validated['is_public'] = $request->has('is_public');
 
         $playlist = Playlist::create($validated);
-        
+
         // Attach the playlist to the currently authenticated user
         $playlist->users()->attach(auth()->id());
 
         return redirect("/playlists/{$playlist->id}")->with('success', 'Playlist created successfully!');
     }
+
     public function show(Request $request, Playlist $playlist)
     {
         // 1. Paginate games (custom page name: 'games_page')
@@ -48,7 +48,7 @@ class PlaylistController extends Controller
 
         // Handle load-more AJAX responses
         if ($request->ajax()) {
-            
+
             // If the request is for more games
             if ($request->has('games_page')) {
                 $html = '';
@@ -99,5 +99,16 @@ class PlaylistController extends Controller
         $playlist->update($validated);
 
         return redirect("/playlists/{$playlist->id}")->with('success', 'Playlist updated!');
+    }
+
+    public function destroy(Playlist $playlist)
+    {
+        if (!$playlist->users->contains(auth()->id())) {
+            abort(403);
+        }
+
+        $playlist->delete();
+
+        return redirect('/users/' . auth()->id() . '/playlists')->with('success', 'Playlist deleted.');
     }
 }
