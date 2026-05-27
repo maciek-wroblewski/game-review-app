@@ -92,7 +92,11 @@ class UserController extends Controller
 
     public function playlists(Request $request, User $user)
     {
-        $playlists = $user->playlists()->latest()->paginate(20);
+        $playlists = $user->playlists()
+        ->with('users')       // Eager load users to prevent N+1 on ownership check
+        ->withCount('games')  // Perform the count in SQL natively
+        ->latest()
+        ->paginate(20);
 
         // Intercept async pagination queries
         if ($request->ajax()) {
