@@ -2,9 +2,12 @@
     <div class="container py-5 d-flex flex-column gap-3">
         <x-playlist.card :playlist="$playlist" layout="full" />
 
-        @if($playlist->games->count() > 0)
+        {{-- CHANGE 1: Use $games instead of $playlist->games --}}
+        @if($games->count() > 0)
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
-            @foreach($playlist->games as $game)
+            
+            {{-- CHANGE 2: Use $games instead of $playlist->games --}}
+            @foreach($games as $game)
             <div class="col d-flex flex-column gap-2">
                 <div class="flex-grow-1">
                     <x-game-card :game="$game" />
@@ -30,7 +33,9 @@
             <p class="mb-0">There are no games in this playlist yet.</p>
         </div>
         @endif
+        
         <div class="mt-5 max-w-3xl">
             <x-hub-comments hub-type="playlist" :hub-id="$playlist->id" :posts="$posts" />
         </div>
+    </div>
 </x-layout>

@@ -21,7 +21,7 @@
                         @if($playlist->cover)
                         <div class="mt-2">
                             <small class="text-muted d-block mb-1">Current Cover:</small>
-                            <img src="{{ asset('storage/' . $playlist->cover) }}" alt="Cover" class="rounded shadow-sm"
+                            <img src="{{ asset($playlist->cover) }}" alt="Cover" class="rounded shadow-sm"
                                 style="width: 100px; height: 100px; object-fit: cover;">
                         </div>
                         @endif

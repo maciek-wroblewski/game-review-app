@@ -38,20 +38,27 @@ class PlaylistController extends Controller
 
     public function show(Request $request, Playlist $playlist)
     {
+        // 1. Eager load the playlist owners and game count for the header card
+        $playlist->load('users')->loadCount('games');
+
+        // 2. Paginate games with eager loaded relationships
         $games = $playlist->games()
             ->with(['genres', 'credits'])
             ->paginate(12, ['*'], 'games_page');
 
+        // 3. Paginate posts (custom page name: 'posts_page')
         $posts = Post::query()
             ->where('hub_type', 'playlist')
             ->where('hub_id', $playlist->id)
             ->whereNull('parent_id')
             ->latest()
-            ->withFeedRelations()
+            ->withFeedRelations() 
             ->paginate(10, ['*'], 'posts_page');
 
+        // Handle load-more AJAX responses
         if ($request->ajax()) {
 
+            // If the request is for more games
             if ($request->has('games_page')) {
                 $html = '';
                 foreach ($games as $game) {
@@ -64,6 +71,7 @@ class PlaylistController extends Controller
                 ]);
             }
 
+            // If the request is for more posts/comments
             if ($request->has('posts_page')) {
                 return response()->json([
                     'html' => view('components.post.items', compact('posts'))->render(),
