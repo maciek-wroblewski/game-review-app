@@ -13,8 +13,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
     @vite([
-        'resources/sass/app.scss',
-        'resources/js/app.js'
+    'resources/sass/app.scss',
+    'resources/js/app.js'
     ])
 
     <style>
@@ -91,47 +91,6 @@
             box-shadow: 0 0 14px rgba(255, 77, 77, 0.32);
         }
 
-        /* --- DROPDOWN NOTYFIKACJI (DESKTOP) --- */
-        .notification-dropdown {
-            width: 340px;
-            max-height: 500px;
-            overflow-y: auto;
-            border-radius: 18px;
-            display: block !important;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease;
-            pointer-events: none;
-            right: 0;
-            left: auto !important;
-            margin-top: 10px;
-        }
-
-        .notification-dropdown.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-
-        /* --- OVERLAY NOTYFIKACJI (TŁO NA MOBILE) --- */
-        .notification-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(6px);
-            z-index: 10000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.25s ease, visibility 0.25s ease;
-        }
-
-        .notification-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
         /* --- MOBILE SPECIFIC FIXES --- */
         @media (max-width: 991.98px) {
             .mobile-menu-wrapper {
@@ -150,34 +109,13 @@
             .nav-item {
                 margin-bottom: 0.5rem;
             }
-
-            /* Przekształcenie dropdowna w pop-up na mobile */
-            .notification-dropdown {
-                position: fixed !important;
-                top: 50% !important;
-                left: 50% !important;
-                transform: translate(-50%, -45%) !important;
-                width: 92% !important;
-                max-width: 400px;
-                max-height: 80vh !important;
-                z-index: 10001 !important;
-                margin: 0 !important;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                background: #fff; /* Tło okienka */
-            }
-
-            .notification-dropdown.show {
-                transform: translate(-50%, -50%) !important;
-            }
         }
     </style>
 </head>
 
 <body class="bg-light d-flex flex-column min-vh-100">
-
-    <div id="notificationOverlay" class="notification-overlay d-lg-none"></div>
-
-    <nav class="navbar navbar-expand-lg navbar-dark premium-navbar" style="position: fixed; top: 0; left: 0; right: 0; width: 100%; z-index: 9999;">
+    <nav class="navbar navbar-expand-lg navbar-dark premium-navbar"
+        style="position: fixed; top: 0; left: 0; right: 0; width: 100%; z-index: 9999;">
         <div class="container-fluid px-4 px-xl-5">
 
             <a class="navbar-brand fw-bold fs-3 d-flex align-items-center" href="/">
@@ -185,7 +123,8 @@
                 VG<span class="text-primary">DB</span>
             </a>
 
-            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
@@ -197,120 +136,47 @@
                 </ul>
 
                 <form class="d-flex mx-auto col-12 col-lg-5 mb-3 mb-lg-0" role="search" action="/search" method="GET">
-                    <input class="form-control rounded-pill premium-search px-4" type="search" name="q" placeholder="Search games, users..." value="{{ request('q') }}">
+                    <input class="form-control rounded-pill premium-search px-4" type="search" name="q"
+                        placeholder="Search games, users..." value="{{ request('q') }}">
                 </form>
 
                 <ul class="navbar-nav align-items-lg-center gap-lg-3">
 
                     @auth
-                        @php
-                            $user = auth()->user();
-                            $unreadNotificationCount = $user->notifications()->where('read', false)->count();
+                    <x-notifications />
 
-                            $recentNotifications = $user->notifications()
-                                ->with('fromUser.avatar')
-                                ->latest()
-                                ->take(10)
-                                ->get();
-                        @endphp
+                    <li class="nav-item">
+                        <a class="nav-link profile-pill d-flex align-items-center gap-2 justify-content-center justify-content-lg-start"
+                            href="/users/{{ auth()->user()->username }}">
+                            <i class="bi bi-person-circle"></i>
+                            <span>{{ auth()->user()->username }}</span>
+                            @if(auth()->user()->is_admin)
+                            <span class="admin-badge">ADMIN</span>
+                            @endif
+                        </a>
+                    </li>
 
-                        <li class="nav-item dropdown">
-                            <a id="notificationToggle" class="nav-link d-inline-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" data-bs-display="static">
-                                <i class="bi bi-bell-fill fs-5"></i>
-                                @if($unreadNotificationCount > 0)
-                                    <span class="small fw-semibold text-white">
-                                        {{ $unreadNotificationCount }}
-                                    </span>
-                                @endif
-                                <span class="d-lg-none ms-2">Notifications</span>
-                            </a>
+                    <li class="nav-item">
+                        <a href="/profile" class="btn btn-outline-light premium-button">Edit Profile</a>
+                    </li>
 
-                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2 notification-dropdown">
-                                <li class="px-3 py-2 border-bottom mb-2">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="fw-bold mb-0 text-dark">Notifications</h6>
-                                        @if($unreadNotificationCount > 0)
-                                            <form action="/notifications/read-all" method="POST">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-link text-decoration-none p-0">
-                                                    Mark all as read
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </div>
-                                </li>
-
-                                @forelse($recentNotifications as $notification)
-                                    <li>
-                                        <x-clickable-card href="{{ $notification->target_url }}" class="dropdown-item rounded-4 py-3 {{ !$notification->read ? 'bg-light' : '' }}">
-                                            <div class="d-flex align-items-start gap-3">
-                                                <a href="/users/{{ optional($notification->fromUser)->username }}" class="text-decoration-none">
-                                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center overflow-hidden" style="width: 42px; height: 42px; flex-shrink: 0;">
-                                                        @php
-                                                            $avatar = optional($notification->fromUser)->avatar;
-                                                            $avatarPath = is_string($avatar) ? $avatar : optional($avatar)->file_path;
-                                                        @endphp
-
-                                                        @if($avatarPath)
-                                                            <img src="{{ $avatarPath }}" class="w-100 h-100 object-fit-cover">
-                                                        @else
-                                                            {{ strtoupper(substr(optional($notification->fromUser)->username ?? 'S', 0, 1)) }}
-                                                        @endif
-                                                    </div>
-                                                </a>
-                                                <div class="flex-grow-1 text-wrap">
-                                                    <div class="small mb-1 text-dark">
-                                                        <a href="/users/{{ optional($notification->fromUser)->username }}" class="fw-semibold text-decoration-none text-dark">
-                                                            {{ optional($notification->fromUser)->username }}
-                                                        </a>
-                                                        {{ str_replace(optional($notification->fromUser)->username, '', $notification->message) }}
-                                                    </div>
-                                                    <small class="text-muted">
-                                                        {{ $notification->created_at->diffForHumans() }}
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        </x-clickable-card>
-                                    </li>
-                                @empty
-                                    <li class="px-3 py-4 text-center text-muted">
-                                        No notifications yet
-                                    </li>
-                                @endforelse
-                            </ul>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link profile-pill d-flex align-items-center gap-2 justify-content-center justify-content-lg-start" href="/users/{{ auth()->user()->username }}">
-                                <i class="bi bi-person-circle"></i>
-                                <span>{{ auth()->user()->username }}</span>
-                                @if(auth()->user()->is_admin)
-                                    <span class="admin-badge">ADMIN</span>
-                                @endif
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a href="/profile" class="btn btn-outline-light premium-button">Edit Profile</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="btn btn-primary premium-button px-4 w-100">
-                                    <i class="bi bi-box-arrow-right me-2"></i> Log Out
-                                </button>
-                            </form>
-                        </li>
+                    <li class="nav-item">
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="btn btn-primary premium-button px-4 w-100">
+                                <i class="bi bi-box-arrow-right me-2"></i> Log Out
+                            </button>
+                        </form>
+                    </li>
                     @endauth
 
                     @guest
-                        <li class="nav-item">
-                            <a class="btn btn-outline-light premium-button w-100" href="/login">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-primary premium-button w-100" href="/register">Register</a>
-                        </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-light premium-button w-100" href="/login">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary premium-button w-100" href="/register">Register</a>
+                    </li>
                     @endguest
 
                 </ul>
@@ -360,33 +226,8 @@
                     }
                 });
             });
-
-            // 3. Obsługa Mobile Overlay dla notyfikacji
-            if (notificationToggle && overlay) {
-                // Gdy dropdown Bootstrapa się otwiera
-                notificationToggle.addEventListener('show.bs.dropdown', () => {
-                    if (window.innerWidth < 992) {
-                        overlay.classList.add('show');
-                        document.body.style.overflow = 'hidden'; // Blokuje scroll w tle
-                    }
-                });
-
-                // Gdy dropdown Bootstrapa się zamyka
-                notificationToggle.addEventListener('hide.bs.dropdown', () => {
-                    overlay.classList.remove('show');
-                    document.body.style.overflow = ''; // Zwraca scroll
-                });
-
-                // Kliknięcie w ciemne tło (overlay) zamyka dropdown
-                overlay.addEventListener('click', () => {
-                    // Jeśli chcemy zamknąć za pomocą API Bootstrap 5:
-                    const bsDropdown = bootstrap.Dropdown.getInstance(notificationToggle);
-                    if (bsDropdown) {
-                        bsDropdown.hide();
-                    }
-                });
-            }
         });
     </script>
 </body>
+
 </html>
