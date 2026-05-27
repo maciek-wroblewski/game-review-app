@@ -59,21 +59,14 @@ class User extends Authenticatable
 
     public function posts()
     {
-        return $this->hasMany(Post::class);
+        return $this->hasMany(Post::class)
+            ->doesntHave('review');
     }
 
     public function reviews()
     {
         return $this->hasMany(Post::class)
-            ->where('hub_type', 'game')
-            ->whereNull('parent_id');
-    }
-
-    public function communityPosts()
-    {
-        return $this->hasMany(Post::class)
-            ->where('hub_type', 'user')
-            ->whereNull('parent_id');
+            ->has('review');
     }
 
     // --- Blocks ---

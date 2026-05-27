@@ -24,12 +24,11 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-
         $user->loadCount([
             'followers',
             'following',
             'reviews',
-            'communityPosts',
+            'posts',
             'playlists',
         ])
             ->load([
@@ -41,7 +40,7 @@ class UserController extends Controller
             return view('users.private', ['user' => $user]);
         }
 
-        $posts = $user->communityPosts()
+        $posts = $user->posts()
             ->latest()
             ->withFeedRelations()
             ->paginate(10);
@@ -133,13 +132,12 @@ class UserController extends Controller
 
     public function posts(Request $request, User $user)
     {
-        $posts = $user->communityPosts()
+        $posts = $user->posts()
             ->latest()
             ->withFeedRelations()
             ->paginate(10);
 
         if ($request->ajax()) {
-
             return response()->json([
                 'html' => view('components.post.items', compact('posts'))->render(),
                 'next_page_url' => $posts->nextPageUrl(),

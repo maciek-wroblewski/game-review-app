@@ -182,7 +182,7 @@ $isCompact = $layout === 'compact';
                             <i class="bi bi-pencil-square text-info fs-1"></i>
                         </div>
                         <h2 class="fw-bold display-5 mb-1 text-dark">
-                            {{ $user->community_posts_count ?? 0 }}
+                            {{ $user->posts_count ?? 0 }}
                         </h2>
                         <p class="text-muted mb-0 fs-5">Posts</p>
                     </div>
