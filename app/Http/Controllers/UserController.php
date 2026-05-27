@@ -22,7 +22,7 @@ class UserController extends Controller
         }
     }
 
-    public function show(User $user)
+    public function show(Request $request, User $user)
     {
         $user->loadCount([
             'followers',
@@ -40,12 +40,39 @@ class UserController extends Controller
             return view('users.private', ['user' => $user]);
         }
 
+        // 1. Authored Posts
         $posts = $user->posts()
             ->latest()
             ->withFeedRelations()
-            ->paginate(10);
+            ->paginate(10, ['*'], 'posts_page');
 
-        return view('users.show', compact('user', 'posts'));
+        // 2. Profile Comments (hub_type = 'user', hub_id = user's ID)
+        $comments = Post::query()
+            ->where('hub_type', 'user')
+            ->where('hub_id', $user->id)
+            ->whereNull('parent_id')
+            ->latest()
+            ->withFeedRelations()
+            ->paginate(10, ['*'], 'comments_page');
+
+        // 3. Handle AJAX Requests for loading more posts/comments dynamically
+        if ($request->ajax()) {
+            if ($request->has('posts_page')) {
+                return response()->json([
+                    'html' => view('components.post.items', compact('posts'))->render(),
+                    'next_page_url' => $posts->nextPageUrl(),
+                ]);
+            }
+
+            if ($request->has('comments_page')) {
+                return response()->json([
+                    'html' => view('components.post.items', ['posts' => $comments])->render(),
+                    'next_page_url' => $comments->nextPageUrl(),
+                ]);
+            }
+        }
+
+        return view('users.show', compact('user', 'posts', 'comments'));
     }
 
     public function followers(Request $request, User $user)

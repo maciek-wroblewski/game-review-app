@@ -141,7 +141,7 @@
                         </div>
                         <div class="container">
                             <div class="mt-5 max-w-3xl mx-auto">
-                                <x-hub-comments hub-type="user" :hub-id="$user->id" :posts="$posts" />
+                                <x-hub-comments hub-type="user" :hub-id="$user->id" :posts="$comments" />
                             </div>
                         </div>
                     </div>

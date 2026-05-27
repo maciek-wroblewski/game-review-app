@@ -133,30 +133,30 @@ $isCompact = $layout === 'compact';
 
         {{-- Compact Footer --}}
         @if($isCompact)
-        <div class="card-footer bg-white border-top-0 d-flex justify-content-around py-3">
-            <div class="text-center">
-                <div class="followers-count fw-bold fs-5" data-user-id="{{ $user->id }}">
-                    {{ $user->followers_count ?? 0 }}
+            <div class="card-footer bg-white border-top-0 d-flex justify-content-around py-3">
+                <div class="text-center">
+                    <div class="followers-count fw-bold fs-5" data-user-id="{{ $user->id }}">
+                        {{ $user->followers_count ?? 0 }}
+                    </div>
+                    <div class="text-muted small">Followers</div>
+                </div>
+
+                <div class="text-center">
+                    <div class="fw-bold fs-5">
+                        {{ $user->following_count ?? 0 }}
+                    </div>
+                    <div class="text-muted small">Following</div>
+                </div>
+
+                <div class="text-center">
+                    <div class="fw-bold fs-5">
+                        {{ $user->reviews_count ?? 0 }}
+                    </div>
+                    <div class="text-muted small">Reviews</div>
                 </div>
             </div>
-            <div class="text-muted small">Followers</div>
-        </div>
-
-        <div class="text-center">
-            <div class="fw-bold fs-5">
-                {{ $user->following_count ?? 0 }}
-            </div>
-            <div class="text-muted small">Following</div>
-        </div>
-
-        <div class="text-center">
-            <div class="fw-bold fs-5">
-                {{ $user->reviews_count ?? 0 }}
-            </div>
-            <div class="text-muted small">Reviews</div>
-        </div>
+        @endif
     </div>
-    @endif
 
 </div>
 
