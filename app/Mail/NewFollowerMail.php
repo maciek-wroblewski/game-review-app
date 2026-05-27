@@ -23,7 +23,7 @@ class NewFollowerMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Masz nowego obserwującego! 🎉',
+            subject: __('New follower: :username', ['username' => $this->follower->username]),
         );
     }
 

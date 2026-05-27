@@ -26,7 +26,7 @@ class NewPostMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Nowy post od ' . $this->author->username . '!', // Translated to Polish to match your NewFollowerMail
+            subject: __('New post from :username', ['username' => $this->author->username]),
         );
     }
 

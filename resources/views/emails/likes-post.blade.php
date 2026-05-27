@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>__('New post')</title>
+    <title>__('Your post is getting popular!')</title>
 </head>
 <body>
-    <h2>__('New post')</h2>
-    <p>__('A user named :username has published a new post.', ['username' => $author->username])</p>
+    <h2>__('Your post is getting popular!')</h2>
+    <p>__('Your post just got its first 10 likes!')</p>
     
     <div style="padding: 10px; border-left: 4px solid #ccc; margin: 20px 0;">
         <p>{{ Str::limit($post->body, 100) }}</p>

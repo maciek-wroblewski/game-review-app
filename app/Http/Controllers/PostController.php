@@ -97,8 +97,8 @@ class PostController extends Controller
                     'user_id' => $parentPost->user_id,
                     'from_user_id' => $currentUser->id,
                     'type' => 'comment',
-                    'message' => __(':username skomentował twój post.', ['username' => $currentUser->username]),
-                    'target_url' => url('/posts/' . $parentPost->id), // Link do posta głównego
+                    'message' => __(':username commented on your post.', ['username' => $currentUser->username]),
+                    'target_url' => url('/posts/' . $parentPost->id),
                 ]);
 
                 if ($parentPost->author && $parentPost->author->email) {
@@ -114,7 +114,7 @@ class PostController extends Controller
                     'user_id' => $follower->id,
                     'from_user_id' => $currentUser->id,
                     'type' => 'new_post',
-                    'message' => __(':username właśnie opublikował nowy post.', ['username' => $currentUser->username]),
+                    'message' => __(':username just posted a new post.', ['username' => $currentUser->username]),
                     'target_url' => url('/posts/' . $post->id), // Link do nowego posta
                 ]);
 

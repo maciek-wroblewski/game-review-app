@@ -218,7 +218,8 @@
             });
 
             // 2. Zamykanie menu po kliknięciu w standardowy link
-            const navLinks = document.querySelectorAll('.nav-link:not(.dropdown-toggle)');
+            const navLinks = document.querySelectorAll('.nav-link:not([data-bs-toggle="dropdown"])');
+
             navLinks.forEach(link => {
                 link.addEventListener('click', () => {
                     if (navBar.classList.contains('show')) {

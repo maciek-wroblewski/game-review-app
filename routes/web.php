@@ -81,6 +81,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/posts/{post}/lock', [AdminController::class, 'toggleLock']);
     // Notifications
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 });
 // public API

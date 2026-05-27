@@ -10,32 +10,29 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class NewCommentMail extends Mailable
+class LikesPostMail extends Mailable
 {
     use Queueable, SerializesModels;
+    public $author, $post;
 
-    public $commenter;
-    public $comment;
-    public $parentPost;
-
-    public function __construct(User $commenter, Post $comment, Post $parentPost)
+    public function __construct(User $author, Post $post)
     {
-        $this->commenter = $commenter;
-        $this->comment = $comment;
-        $this->parentPost = $parentPost;
+        $this->author = $author;
+        $this->post = $post;
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: __(':username commented on your post', ['username' => $this->commenter->username]),
+            subject: __('Your post is popular! 🎉'),
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            view: 'emails.new-comment',
+            view: 'emails.likes-post',
         );
     }
+
 }

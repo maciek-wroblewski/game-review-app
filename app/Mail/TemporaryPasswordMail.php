@@ -23,7 +23,7 @@ class TemporaryPasswordMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Twoje hasło tymczasowe 🔑',
+            subject: __('Your temporary password 🔑'),
         );
     }
 

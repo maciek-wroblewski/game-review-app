@@ -34,4 +34,22 @@ class NotificationController extends Controller
 
         return back();
     }
+    public function index(Request $request)
+    {
+        $notifications = $request->user()
+            ->notifications()
+            ->with('fromUser.avatar')
+            ->latest()
+            ->simplePaginate(10);
+
+        if ($request->ajax()) {
+            // Return JSON payload so JS knows exactly when to hide the button
+            return response()->json([
+                'html' => view('components.notification-items', compact('notifications'))->render(),
+                'next_page_url' => $notifications->nextPageUrl()
+            ]);
+        }
+
+        return back();
+    }
 }
