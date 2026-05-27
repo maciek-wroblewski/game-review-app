@@ -64,10 +64,10 @@
             @endif
         </div>
     </ul>
-<style>
+    
+    <style>
         .notification-dropdown {
             width: 340px;
-            /* Removed max-height and overflow from here */
             border-radius: 18px;
             
             display: block !important;
@@ -130,15 +130,27 @@
             visibility: visible;
         }
 
+        /* --- MOBILE SPECIFIC OVERRIDES --- */
         @media (max-width: 991.98px) {
             .notification-dropdown {
                 position: fixed !important;
-                top: 50% !important;
+                
+                /* 1. ANCHOR TOP: Sit right below the navbar */
+                top: 75px !important; 
+                
+                /* 2. ONLY CENTER HORIZONTALLY */
                 left: 50% !important;
-                transform: translate(-50%, -45%) !important; 
+                transform: translateX(-50%) translateY(-15px) !important; 
+                
                 width: 92% !important;
                 max-width: 400px;
-                /* Removed max-height from here */
+                
+                /* 3. FLUID HEIGHT: 100vh minus top offset and bottom padding */
+                max-height: calc(100vh - 100px) !important; 
+                
+                display: flex !important;
+                flex-direction: column;
+                
                 z-index: 10001 !important;
                 margin-top: 0 !important;
                 border: 1px solid rgba(255, 255, 255, 0.1);
@@ -146,13 +158,17 @@
             }
 
             .notification-dropdown.show {
-                transform: translate(-50%, -50%) !important;
+                transform: translateX(-50%) translateY(0) !important;
+            }
+
+            .notification-dropdown > li:first-child {
+                flex-shrink: 0;
             }
 
             .notification-scroll-area {
-                max-height: calc(80vh - 65px); /* 80vh minus the fixed header height */
+                flex-grow: 1;
+                max-height: none; 
             }
         }
     </style>
-
 </li>

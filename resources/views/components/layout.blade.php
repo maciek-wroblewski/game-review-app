@@ -79,6 +79,12 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 999px;
             padding: 0.45rem 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .profile-pill:hover {
+            background: rgba(255, 255, 255, 0.12);
         }
 
         .admin-badge {
@@ -89,6 +95,41 @@
             padding: 0.35rem 0.55rem;
             border-radius: 999px;
             box-shadow: 0 0 14px rgba(255, 77, 77, 0.32);
+        }
+
+        /* --- DROPDOWN STYLING --- */
+        .premium-dropdown {
+            background: rgba(24, 26, 31, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 0.5rem 0;
+        }
+
+        .premium-dropdown .dropdown-item {
+            color: rgba(255, 255, 255, 0.85);
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .premium-dropdown .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+
+        .premium-dropdown .dropdown-divider {
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        /* --- CUSTOM RESPONSIVE NAV BREAKPOINT (1454px) --- */
+        @media (min-width: 1454px) {
+            .desktop-nav-item { display: block !important; }
+            .compact-nav-item { display: none !important; }
+        }
+        @media (max-width: 1453.98px) {
+            .desktop-nav-item { display: none !important; }
+            .compact-nav-item { display: block !important; }
         }
 
         /* --- MOBILE SPECIFIC FIXES --- */
@@ -145,7 +186,8 @@
                     @auth
                     <x-notifications />
 
-                    <li class="nav-item">
+                    {{-- --- DESKTOP VIEW (≥ 1454px): Full separated buttons --- --}}
+                    <li class="nav-item desktop-nav-item">
                         <a class="nav-link profile-pill d-flex align-items-center gap-2 justify-content-center justify-content-lg-start"
                             href="/users/{{ auth()->user()->username }}">
                             <i class="bi bi-person-circle"></i>
@@ -156,17 +198,54 @@
                         </a>
                     </li>
 
-                    <li class="nav-item">
+                    <li class="nav-item desktop-nav-item">
                         <a href="/profile" class="btn btn-outline-light premium-button">Edit Profile</a>
                     </li>
 
-                    <li class="nav-item">
-                        <form method="POST" action="{{ route('logout') }}">
+                    <li class="nav-item desktop-nav-item">
+                        <form method="POST" action="{{ route('logout') }}" class="m-0">
                             @csrf
                             <button type="submit" class="btn btn-primary premium-button px-4 w-100">
                                 <i class="bi bi-box-arrow-right me-2"></i> Log Out
                             </button>
                         </form>
+                    </li>
+
+                    {{-- --- COMPACT VIEW (< 1454px): Unified Dropdown (Click Only) --- --}}
+                    <li class="nav-item dropdown compact-nav-item">
+                        <button class="nav-link profile-pill d-flex align-items-center gap-2 justify-content-center justify-content-lg-start border-0 w-100"
+                            id="userDropdownToggle" 
+                            data-bs-toggle="dropdown" 
+                            aria-expanded="false"
+                            style="background: transparent;">
+                            <i class="bi bi-person-circle"></i>
+                            <span>{{ auth()->user()->username }}</span>
+                            @if(auth()->user()->is_admin)
+                            <span class="admin-badge">ADMIN</span>
+                            @endif
+                        </button>
+                        
+                        <ul class="dropdown-menu dropdown-menu-end premium-dropdown mt-lg-2" aria-labelledby="userDropdownToggle">
+                            <li>
+                                <a class="dropdown-item py-2 fw-bold" href="/users/{{ auth()->user()->username }}">
+                                    <i class="bi bi-person me-2 text-primary"></i> View Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2" href="/profile">
+                                    <i class="bi bi-person-gear me-2 text-primary"></i> Edit Profile
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{{ route('logout') }}" class="m-0">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item py-2 text-danger">
+                                        <i class="bi bi-box-arrow-right me-2"></i> Log Out
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
                     </li>
                     @endauth
 
@@ -206,10 +285,8 @@
         document.addEventListener('DOMContentLoaded', function () {
             const navBar = document.getElementById('navbarNav');
             const toggler = document.querySelector('.navbar-toggler');
-            const notificationToggle = document.getElementById('notificationToggle');
-            const overlay = document.getElementById('notificationOverlay');
-
-            // 1. Zamykanie menu po kliknięciu poza nim
+            
+            // 1. Close menu when clicking outside
             document.addEventListener('click', function (event) {
                 const isClickInside = navBar.contains(event.target) || toggler.contains(event.target);
                 if (!isClickInside && navBar.classList.contains('show')) {
@@ -217,9 +294,8 @@
                 }
             });
 
-            // 2. Zamykanie menu po kliknięciu w standardowy link
+            // 2. Close menu on standard link click
             const navLinks = document.querySelectorAll('.nav-link:not([data-bs-toggle="dropdown"])');
-
             navLinks.forEach(link => {
                 link.addEventListener('click', () => {
                     if (navBar.classList.contains('show')) {

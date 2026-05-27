@@ -3,7 +3,7 @@
 <div class="col-md-4 mb-4">
     <div class="card shadow-sm border-0">
         @if($game->cover_img)
-        <img src="{{ $game->cover_img }}" class="card-img-top" alt="{{ $game->title }} Cover">
+        <img src="{{ asset($game->cover_img) }}" class="card-img-top" style="aspect-ratio: 2/3; object-fit: cover; background: #333;" alt="{{ $game->title }} Cover">
         @endif
         <div class="card-body">
             

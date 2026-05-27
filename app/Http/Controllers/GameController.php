@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Game;
+use App\Models\Genre;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -17,7 +18,6 @@ class GameController extends Controller
             ->orderBy('average_rating', 'desc')
             ->paginate(12);
 
-        // If it's an AJAX pagination request, return raw HTML row grids directly
         if ($request->ajax()) {
             $html = '';
             foreach ($games as $game) {
@@ -33,12 +33,8 @@ class GameController extends Controller
         return view('games.index', compact('games'));
     }
 
-    /**
-     * Display the specified game.
-     */
     public function show(Request $request, Game $game)
     {
-        // 1. Eager load simple relations and an efficient COUNT of posts/reviews
         $game->load(['genres', 'credits']);
         $game->loadCount(['posts' => function ($query) {
             $query->whereHas('review');
@@ -48,25 +44,22 @@ class GameController extends Controller
         $user = auth()->user();
         $playlists = $user
             ? $user->playlists()->with(['games' => function ($query) use ($game) {
-                $query->where('games.id', $game->id); // Only loads pivot data for this specific game
+                $query->where('games.id', $game->id);
             }])->get()
             : collect();
 
-        // 2. Fetch user's specific review first using the optimized feed scope
         $userReviewPost = $userId
-                    ? $game->posts() // <-- Query directly through the relationship
+                    ? $game->posts()
                         ->where('user_id', $userId)
                         ->has('review')
                         ->withFeedRelations()
                         ->first()
                     : null;
 
-        // 3. Fetch all other reviews using the optimized feed scope
-        $posts = $game->posts() // <-- Query directly through the relationship
+        $posts = $game->posts()
             ->has('review')
             ->withFeedRelations()
             ->when($userId, function ($query) use ($userId) {
-                // This excludes the user's post from the paginated list
                 $query->where('user_id', '!=', $userId);
             })
             ->orderByDesc('is_pinned')
@@ -93,7 +86,6 @@ class GameController extends Controller
 
         $html = '';
 
-        // CHANGE: Render the partial that includes the column wrapper
         foreach ($games as $game) {
             $html .= view('games.partials.game-card-wrapper', ['game' => $game])->render();
         }
@@ -107,10 +99,9 @@ class GameController extends Controller
 
     public function discussions(Request $request, Game $game)
     {
-        // 1. Eager load simple relations and an efficient COUNT of discussion posts
         $game->load(['genres', 'credits']);
         $game->loadCount(['posts' => function ($query) {
-            $query->doesntHave('review'); // Filter out reviews for the count
+            $query->doesntHave('review');
         }]);
 
         $userId = auth()->id() ?? null;
@@ -122,15 +113,13 @@ class GameController extends Controller
             }])->get()
             : collect();
 
-        // 2. Fetch all discussion posts (excluding reviews) using the optimized feed scope
         $posts = $game->posts()
-            ->doesntHave('review') // Get general discussions, not reviews
+            ->doesntHave('review')
             ->withFeedRelations()
             ->orderByDesc('is_pinned')
             ->latest()
             ->paginate(10);
 
-        // 3. Handle AJAX pagination
         if ($request->ajax()) {
             return view('components.post.items', compact('posts'))->render();
         }
@@ -138,27 +127,21 @@ class GameController extends Controller
         return view('games.discussions', compact('game', 'playlists', 'posts'));
     }
 
-    /**
-     * Show the form for editing the specified game.
-     */
     public function edit(Game $game)
     {
-        // Authorization check: User must be authenticated AND either an admin or in the game's credits
         if (!auth()->check() || (!auth()->user()->is_admin && !$game->credits->contains('id', auth()->id()))) {
-            abort(403, 'You do not have permission to edit this game.');
+            abort(403, __('You do not have permission to edit this game.'));
         }
 
-        return view('games.edit', compact('game'));
+        $genres = Genre::orderBy('name')->get(); // Added genres fetch
+
+        return view('games.edit', compact('game', 'genres')); // Passed to view
     }
 
-    /**
-     * Update the specified game in storage.
-     */
     public function update(Request $request, Game $game)
     {
-        // Authorization check...
         if (!auth()->check() || (!auth()->user()->is_admin && !$game->credits->contains('id', auth()->id()))) {
-            abort(403, 'You do not have permission to edit this game.');
+            abort(403, __('You do not have permission to edit this game.'));
         }
 
         $validated = $request->validate([
@@ -168,7 +151,8 @@ class GameController extends Controller
             'details' => 'nullable|string',
             'banner_img' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'cover_img' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'logo' => 'nullable|image|mimes:jpeg,png,webp|max:1024', // <-- Changed to 'logo'
+            'logo' => 'nullable|image|mimes:jpeg,png,webp|max:1024',
+            'genres' => 'nullable|array', // Removed the strict ID exists check
         ]);
 
         // Process file uploads
@@ -182,7 +166,6 @@ class GameController extends Controller
             $validated['cover_img'] = '/storage/' . $path;
         }
 
-        // <-- Changed to 'logo' here as well
         if ($request->hasFile('logo')) {
             $path = $request->file('logo')->store('games/logos', 'public');
             $validated['logo'] = '/storage/' . $path;
@@ -190,6 +173,30 @@ class GameController extends Controller
 
         // Update the game record
         $game->update($validated);
+
+        // --- NEW GENRE LOGIC & SYNC ---
+        $syncIds = [];
+        if ($request->has('genres')) {
+            foreach ($request->input('genres') as $genreItem) {
+                if (is_numeric($genreItem)) {
+                    // Existing genre ID
+                    $syncIds[] = (int) $genreItem;
+                } else {
+                    // New genre string - find it or create it
+                    // Your Genre model already auto-generates the slug in the boot() method!
+                    $newGenre = Genre::firstOrCreate([
+                        'name' => trim($genreItem)
+                    ]);
+                    $syncIds[] = $newGenre->id;
+                }
+            }
+        }
+        
+        $game->genres()->sync($syncIds);
+
+        // --- GARBAGE COLLECTION ---
+        // Delete any genres that are no longer attached to any games
+        Genre::doesntHave('games')->delete();
 
         return redirect('/games/' . $game->id)->with('success', 'Game information updated successfully.');
     }

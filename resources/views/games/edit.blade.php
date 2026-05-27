@@ -35,6 +35,16 @@
             width: 100%;
             height: 100%;
         }
+
+        .genre-badge {
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .genre-badge:hover {
+            opacity: 0.8;
+            text-decoration: line-through;
+        }
     </style>
 
     <div class="container py-5 max-w-4xl mx-auto">
@@ -123,6 +133,25 @@
                         </div>
 
                         <div class="mb-4">
+                            <label class="form-label fw-bold">Genres</label>
+                            
+                            <div id="activeGenres" class="d-flex flex-wrap gap-2 mb-3">
+                                </div>
+
+                            <div class="position-relative">
+                                <input type="text" id="genreSearchInput" class="form-control" placeholder="Search and add genre..." autocomplete="off">
+                                <div id="genreDropdown" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1000; max-height: 200px; overflow-y: auto;">
+                                    </div>
+                            </div>
+
+                            <div id="hiddenGenreInputs"></div>
+                            
+                            <small class="text-muted mt-2 d-block">Click on an active genre to remove it.</small>
+                            @error('genres') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                            @error('genres.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                        </div>
+
+                        <div class="mb-4">
                             <label for="details" class="form-label fw-bold">Description / Details</label>
                             <textarea class="form-control @error('details') is-invalid @enderror" id="details" name="details" rows="6" placeholder="Enter game description...">{{ old('details', $game->details) }}</textarea>
                             @error('details') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -141,6 +170,7 @@
     </div>
 
     <script>
+        // --- Image Preview Logic ---
         function previewImage(input, previewId) {
             const preview = document.getElementById(previewId);
             if (input.files && input.files[0]) {
@@ -151,5 +181,130 @@
                 reader.readAsDataURL(input.files[0]);
             }
         }
+
+        // --- Interactive Genre Selection Logic ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const allGenres = @json($genres);
+            const rawInitialGenres = @json(old('genres', $game->genres->pluck('id')->toArray()));
+            
+            // Array of objects { id: int|string, name: string }
+            let selectedGenres = [];
+
+            // Parse initial genres (handles both numeric IDs from DB and strings from failed validation)
+            if (rawInitialGenres) {
+                rawInitialGenres.forEach(item => {
+                    let isNum = !isNaN(item) && !isNaN(parseFloat(item));
+                    if (isNum) {
+                        let g = allGenres.find(g => g.id == item);
+                        if (g) selectedGenres.push({ id: g.id, name: g.name });
+                    } else {
+                        // It was a newly typed string that bounced back from validation
+                        selectedGenres.push({ id: item, name: item });
+                    }
+                });
+            }
+
+            const searchInput = document.getElementById('genreSearchInput');
+            const dropdown = document.getElementById('genreDropdown');
+            const activeContainer = document.getElementById('activeGenres');
+            const hiddenContainer = document.getElementById('hiddenGenreInputs');
+
+            function render() {
+                activeContainer.innerHTML = '';
+                hiddenContainer.innerHTML = '';
+
+                selectedGenres.forEach(genre => {
+                    // Create Badge
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-secondary genre-badge d-inline-flex align-items-center py-2 px-3 fs-6';
+                    badge.innerHTML = `${genre.name} <i class="bi bi-x-circle ms-2"></i>`;
+                    badge.onclick = () => removeGenre(genre.id);
+                    activeContainer.appendChild(badge);
+
+                    // Create Hidden Input
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'genres[]';
+                    hiddenInput.value = genre.id; // Either the numeric ID or the exact string
+                    hiddenContainer.appendChild(hiddenInput);
+                });
+
+                filterDropdown(); 
+            }
+
+            function filterDropdown() {
+                const query = searchInput.value.trim().toLowerCase();
+                dropdown.innerHTML = '';
+                let exactMatchFound = false;
+
+                if (query) {
+                    dropdown.classList.remove('d-none');
+                    
+                    // Filter existing genres
+                    const availableGenres = allGenres.filter(g => 
+                        !selectedGenres.some(sg => sg.name.toLowerCase() === g.name.toLowerCase()) && 
+                        g.name.toLowerCase().includes(query)
+                    );
+
+                    availableGenres.forEach(genre => {
+                        if (genre.name.toLowerCase() === query) exactMatchFound = true;
+                        createDropdownItem(genre.name, () => addGenre(genre.id, genre.name));
+                    });
+
+                    // Add "Create new" option if no exact match is found and it's not already selected
+                    const isAlreadySelected = selectedGenres.some(sg => sg.name.toLowerCase() === query);
+                    if (!exactMatchFound && !isAlreadySelected) {
+                        const newName = searchInput.value.trim();
+                        createDropdownItem(`Add new: "${newName}"`, () => addGenre(newName, newName), 'text-primary fw-bold');
+                    }
+                } else {
+                    dropdown.classList.add('d-none');
+                }
+            }
+
+            function createDropdownItem(text, onClick, extraClasses = '') {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `list-group-item list-group-item-action ${extraClasses}`;
+                btn.textContent = text;
+                btn.onclick = onClick;
+                dropdown.appendChild(btn);
+            }
+
+            window.addGenre = function(id, name) {
+                if (!selectedGenres.some(g => g.name.toLowerCase() === name.toLowerCase())) {
+                    selectedGenres.push({ id, name });
+                    searchInput.value = '';
+                    render();
+                    searchInput.focus();
+                }
+            }
+
+            window.removeGenre = function(id) {
+                selectedGenres = selectedGenres.filter(g => g.id !== id);
+                render();
+            }
+
+            // Keyboard support for hitting "Enter" to add the first item
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (dropdown.children.length > 0) {
+                        dropdown.children[0].click(); // Click the top result automatically
+                    }
+                }
+            });
+
+            searchInput.addEventListener('input', filterDropdown);
+            searchInput.addEventListener('focus', filterDropdown);
+
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.add('d-none');
+                }
+            });
+
+            render();
+        });
     </script>
 </x-layout>
