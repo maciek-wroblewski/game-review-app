@@ -249,7 +249,6 @@ $isCompact = $layout === 'compact';
     </div>
 </div>
 @endif
-</div>
 
 <style>
     .followers-count {
