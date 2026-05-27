@@ -61,10 +61,15 @@ Route::middleware('auth')->group(function () {
     Route::put('/reviews/{review}', [GameReviewController::class, 'update']);
     Route::delete('/reviews/{review}', [GameReviewController::class, 'destroy']);
 
+    // Playlist Create/Store MUST come before {playlist} bindings
+    Route::get('/playlists/create', [PlaylistController::class, 'create']);
+    Route::post('/playlists', [PlaylistController::class, 'store']);
+
     Route::get('/playlists/{playlist}/edit', [PlaylistController::class, 'edit']);
-    Route::patch('/playlists/{playlist}', [PlaylistController::class, 'update']);
+    Route::put('/playlists/{playlist}', [PlaylistController::class, 'update']); // Changed from patch to put
     Route::delete('/playlists/{playlist}', [PlaylistController::class, 'destroy']);
     Route::get('/playlists/{playlist}', [PlaylistController::class, 'show']);
+    
     Route::post('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'store']);
     Route::delete('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'destroy']);
 

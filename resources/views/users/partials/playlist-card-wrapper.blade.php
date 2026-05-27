@@ -1,5 +1,14 @@
 <div class="col-md-6 col-lg-4 animate-fade-in">
     <div class="card shadow-sm border-0 h-100">
+        {{-- Cover Image Section --}}
+        @if($playlist->cover)
+            <img src="{{ asset('storage/' . $playlist->cover) }}" class="card-img-top" alt="{{ $playlist->name }}" style="aspect-ratio: 1/1; object-fit: cover;">
+        @else
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center text-muted border-bottom" style="aspect-ratio: 1/1;">
+                <i class="bi bi-collection-play" style="font-size: 4rem; opacity: 0.5;"></i>
+            </div>
+        @endif
+
         <div class="card-body d-flex flex-column">
             <div class="mb-3">
                 <h3 class="fw-bold mb-2">

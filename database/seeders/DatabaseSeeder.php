@@ -163,6 +163,16 @@ class DatabaseSeeder extends Seeder
                 $gamesPerPlaylist = rand(3, 8);
                 $randomGames = $games->random(min($gamesPerPlaylist, count($games)));
                 
+                // fill each playlist with 3-5 random comments
+                $commentsPerPlaylist = rand(3, 5);
+                for ($j = 0; $j < $commentsPerPlaylist; $j++) {
+                    Post::factory()->create([
+                        'hub_id' => $playlist->id,
+                        'hub_type' => 'playlist',
+                        'user_id' => $users->random()->id,
+                    ]);
+                }
+
                 $order = 1;
                 foreach ($randomGames as $game) {
                     $playlist->games()->attach($game->id, ['order' => $order++]);
@@ -178,6 +188,21 @@ class DatabaseSeeder extends Seeder
             $postsToLike = rand(5, 15);
             $randomPostsToLike = $allPosts->random(min($postsToLike, count($allPosts)))->pluck('id');
             $user->likedPosts()->attach($randomPostsToLike);
+        }
+
+        /// =========================================================
+        /// 10. POPULATE COMMENTS ON USER PROFILES
+        /// =========================================================
+        foreach ($users as $user) {
+            // Each user gets 0-5 comments on their profile
+            $commentsOnProfile = rand(0, 5);
+            for ($i = 0; $i < $commentsOnProfile; $i++) {
+                Post::factory()->create([
+                    'hub_id' => $user->id,
+                    'hub_type' => 'user',
+                    'user_id' => $users->random()->id,
+                ]);
+            }
         }
     }
 }

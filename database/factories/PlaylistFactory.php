@@ -12,7 +12,9 @@ class PlaylistFactory extends Factory
         return [
             'name' => fake()->catchPhrase(),
             'is_system' => false,
-            'is_public' => fake()->boolean(90), // 90% chance to be public
+            'is_public' => fake()->boolean(90),
+            'description' => fake()->paragraph(),
+            'cover' => fake()->imageUrl(640, 480, 'abstract', true),
         ];
     }
 }

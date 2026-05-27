@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Playlist;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PlaylistController extends Controller
 {
@@ -19,14 +20,17 @@ class PlaylistController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'cover' => 'nullable|image|max:2048', // <-- Validate as image (max 2MB)
         ]);
 
-        // Checkboxes only send data if checked
         $validated['is_public'] = $request->has('is_public');
 
-        $playlist = Playlist::create($validated);
+        // Handle File Upload
+        if ($request->hasFile('cover')) {
+            $validated['cover'] = $request->file('cover')->store('playlist-covers', 'public');
+        }
 
-        // Attach the playlist to the currently authenticated user
+        $playlist = Playlist::create($validated);
         $playlist->users()->attach(auth()->id());
 
         return redirect("/playlists/{$playlist->id}")->with('success', 'Playlist created successfully!');
@@ -92,9 +96,17 @@ class PlaylistController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'cover' => 'nullable|image|max:2048', // <-- Validation
         ]);
 
         $validated['is_public'] = $request->has('is_public');
+
+        if ($request->hasFile('cover')) {
+            if ($playlist->cover) {
+                Storage::disk('public')->delete($playlist->cover); // Delete old image
+            }
+            $validated['cover'] = $request->file('cover')->store('playlist-covers', 'public');
+        }
 
         $playlist->update($validated);
 
@@ -105,6 +117,10 @@ class PlaylistController extends Controller
     {
         if (!$playlist->users->contains(auth()->id())) {
             abort(403);
+        }
+
+        if ($playlist->cover) {
+            Storage::disk('public')->delete($playlist->cover);
         }
 
         $playlist->delete();
