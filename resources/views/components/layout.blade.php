@@ -97,7 +97,7 @@
             box-shadow: 0 0 14px rgba(255, 77, 77, 0.32);
         }
 
-        /* --- DROPDOWN STYLING --- */
+        /* --- DROPDOWN STYLING & ANIMATION --- */
         .premium-dropdown {
             background: rgba(24, 26, 31, 0.95);
             backdrop-filter: blur(16px);
@@ -120,6 +120,23 @@
 
         .premium-dropdown .dropdown-divider {
             border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Animation Classes */
+        .premium-dropdown.show {
+            animation: dropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transform-origin: top center;
+        }
+
+        @keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         /* --- CUSTOM RESPONSIVE NAV BREAKPOINT (1454px) --- */
@@ -216,6 +233,7 @@
                         <button class="nav-link profile-pill d-flex align-items-center gap-2 justify-content-center justify-content-lg-start border-0 w-100"
                             id="userDropdownToggle" 
                             data-bs-toggle="dropdown" 
+                            data-bs-display="static" 
                             aria-expanded="false"
                             style="background: transparent;">
                             <i class="bi bi-person-circle"></i>
@@ -286,7 +304,6 @@
             const navBar = document.getElementById('navbarNav');
             const toggler = document.querySelector('.navbar-toggler');
             
-            // 1. Close menu when clicking outside
             document.addEventListener('click', function (event) {
                 const isClickInside = navBar.contains(event.target) || toggler.contains(event.target);
                 if (!isClickInside && navBar.classList.contains('show')) {
@@ -294,7 +311,6 @@
                 }
             });
 
-            // 2. Close menu on standard link click
             const navLinks = document.querySelectorAll('.nav-link:not([data-bs-toggle="dropdown"])');
             navLinks.forEach(link => {
                 link.addEventListener('click', () => {
@@ -305,6 +321,7 @@
             });
         });
     </script>
+    <x-lightbox />
 </body>
 
 </html>

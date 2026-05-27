@@ -1,11 +1,9 @@
 @props(['media' => []])
 
 @php
-    // Ensure we are working with a collection
     $mediaCollection = collect($media);
     $count = $mediaCollection->count();
     
-    // Determine the layout grid class
     $gridClass = match($count) {
         0 => '',
         1 => 'grid-1',
@@ -13,10 +11,18 @@
         3 => 'grid-3',
         default => 'grid-4'
     };
+
+    $mediaData = $mediaCollection->map(function($m) {
+        return [
+            'url' => asset($m->file_path),
+            'type' => str_starts_with($m->mime_type, 'video/') ? 'video' : 'image'
+        ];
+    })->toJson();
 @endphp
 
 @if($count > 0)
-<div class="js-media-container">
+<div class="js-media-container" data-media="{{ $mediaData }}">
+    
     {{-- Dynamically set the aspect ratio via a CSS variable: 1/1 for a single item, 16/9 for galleries --}}
     <div class="media-grid {{ $gridClass }} shadow-sm w-100" style="--grid-aspect-ratio: {{ $count === 1 ? '1/1' : '16/9' }};">
         @foreach($mediaCollection->take(4) as $index => $item)
@@ -52,7 +58,6 @@
     overflow: hidden; 
     max-height: 450px; 
     width: 100%; 
-    /* Uses the dynamic aspect ratio passed from Blade, falling back to 16/9 */
     aspect-ratio: var(--grid-aspect-ratio, 16/9); 
 }
 .media-grid .media-item-wrapper { position: relative; overflow: hidden; cursor: zoom-in; }
@@ -66,35 +71,17 @@
 .grid-3 > div:first-child { grid-row: 1 / 3; }
 .grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
 
-/* Overlay UI elements cleaned out of inline HTML */
 .video-play-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #fff;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: #fff; background: rgba(0, 0, 0, 0.5); border-radius: 50%;
+    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
     pointer-events: none;
 }
 
 .media-more-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.6);
-    pointer-events: none;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, 0.6); pointer-events: none;
 }
 </style>
-
 @endonce
