@@ -38,7 +38,6 @@ class User extends Authenticatable
         'email',
         'password',
         'bio',
-        'avatar_media_id',
         'verified',
         'is_admin',
         'is_suspended',

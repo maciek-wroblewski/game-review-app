@@ -24,7 +24,6 @@
 </style>
 
 @php
-    // Color generation logic
     $bannerHash = md5($user->username . '-banner');
     $bannerColor1 = '#' . substr($bannerHash, 0, 6);
     $bannerColor2 = '#' . substr($bannerHash, 6, 6);
@@ -37,7 +36,6 @@
         <div class="row justify-content-center">
             <div class="col-xl-8">
 
-                {{-- MEDIA UPLOAD FORM --}}
                 <form method="POST" action="{{ route('profile.media.update') }}" enctype="multipart/form-data">
                     @csrf
                     @method('PATCH')

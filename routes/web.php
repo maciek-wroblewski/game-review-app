@@ -60,6 +60,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/games/{game}/reviews', [GameReviewController::class, 'store']);
     Route::put('/reviews/{review}', [GameReviewController::class, 'update']);
     Route::delete('/reviews/{review}', [GameReviewController::class, 'destroy']);
+
+    Route::get('/playlists/{playlist}/edit', [PlaylistController::class, 'edit']);
+    Route::patch('/playlists/{playlist}', [PlaylistController::class, 'update']);
+    Route::delete('/playlists/{playlist}', [PlaylistController::class, 'destroy']);
     Route::get('/playlists/{playlist}', [PlaylistController::class, 'show']);
     Route::post('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'store']);
     Route::delete('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'destroy']);

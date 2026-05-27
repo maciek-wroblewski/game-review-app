@@ -38,9 +38,6 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    /**
-     * Update the user's avatar or banner via direct file uploads.
-     */
     public function updateMedia(Request $request): RedirectResponse
     {
         $request->validate([

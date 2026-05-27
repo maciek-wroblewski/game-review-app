@@ -19,4 +19,41 @@ class PlaylistController extends Controller
 
         return view('playlists.show', compact('playlist', 'posts'));
     }
+
+    public function edit(Playlist $playlist)
+    {
+        // Authorization: Only allow if authenticated user is associated with the playlist
+        if (!$playlist->users->contains(auth()->id())) {
+            abort(403);
+        }
+
+        return view('playlists.edit', compact('playlist'));
+    }
+
+    public function update(Request $request, Playlist $playlist)
+    {
+        if (!$playlist->users->contains(auth()->id())) {
+            abort(403);
+        } 
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'is_public' => 'boolean',
+        ]);
+
+        $playlist->update($validated);
+
+        return redirect("/playlists/{$playlist->id}")->with('success', 'Playlist updated!');
+    }
+
+    public function destroy(Playlist $playlist)
+    {
+        if (!$playlist->users->contains(auth()->id())) {
+            abort(403);
+        }
+
+        $playlist->delete();
+
+        return redirect('/users/' . auth()->id() . '/playlists')->with('success', 'Playlist deleted.');
+    }
 }

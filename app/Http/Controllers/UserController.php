@@ -41,20 +41,9 @@ class UserController extends Controller
             return view('users.private', ['user' => $user]);
         }
 
-        $recentPosts = $user->reviews()
+        $posts = $user->communityPosts()
             ->latest()
             ->withFeedRelations()
-            ->paginate(10);
-
-        $user->setRelation('posts', $recentPosts);
-
-        // 2. Apply withFeedRelations() here to prevent an N+1 disaster in <x-hub-comments>
-        $posts = Post::query()
-            ->where('hub_type', 'user')
-            ->where('hub_id', $user->id)
-            ->whereNull('parent_id')
-            ->latest()
-            ->withFeedRelations() // ⚡ Critical Optimization
             ->paginate(10);
 
         return view('users.show', compact('user', 'posts'));
