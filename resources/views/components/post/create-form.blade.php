@@ -19,7 +19,7 @@
                 <div class="alert alert-danger border-0 m-0 shadow-sm">
                     <div class="d-flex align-items-center gap-2">
                         <i class="bi bi-exclamation-triangle-fill"></i>
-                        <strong>Your account is currently suspended.</strong>
+                        <strong>{{ __('common.account_suspended') }}</strong>
                     </div>
                 </div>
             </div>
@@ -66,7 +66,7 @@
     {{-- Guest Call to Action --}}
     <div class="card shadow-sm mb-4 border-0 bg-light text-center p-4">
         <p class="text-muted mb-0">
-            <a href="{{ route('login') }}" class="text-decoration-none fw-bold">Log in</a> or <a href="{{ route('register') }}" class="text-decoration-none fw-bold">register</a> to write a post.
+            <a href="{{ route('login') }}" class="text-decoration-none fw-bold">{{ __('common.login') }}</a> or <a href="{{ route('register') }}" class="text-decoration-none fw-bold">{{ __('common.register') }}</a> to write a post.
         </p>
     </div>
 @endauth

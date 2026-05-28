@@ -1,4 +1,4 @@
-<x-layout headtitle="{{ __('Register') }}">
+<x-layout headtitle="{{ __('auth.register') }}">
 
     <div class="container py-5">
 
@@ -14,11 +14,11 @@
                         <i class="bi bi-controller display-3 text-primary"></i>
 
                         <h1 class="fw-bold mt-3 mb-2">
-                            {{ __('Create Account') }}
+                            {{ __('auth.create_account') }}
                         </h1>
 
                         <p class="text-secondary mb-0">
-                            {{ __('Join the VGDB community') }}
+                            {{ __('auth.join_community') }}
                         </p>
 
                     </div>
@@ -37,7 +37,7 @@
                                 <label for="username"
                                        class="form-label fw-semibold">
 
-                                    {{ __('Username') }}
+                                    {{ __('auth.username') }}
 
                                 </label>
 
@@ -65,7 +65,7 @@
                                 <label for="email"
                                        class="form-label fw-semibold">
 
-                                    {{ __('Email Address') }}
+                                    {{ __('auth.email_address') }}
 
                                 </label>
 
@@ -92,7 +92,7 @@
                                 <label for="password"
                                        class="form-label fw-semibold">
 
-                                    {{ __('Password') }}
+                                    {{ __('auth.password') }}
 
                                 </label>
 
@@ -118,7 +118,7 @@
                                 <label for="password_confirmation"
                                        class="form-label fw-semibold">
 
-                                    {{ __('Confirm Password') }}
+                                    {{ __('auth.confirm_password') }}
 
                                 </label>
 
@@ -136,7 +136,7 @@
                                 <a href="{{ route('login') }}"
                                    class="text-decoration-none">
 
-                                    {{ __('Already registered?') }}
+                                    {{ __('auth.already_registered') }}
 
                                 </a>
 
@@ -144,7 +144,7 @@
                                         class="btn btn-primary btn-lg px-4">
 
                                     <i class="bi bi-person-plus-fill me-2"></i>
-                                    {{ __('Create Account') }}
+                                    {{ __('auth.create_account') }}
 
                                 </button>
 

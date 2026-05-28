@@ -1,0 +1,23 @@
+<?php
+
+return [
+    'title' => 'Admin Panel',
+    'users' => 'Users',
+    'posts' => 'Posts',
+    'reviews' => 'Reviews',
+    'games' => 'Games',
+    'reports' => 'Reports',
+    'settings' => 'Settings',
+    'manage_users' => 'Manage Users',
+    'manage_posts' => 'Manage Posts',
+    'manage_reviews' => 'Manage Reviews',
+    'manage_games' => 'Manage Games',
+    'view_reports' => 'View Reports',
+    'suspend' => 'Suspend',
+    'unsuspend' => 'Unsuspend',
+    'ban' => 'Ban',
+    'unban' => 'Unban',
+    'delete' => 'Delete',
+    'approve' => 'Approve',
+    'reject' => 'Reject',
+];

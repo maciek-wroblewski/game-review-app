@@ -1,6 +1,4 @@
-
-
-<x-layout headtitle="{{ __('Forgot Password') }}">
+<x-layout headtitle="{{ __('auth.forgot_password_title') }}">
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-7 col-lg-6">
@@ -9,10 +7,10 @@
                     <div class="bg-dark text-white p-5 text-center">
                         <i class="bi bi-key display-3 text-primary"></i>
                         <h1 class="fw-bold mt-3 mb-2">
-                            {{ __('Forgot Password') }}
+                            {{ __('auth.forgot_password_title') }}
                         </h1>
                         <p class="text-secondary mb-0">
-                            {{ __('No problem. Enter your email and we will send a password reset link.') }}
+                            {{ __('auth.no_problem_reset') }}
                         </p>
                     </div>
                     <!-- Form -->
@@ -35,7 +33,7 @@
                             <!-- Email -->
                             <div class="mb-4">
                                 <label for="email" class="form-label fw-semibold">
-                                    {{ __('Email Address') }}
+                                    {{ __('auth.email_address') }}
                                 </label>
                                 <input id="email"
                                        type="email"
@@ -54,7 +52,7 @@
                             <div class="d-flex justify-content-end mt-4">
                                 <button type="submit" class="btn btn-primary btn-lg px-4">
                                     <i class="bi bi-envelope me-2"></i>
-                                    {{ __('Send Password Reset Link') }}
+                                    {{ __('auth.send_reset_link') }}
                                 </button>
                             </div>
                         </form>

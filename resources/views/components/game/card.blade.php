@@ -34,7 +34,7 @@
                     <h5 class="card-title mb-0 fw-bold text-truncate w-100" style="color: #212529;">{{ $game->title }}</h5>
                     <div class="text-warning small d-flex align-items-center">
                         <i class="bi bi-star-fill me-1"></i> {{ number_format($game->average_rating, 1) }}
-                        <span class="text-muted ms-2" style="font-size: 0.75rem;">({{ $game->posts_count ?? 0 }} posts)</span>
+                        <span class="text-muted ms-2" style="font-size: 0.75rem;">({{ $game->posts_count ?? 0 }} {{ __('games.reviews_count') }})</span>
                     </div>
                 </div>
             </div>
@@ -59,11 +59,11 @@
         <div class="card-footer bg-transparent border-top-0 pb-3 pt-0">
             @if($game->publisher)
                 <small class="text-muted d-block mb-1" style="font-size: 0.75rem;">
-                    <strong>Publisher:</strong> {{ $game->publisher }}
+                    <strong>{{ __('games.publisher') }}:</strong> {{ $game->publisher }}
                 </small>
             @endif
             <small class="text-muted" style="font-size: 0.75rem; font-style: italic;">
-                By: 
+                {{ __('games.by') }} 
                 @foreach($game->credits as $user)
                     <a href="Profile/{{ $user->id }}" class="text-decoration-none"><span class="text-decoration-none border-bottom border-secondary border-opacity-25">{{ $user->username }}</span></a>@if(!$loop->last), @endif
                 @endforeach

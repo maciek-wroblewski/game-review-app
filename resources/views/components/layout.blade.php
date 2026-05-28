@@ -188,14 +188,14 @@
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto align-items-lg-center gap-lg-2">
-                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/games">Games</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/posts">Community</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/">{{ __('common.home') }}</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/games">{{ __('common.games') }}</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/posts">{{ __('common.community') }}</a></li>
                 </ul>
 
                 <form class="d-flex mx-auto col-12 col-lg-5 mb-3 mb-lg-0" role="search" action="/search" method="GET">
                     <input class="form-control rounded-pill premium-search px-4" type="search" name="q"
-                        placeholder="Search games, users..." value="{{ request('q') }}">
+                        placeholder="{{ __('common.search_placeholder') }}" value="{{ request('q') }}">
                 </form>
 
                 <ul class="navbar-nav align-items-lg-center gap-lg-3">
@@ -216,14 +216,14 @@
                     </li>
 
                     <li class="nav-item desktop-nav-item">
-                        <a href="/profile" class="btn btn-outline-light premium-button">Edit Profile</a>
+                        <a href="/profile" class="btn btn-outline-light premium-button">{{ __('common.edit_profile') }}</a>
                     </li>
 
                     <li class="nav-item desktop-nav-item">
                         <form method="POST" action="{{ route('logout') }}" class="m-0">
                             @csrf
                             <button type="submit" class="btn btn-primary premium-button px-4 w-100">
-                                <i class="bi bi-box-arrow-right me-2"></i> Log Out
+                                <i class="bi bi-box-arrow-right me-2"></i> {{ __('common.logout') }}
                             </button>
                         </form>
                     </li>
@@ -246,12 +246,12 @@
                         <ul class="dropdown-menu dropdown-menu-end premium-dropdown mt-lg-2" aria-labelledby="userDropdownToggle">
                             <li>
                                 <a class="dropdown-item py-2 fw-bold" href="/users/{{ auth()->user()->username }}">
-                                    <i class="bi bi-person me-2 text-primary"></i> View Profile
+                                    <i class="bi bi-person me-2 text-primary"></i> {{ __('common.view_profile') }}
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item py-2" href="/profile">
-                                    <i class="bi bi-person-gear me-2 text-primary"></i> Edit Profile
+                                    <i class="bi bi-person-gear me-2 text-primary"></i> {{ __('common.edit_profile') }}
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
@@ -259,7 +259,7 @@
                                 <form method="POST" action="{{ route('logout') }}" class="m-0">
                                     @csrf
                                     <button type="submit" class="dropdown-item py-2 text-danger">
-                                        <i class="bi bi-box-arrow-right me-2"></i> Log Out
+                                        <i class="bi bi-box-arrow-right me-2"></i> {{ __('common.logout') }}
                                     </button>
                                 </form>
                             </li>
@@ -269,10 +269,10 @@
 
                     @guest
                     <li class="nav-item">
-                        <a class="btn btn-outline-light premium-button w-100" href="/login">Login</a>
+                        <a class="btn btn-outline-light premium-button w-100" href="/login">{{ __('common.login') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="btn btn-primary premium-button w-100" href="/register">Register</a>
+                        <a class="btn btn-primary premium-button w-100" href="/register">{{ __('common.register') }}</a>
                     </li>
                     @endguest
 
@@ -290,7 +290,7 @@
     <footer class="bg-dark text-light text-center py-4 mt-auto">
         <div class="container">
             <p class="mb-0 text-secondary">
-                &copy; {{ date('Y') }} VGDB. {{ __('All Rights Reserved') }}.
+                &copy; {{ date('Y') }} VGDB. {{ __('common.all_rights_reserved') }}.
             </p>
             <div>
                 <a href="{{ route('lang.switch', 'en') }}" class="text-secondary text-decoration-none">EN</a> |

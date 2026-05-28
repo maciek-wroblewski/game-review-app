@@ -43,21 +43,21 @@ $isAdmin = auth()->user()?->is_admin ?? false;
     <div class="flex-grow-1 d-flex flex-column {{ $isReview ? 'bg-white' : '' }}" style="min-width: 0;">
 
         @if($post->trashed())
-        <p class="card-text text-muted fst-italic p-3">[This post has been deleted]</p>
+        <p class="card-text text-muted fst-italic p-3">{{ __('common.this_post_has_been_deleted') }}</p>
         @else
         {{-- PINNED BANNER --}}
         @if($post->is_pinned)
         <div class="pinned-banner px-3 py-2 border-bottom"
             style="background: linear-gradient(90deg, rgba(255,193,7,.18), rgba(255,193,7,.05));">
             <i class="bi bi-pin-angle-fill text-warning me-1"></i>
-            <span class="fw-semibold">Pinned Post</span>
+            <span class="fw-semibold">{{ __('common.pinned_post') }}</span>
         </div>
         @endif
 
         {{-- SUSPENDED AUTHOR BANNER --}}
         @if($post->user?->is_suspended)
         <div class="alert alert-danger rounded-0 border-0 mb-0">
-            <i class="bi bi-slash-circle-fill me-1"></i> Author suspended
+            <i class="bi bi-slash-circle-fill me-1"></i> {{ __('common.author_suspended') }}
         </div>
         @endif
 
@@ -65,7 +65,7 @@ $isAdmin = auth()->user()?->is_admin ?? false;
         @if($isAdmin)
         <div class="px-3 py-2 border-bottom bg-danger-subtle d-flex justify-content-between align-items-center">
             <div class="small fw-semibold text-danger">
-                <i class="bi bi-shield-lock-fill me-1"></i> ADMIN MODERATION MODE
+                <i class="bi bi-shield-lock-fill me-1"></i> {{ __('common.admin_moderation_mode') }}
             </div>
             <div>
                 <span class="badge bg-danger">POST #{{ $post->id }}</span>
@@ -83,10 +83,10 @@ $isAdmin = auth()->user()?->is_admin ?? false;
             @if($isAdmin)
             <div class="px-3 pb-3 d-flex gap-2 flex-wrap">
                 {{-- Delete --}}
-                <form method="POST" action="/posts/{{ $post->id }}" onsubmit="return confirm('Delete post?')">
+                <form method="POST" action="/posts/{{ $post->id }}" onsubmit="return confirm('{{ __('common.confirm_delete_post') }}')">
                     @csrf @method('DELETE')
                     <button class="btn btn-sm btn-outline-danger admin-tool-btn">
-                        <i class="bi bi-trash-fill me-1"></i> Delete
+                        <i class="bi bi-trash-fill me-1"></i> {{ __('common.delete') }}
                     </button>
                 </form>
 
@@ -97,7 +97,7 @@ $isAdmin = auth()->user()?->is_admin ?? false;
                     @csrf
                     <button
                         class="btn btn-sm {{ $post->is_pinned ? 'btn-warning' : 'btn-outline-warning' }} admin-tool-btn">
-                        <i class="bi bi-pin-angle-fill me-1"></i> {{ $post->is_pinned ? 'Unpin' : 'Pin' }}
+                        <i class="bi bi-pin-angle-fill me-1"></i> {{ $post->is_pinned ? __('common.unpin') : __('common.pin') }}
                     </button>
                 </form>
                 {{-- Lock --}}

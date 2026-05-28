@@ -21,7 +21,7 @@
                 <div class="alert alert-danger border-0 m-0 shadow-sm">
                     <div class="d-flex align-items-center gap-2">
                         <i class="bi bi-exclamation-triangle-fill"></i>
-                        <strong>Your account is currently suspended.</strong>
+                        <strong>{{ __('common.account_suspended') }}</strong>
                     </div>
                 </div>
             </div>
@@ -29,12 +29,12 @@
         
         <div class="p-3">
             <div class="mb-3">
-                <label class="form-label fw-bold text-muted small">Reply as a comment...</label>
-                <textarea class="js-comment-textarea form-control" rows="3" placeholder="Write your reply..."></textarea>
+                <label class="form-label fw-bold text-muted small">{{ __('posts.reply_as_comment') }}</label>
+                <textarea class="js-comment-textarea form-control" rows="3" placeholder="{{ __('posts.write_your_reply') }}"></textarea>
             </div>
 
             <div class="mb-3 border-bottom pb-3">
-                <label class="form-label fw-bold text-muted small">Media</label>
+                <label class="form-label fw-bold text-muted small">{{ __('common.media') }}</label>
                 <x-media-upload 
                     multiple="true" 
                     inputName="comment_media_ids[]" 
@@ -56,8 +56,8 @@
                     :clearClass="'js-btn-comment-clear'"
                     :submitClass="'js-btn-comment-submit'"
                     :spinnerClass="'js-comment-submit-spinner'"
-                    :clearLabel="'Clear'"
-                    :submitLabel="'Reply'"
+                    :clearLabel="__('common.clear')"
+                    :submitLabel="__('common.reply')"
                 />
             </div>
         </div>

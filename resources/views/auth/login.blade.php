@@ -1,4 +1,4 @@
-<x-layout headtitle="{{ __('Login') }}">
+<x-layout headtitle="{{ __('auth.login') }}">
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-7 col-lg-6">
@@ -7,10 +7,10 @@
                     <div class="bg-dark text-white p-5 text-center">
                         <i class="bi bi-controller display-3 text-primary"></i>
                         <h1 class="fw-bold mt-3 mb-2">
-                            {{ __('Welcome Back') }}
+                            {{ __('auth.welcome_back') }}
                         </h1>
                         <p class="text-secondary mb-0">
-                            {{ __('Log into your VGDB account') }}
+                            {{ __('auth.log_into_account') }}
                         </p>
                     </div>
                     <!-- Form -->
@@ -27,7 +27,7 @@
                             <div class="mb-4">
                                 <label for="email"
                                        class="form-label fw-semibold">
-                                    {{ __('Email Address') }}
+                                    {{ __('auth.email_address') }}
                                 </label>
                                 <input id="email"
                                        type="email"
@@ -48,7 +48,7 @@
                             <div class="mb-5">
                                 <label for="password"
                                        class="form-label fw-semibold">
-                                    {{ __('Password') }}
+                                    {{ __('auth.password') }}
                                 </label>
                                 <input id="password"
                                        type="password"
@@ -69,20 +69,20 @@
                                        id="remember_me">
                                 <label class="form-check-label"
                                        for="remember_me">
-                                    {{ __('Remember me') }}
+                                    {{ __('auth.remember_me') }}
                                 </label>
                             </div>
                             <!-- Bottom -->
                             <div class="d-flex justify-content-between align-items-center mt-5">
                                 @if (Route::has('password.request'))
                                     <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                                        {{ __('Forgot your password?') }}
+                                        {{ __('auth.forgot_password') }}
                                     </a>
                                 @endif
                                 <button type="submit"
                                         class="btn btn-primary btn-lg px-4">
                                     <i class="bi bi-box-arrow-in-right me-2"></i>
-                                    {{ __('Log In') }}
+                                    {{ __('auth.log_in') }}
                                 </button>
                             </div>
                         </form>
