@@ -38,9 +38,7 @@
                     </a>
                 </div>
 
-                @auth
                     <x-post.create-form hub-type="game" :hub-id="$game->id" />
-                @endauth
 
                 <x-post.list :posts="$posts" />
             </div>

@@ -113,12 +113,30 @@ class GameController extends Controller
             }])->get()
             : collect();
 
+        // 1. Fetch posts, turning off the redundant eager loads
         $posts = $game->posts()
             ->doesntHave('review')
-            ->withFeedRelations()
+            ->withFeedRelations(['hub' => false, 'review' => false]) // <-- Turn off hub and review
             ->orderByDesc('is_pinned')
             ->latest()
             ->paginate(10);
+
+        // 2. Manually map the data to prevent N+1 fallbacks
+        $posts->getCollection()->each(function ($post) use ($game) {
+            // Attach the hub we already fetched
+            $post->setRelation('hub', $game);
+            
+            // Tell Laravel there is no review to block N+1 on $post->isReview()
+            $post->setRelation('review', null); 
+
+            // If this post is a reply, the parent also shares the same hub
+            if ($post->relationLoaded('parent') && $post->parent) {
+                $post->parent->setRelation('hub', $game);
+                
+                // Assuming parent posts in this view also aren't reviews
+                $post->parent->setRelation('review', null);
+            }
+        });
 
         if ($request->ajax()) {
             return view('components.post.items', compact('posts'))->render();

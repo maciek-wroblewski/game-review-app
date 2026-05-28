@@ -102,13 +102,13 @@ class Post extends Model
     {
         $loadReview = $options['review'] ?? true;
         $loadHub = $options['hub'] ?? true;
+        $loadAuthor = $options['author'] ?? true; // <-- Added
 
         $relations = [
-            'author' => function ($q) {
-                $q->with('avatar')->withCount(['followers', 'following', 'posts']);
-            },
             'media',
             'parent' => function ($q) use ($loadReview, $loadHub) {
+                // Parents should still always load their author, 
+                // because the parent post might be written by someone else!
                 $q->withCount('replies')
                     ->with([
                         'author' => function ($sq) {
@@ -121,6 +121,13 @@ class Post extends Model
                     ->withLikedByAuth();
             },
         ];
+
+        // Only load the top-level author if requested
+        if ($loadAuthor) {
+            $relations['author'] = function ($q) {
+                $q->with('avatar')->withCount(['followers', 'following', 'posts']);
+            };
+        }
 
         if ($loadReview) {
             $relations[] = 'review';

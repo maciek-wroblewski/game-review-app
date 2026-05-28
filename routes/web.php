@@ -33,6 +33,7 @@ Route::get('/users/{user:username}', [UserController::class, 'show']);
 Route::get('/users/{user:username}/followers', [UserController::class, 'followers']);
 Route::get('/users/{user:username}/following', [UserController::class, 'following']);
 Route::get('/users/{user:username}/playlists', [UserController::class, 'playlists']);
+Route::get('/playlists/{playlist}', [PlaylistController::class, 'show']);
 Route::get('/users/{user:username}/reviews', [UserController::class, 'reviews']);
 Route::get('/users/{user:username}/posts', [UserController::class, 'posts']);
 
@@ -66,9 +67,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/playlists', [PlaylistController::class, 'store']);
 
     Route::get('/playlists/{playlist}/edit', [PlaylistController::class, 'edit']);
-    Route::put('/playlists/{playlist}', [PlaylistController::class, 'update']); // Changed from patch to put
+    Route::put('/playlists/{playlist}', [PlaylistController::class, 'update']);
     Route::delete('/playlists/{playlist}', [PlaylistController::class, 'destroy']);
-    Route::get('/playlists/{playlist}', [PlaylistController::class, 'show']);
     
     Route::post('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'store']);
     Route::delete('/playlists/{playlist}/games/{game}', [PlaylistGameController::class, 'destroy']);

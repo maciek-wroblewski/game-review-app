@@ -43,17 +43,30 @@ class UserController extends Controller
         // 1. Authored Posts
         $posts = $user->posts()
             ->latest()
-            ->withFeedRelations()
+            ->withFeedRelations(['review' => false, 'author' => false]) 
             ->paginate(10, ['*'], 'posts_page');
 
-        // 2. Profile Comments (hub_type = 'user', hub_id = user's ID)
+        // Manually attach the author AND tell it there is no review
+        $posts->getCollection()->each(function ($post) use ($user) {
+            $post->setRelation('author', $user);
+            $post->setRelation('review', null); // Fixes the N+1
+        });
+
+        // 2. Profile Comments
         $comments = Post::query()
             ->where('hub_type', 'user')
             ->where('hub_id', $user->id)
             ->whereNull('parent_id')
+            ->orderByDesc('is_pinned')
             ->latest()
-            ->withFeedRelations()
+            ->withFeedRelations(['hub' => false, 'review' => false]) 
             ->paginate(10, ['*'], 'comments_page');
+
+        // Manually attach the hub AND tell it there is no review
+        $comments->getCollection()->each(function ($comment) use ($user) {
+            $comment->setRelation('hub', $user);
+            $comment->setRelation('review', null); // Fixes the N+1
+        });
 
         // 3. Handle AJAX Requests for loading more posts/comments dynamically
         if ($request->ajax()) {

@@ -39,18 +39,16 @@
             <!-- Right Column: Reviews -->
             <div class="col-md-8">
                 <!-- Write / Edit Review Form -->
-                @auth
                 @if($userReviewPost)
                 <x-post :post="$userReviewPost" />
                 @else
                 <x-post.create-form hub-type="game" :hub-id="$game->id" review-type="recommendation" />
                 @endif
-                @endauth
 
                 <!-- Existing Reviews List (Now using components) -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h3 class="m-0 fw-bold">
-                        {{ __('Player Reviews') }} 
+                        {{ __('Player Reviews') }}
                         <span class="text-muted fs-5 fw-normal">({{ $game->posts_count }})</span>
                     </h3>
                     <a href="/games/{{ $game->id }}/discussions" class="btn btn-outline-secondary btn-sm">

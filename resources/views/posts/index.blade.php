@@ -4,9 +4,7 @@
             <div class="col-md-8">
 
 
-                @auth
                 <x-post.create-form />
-                @endauth
                 <div class="container">
                     <h1>Global Timeline</h1>
 

@@ -63,21 +63,21 @@ $backLink = $backUrl ?: ($owner ? url('/users/' . $owner->username . '/playlists
 
                 <div class="d-flex gap-2 flex-wrap justify-content-end">
                     @auth
-                    @if($playlist->users->contains(auth()->id()) && !$playlist->is_system)
-                    <a href="/playlists/{{ $playlist->id }}/edit" class="btn btn-sm btn-outline-primary"
-                        title="Edit playlist">
-                        <i class="bi bi-pencil"></i>
-                    </a>
-                    <form action="/playlists/{{ $playlist->id }}" method="POST"
-                        onsubmit="return confirm('Are you sure you want to delete this playlist?')"
-                        class="d-inline-block">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </form>
-                    @endif
+                        @if($playlist->users->contains(auth()->id()) && !$playlist->is_system)
+                        <a href="/playlists/{{ $playlist->id }}/edit" class="btn btn-sm btn-outline-primary"
+                            title="Edit playlist">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form action="/playlists/{{ $playlist->id }}" method="POST"
+                            onsubmit="return confirm('Are you sure you want to delete this playlist?')"
+                            class="d-inline-block">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                        @endif
                     @endauth
                     <a href="/playlists/{{ $playlist->id }}" class="btn btn-primary btn-sm">
                         View
