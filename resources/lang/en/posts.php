@@ -58,4 +58,12 @@ return [
     'delete_post_confirm' => 'Delete Post',
     'delete_post_message' => 'Are you sure you want to delete this post? This action cannot be undone.',
     'undo' => 'Undo',
+    
+    // Posts index
+    'global_timeline' => 'Global Timeline',
+    
+    // Post show
+    'comments' => 'Comments:',
+    'replies' => 'Replies (:count)',
+    'no_replies_yet' => 'No replies yet. Be the first to comment!',
 ];
