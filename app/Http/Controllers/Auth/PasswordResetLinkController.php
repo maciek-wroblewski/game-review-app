@@ -31,30 +31,28 @@ class PasswordResetLinkController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        // 1. Szukamy użytkownika po adresie e-mail
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
             return back()->withErrors(['email' => 'Nie znaleźliśmy użytkownika z tym adresem e-mail.']);
         }
 
-        // 2. Generujemy losowe, bezpieczne hasło składające się z 12 znaków
         $temporaryPassword = Str::random(12);
 
-        // 3. Aktualizujemy hasło użytkownika w bazie danych (haszując je!)
         $user->forceFill([
             'password' => Hash::make($temporaryPassword),
         ])->save();
 
-        // 4. Wysyłamy maila w bloku try-catch dla pełnego bezpieczeństwa
+        Log::info('Temporary password generated for user: '.$user->username.' (ID: '.$user->id.')');
+
         try {
             Mail::to($user->email)->send(new TemporaryPasswordMail($temporaryPassword));
         } catch (\Exception $e) {
-            Log::error('Błąd wysyłki hasła tymczasowego: ' . $e->getMessage());
+            Log::error('Error sending temporary password email: ' . $e->getMessage());
             return back()->with('error', 'Wystąpił problem z wysyłką e-maila. Skontaktuj się z administratorem.');
         }
 
-        // Zwracamy status sukcesu do widoku
-        return back()->with('status', 'Nowe hasło tymczasowe zostało wysłane na Twój adres e-mail.');
+        Log::info('Temporary password email sent to user: '.$user->username.' (ID: '.$user->id.')');
+        return back()->with('status', 'New temporary password has been sent to your email.');
     }
 }

@@ -6,6 +6,9 @@ use App\Models\Playlist;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+
 
 class PlaylistController extends Controller
 {
@@ -31,7 +34,7 @@ class PlaylistController extends Controller
 
         $playlist = Playlist::create($validated);
         $playlist->users()->attach(auth()->id());
-
+        Log::info('Created playlist: '.$playlist->name.' (ID: '.$playlist->id.') by '.(auth()->check() ? auth()->user()->username : 'guest'));
         return redirect("/playlists/{$playlist->id}")->with('success', 'Playlist created successfully!');
     }
 
@@ -73,6 +76,7 @@ class PlaylistController extends Controller
             }
         }
 
+        Log::info('Viewing playlist: '.$playlist->name.' (ID: '.$playlist->id.') by '.(Auth::check() ? Auth::user()->username : 'guest'));
         return view('playlists.show', compact('playlist', 'games', 'posts'));
     }
 

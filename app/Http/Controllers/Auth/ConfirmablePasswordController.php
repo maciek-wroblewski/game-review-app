@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Log;
+
 
 class ConfirmablePasswordController extends Controller
 {
@@ -34,6 +36,7 @@ class ConfirmablePasswordController extends Controller
         }
 
         $request->session()->put('auth.password_confirmed_at', time());
+        Log::info('Password confirmed for user: '.$request->user()->username.' (ID: '.$request->user()->id.')');
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

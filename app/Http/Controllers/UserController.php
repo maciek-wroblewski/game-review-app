@@ -85,7 +85,7 @@ class UserController extends Controller
                 ]);
             }
         }
-        Log::info('Viewing profile: '.$user->username.' (ID: '.$user->id.') by user '.(Auth() ? Auth::user()->username : 'guest') .' (ID: '.(Auth() ? Auth::id() : 'N/A').')');
+        Log::info('Viewing profile: '.$user->username.' (ID: '.$user->id.') by '.(Auth::check() ? Auth::user()->username : 'guest'));
         return view('users.show', compact('user', 'posts', 'comments'));
     }
 
