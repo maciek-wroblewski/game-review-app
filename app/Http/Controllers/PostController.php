@@ -9,6 +9,7 @@ use App\Models\Notification;
 use App\Mail\NewPostMail;
 use App\Mail\NewCommentMail;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class PostController extends Controller
 {
@@ -55,7 +56,6 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        // Block suspended users
         if (auth()->user()->is_suspended) {
             abort(403, 'Your account is suspended.');
         }
@@ -85,7 +85,8 @@ class PostController extends Controller
         $currentUser = auth()->user();
 
         if (!empty($validated['parent_id'])) {
-            $parentPost = Post::with('author')->find($validated['parent_id']); // Pobieramy z relacją 'author' (by mieć maila)
+            $parentPost = Post::with('author')->find($validated['parent_id']);
+            Log::info("User {$currentUser->id} commented on Post {$parentPost->id} (New Comment ID: {$post->id})");
             
             if ($parentPost && ($parentPost->is_locked || $parentPost->admin_locked)) {
                 return response()->json(['message' => 'This post is locked.'], 403);
@@ -122,15 +123,19 @@ class PostController extends Controller
             }
         }
 
+        Log::info("User {$currentUser->id} created Post {$post->id}");
+
         if (! empty($validated['review_type'])) {
             $post->review()->create([
                 'type' => $validated['review_type'],
                 'rating' => $validated['review_type'] === 'recommendation' ? $validated['rating'] : null,
             ]);
+            Log::info("User {$currentUser->id} created Review for Post {$post->id}");
         }
 
         if (! empty($validated['media_ids'])) {
             Media::whereIn('id', $validated['media_ids'])->update(['post_id' => $post->id]);
+            Log::info("User {$currentUser->id} attached Media to Post {$post->id}");
         }
 
         return response()->json(['message' => 'Post created successfully', 'post' => $post]);
@@ -143,6 +148,7 @@ class PostController extends Controller
     {
         // 1. Load data for the main post card
         $post->load(['author', 'media', 'review', 'hub'])->loadCount('replies');
+        Log::info("User " . auth()->id() . " viewed Post {$post->id}");
         if (auth()->check()) {
             $post->loadExists(['likes as liked_by_auth' => function ($q) {
                 $q->where('user_id', auth()->id());

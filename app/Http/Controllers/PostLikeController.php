@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\LikesPostMail;
+use Illuminate\Support\Facades\Log;
 
 class PostLikeController extends Controller
 {
@@ -16,6 +17,14 @@ class PostLikeController extends Controller
 
         $post->toggleLike($userId);
         
+        $isLiked = $post->likes()->where('user_id', $userId)->exists();
+        
+        if ($isLiked) {
+            Log::info("User {$userId} liked Post {$post->id}");
+        } else {
+            Log::info("User {$userId} unliked Post {$post->id}");
+        }
+
         if ($post->user_id !== $userId) {
             Notification::create([
                 'user_id' => $post->user_id,

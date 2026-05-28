@@ -6,6 +6,7 @@ use App\Models\Game;
 use App\Models\Genre;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class GameController extends Controller
 {
@@ -69,6 +70,7 @@ class GameController extends Controller
         if ($request->ajax()) {
             return view('components.post.items', compact('posts'))->render();
         }
+        Log::info('Viewing game: '.$game->title.' (ID: '.$game->id.') by user ID: '.($userId ?? 'guest'));
 
         return view('games.show', compact('game', 'playlists', 'userReviewPost', 'posts'));
     }

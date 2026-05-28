@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -84,7 +85,7 @@ class UserController extends Controller
                 ]);
             }
         }
-
+        Log::info('Viewing profile: '.$user->username.' (ID: '.$user->id.') by user '.(Auth() ? Auth::user()->username : 'guest') .' (ID: '.(Auth() ? Auth::id() : 'N/A').')');
         return view('users.show', compact('user', 'posts', 'comments'));
     }
 
