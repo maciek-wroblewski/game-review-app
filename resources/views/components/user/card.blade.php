@@ -162,7 +162,7 @@ $isCompact = $layout === 'compact';
 
 {{-- Full Stats --}}
 @if(!$isCompact)
-<div class="row g-4 mb-5">
+<div class="row g-4 mb-5 mt-1">
     {{-- Reviews --}}
     <div class="col">
         <a href="/users/{{ $user->username }}/reviews" class="text-decoration-none">
