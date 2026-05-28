@@ -28,7 +28,7 @@ class UserObserver
                     'is_system' => true,
                     'is_public' => false,
                     'description' => __("Default playlist: $name"),
-                    'cover' => fake()->imageUrl(640, 480, 'abstract', true),
+                    'cover' => null,
                 ]);
                 
                 $user->playlists()->attach($playlist->id, ['role' => 'owner']);

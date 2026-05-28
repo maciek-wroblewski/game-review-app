@@ -4,7 +4,31 @@
 $isCompact = $layout === 'compact';
 $hasOwner = $playlist->users->count() > 0;
 $owner = $hasOwner ? $playlist->users->first() : null;
-$coverUrl = $playlist->cover ? asset($playlist->cover) : null;
+
+// Determine Cover URL
+$coverUrl = null;
+if ($playlist->cover) {
+    $coverUrl = str_starts_with($playlist->cover, 'http') 
+        ? $playlist->cover 
+        : asset('storage/' . $playlist->cover);
+}
+
+// Fallback Gradient Logic
+$coverHash = md5($playlist->name . '-playlist-cover');
+$color1 = '#' . substr($coverHash, 0, 6);
+$color2 = '#' . substr($coverHash, 6, 6);
+$gradientStyle = "background: linear-gradient(135deg, {$color1}, {$color2});";
+
+// Extract Initials (Up to 2 letters)
+$words = explode(' ', $playlist->name);
+$initials = '';
+foreach ($words as $word) {
+    if (!empty($word)) {
+        $initials .= strtoupper(substr($word, 0, 1));
+    }
+    if (strlen($initials) >= 2) break;
+}
+
 $gamesCount = $playlist->games_count ?? $playlist->games->count();
 $backLink = $backUrl ?: ($owner ? url('/users/' . $owner->username . '/playlists') : 'javascript:history.back()');
 @endphp
@@ -16,9 +40,11 @@ $backLink = $backUrl ?: ($owner ? url('/users/' . $owner->username . '/playlists
         <img src="{{ $coverUrl }}" class="card-img-top" alt="{{ $playlist->name }}"
             style="aspect-ratio: 1/1; object-fit: cover;">
         @else
-        <div class="card-img-top bg-light d-flex align-items-center justify-content-center text-muted border-bottom"
-            style="aspect-ratio: 1/1;">
-            <i class="bi bi-collection-play" style="font-size: 4rem; opacity: 0.5;"></i>
+        <div class="card-img-top d-flex align-items-center justify-content-center text-white"
+            style="aspect-ratio: 1/1; {{ $gradientStyle }}">
+            <span class="fw-bold opacity-75" style="font-size: 4rem; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+                {{ $initials }}
+            </span>
         </div>
         @endif
 
@@ -73,9 +99,11 @@ $backLink = $backUrl ?: ($owner ? url('/users/' . $owner->username . '/playlists
                     class="img-fluid w-100 h-100"
                     style="aspect-ratio: 1/1; object-fit: cover;">
                 @else
-                <div class="h-100 bg-light d-flex align-items-center justify-content-center text-muted border"
-                    style="aspect-ratio: 1/1; min-height: 220px;">
-                    <i class="bi bi-collection-play" style="font-size: 4rem; opacity: 0.5;"></i>
+                <div class="h-100 w-100 d-flex align-items-center justify-content-center text-white"
+                    style="aspect-ratio: 1/1; min-height: 220px; {{ $gradientStyle }}">
+                    <span class="fw-bold opacity-75" style="font-size: 6rem; text-shadow: 0 2px 15px rgba(0,0,0,0.2);">
+                        {{ $initials }}
+                    </span>
                 </div>
                 @endif
             </div>
