@@ -25,7 +25,6 @@ class PlaylistController extends Controller
 
         $validated['is_public'] = $request->has('is_public');
 
-        // Handle File Upload
         if ($request->hasFile('cover')) {
             $validated['cover'] = $request->file('cover')->store('playlist-covers', 'public');
         }
@@ -38,15 +37,12 @@ class PlaylistController extends Controller
 
     public function show(Request $request, Playlist $playlist)
     {
-        // 1. Eager load the playlist owners and game count for the header card
         $playlist->load('users')->loadCount('games');
 
-        // 2. Paginate games with eager loaded relationships
         $games = $playlist->games()
             ->with(['genres', 'credits'])
             ->paginate(12, ['*'], 'games_page');
 
-        // 3. Paginate posts (custom page name: 'posts_page')
         $posts = Post::query()
             ->where('hub_type', 'playlist')
             ->where('hub_id', $playlist->id)
@@ -55,10 +51,8 @@ class PlaylistController extends Controller
             ->withFeedRelations() 
             ->paginate(10, ['*'], 'posts_page');
 
-        // Handle load-more AJAX responses
         if ($request->ajax()) {
 
-            // If the request is for more games
             if ($request->has('games_page')) {
                 $html = '';
                 foreach ($games as $game) {
@@ -71,7 +65,6 @@ class PlaylistController extends Controller
                 ]);
             }
 
-            // If the request is for more posts/comments
             if ($request->has('posts_page')) {
                 return response()->json([
                     'html' => view('components.post.items', compact('posts'))->render(),
@@ -108,7 +101,7 @@ class PlaylistController extends Controller
 
         if ($request->hasFile('cover')) {
             if ($playlist->cover) {
-                Storage::disk('public')->delete($playlist->cover); // Delete old image
+                Storage::disk('public')->delete($playlist->cover);
             }
             $validated['cover'] = $request->file('cover')->store('playlist-covers', 'public');
         }
