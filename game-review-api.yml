@@ -1,0 +1,242 @@
+openapi: 3.1.0
+info:
+  title: Game Review App API
+  version: 1.0.0
+  description: Public REST API for querying games and user reviews.
+servers:
+  - url: /api/v1
+    description: v1 API
+
+paths:
+  /games:
+    get:
+      summary: Get a list of games
+      description: Returns a paginated list of games, ordered by average rating.
+      tags:
+        - Games
+      parameters:
+        - name: genre
+          in: query
+          description: Filter games by a specific genre name (e.g., RPG, Action)
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: A paginated list of games
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGamesResponse'
+
+  /games/{id}:
+    get:
+      summary: Get game details
+      description: Returns detailed information for a specific game, including genres and credited users.
+      tags:
+        - Games
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the game
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Game details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/GameDetail'
+        '404':
+          description: Game not found
+
+  /games/{id}/reviews:
+    get:
+      summary: Get reviews for a game
+      description: Returns a paginated list of formatted reviews for a specific game.
+      tags:
+        - Reviews
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the game
+          required: true
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: A paginated list of reviews
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReviewsResponse'
+        '404':
+          description: Game not found
+
+components:
+  schemas:
+    # -- Base Models --
+    GameSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        publisher:
+          type: string
+          nullable: true
+        release_date:
+          type: string
+          format: date
+          nullable: true
+        average_rating:
+          type: number
+          format: float
+        cover_img:
+          type: string
+          nullable: true
+        genres:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+
+    GameDetail:
+      allOf:
+        - $ref: '#/components/schemas/GameSummary'
+        - type: object
+          properties:
+            details:
+              type: string
+              nullable: true
+            banner_img:
+              type: string
+              nullable: true
+            logo:
+              type: string
+              nullable: true
+            credits:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  username:
+                    type: string
+                  pivot:
+                    type: object
+                    properties:
+                      role:
+                        type: string
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+        author:
+          type: string
+        avatar_url:
+          type: string
+          nullable: true
+        rating:
+          type: integer
+          nullable: true
+        type:
+          type: string
+          example: recommendation
+        body:
+          type: string
+        is_spoiler:
+          type: boolean
+        likes_count:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    # -- Pagination Wrappers --
+    PaginationLinks:
+      type: object
+      properties:
+        current_page:
+          type: integer
+        first_page_url:
+          type: string
+        last_page:
+          type: integer
+        last_page_url:
+          type: string
+        next_page_url:
+          type: string
+          nullable: true
+        prev_page_url:
+          type: string
+          nullable: true
+        per_page:
+          type: integer
+        total:
+          type: integer
+
+    PaginatedGamesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Fetched games successfully.
+        data:
+          allOf:
+            - $ref: '#/components/schemas/PaginationLinks'
+            - type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/GameSummary'
+
+    PaginatedReviewsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          allOf:
+            - $ref: '#/components/schemas/PaginationLinks'
+            - type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Review'

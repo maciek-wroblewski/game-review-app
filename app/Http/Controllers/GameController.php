@@ -221,17 +221,79 @@ class GameController extends Controller
         return redirect('/games/' . $game->id)->with('success', 'Game information updated successfully.');
     }
     
-    public function apiIndex()
+    // --- API METHODS ---
+
+    public function apiIndex(Request $request)
     {
-        $games = Game::select('id', 'title', 'publisher', 'release_date', 'average_rating')
-            ->orderBy('average_rating', 'desc')
-            ->take(10)
-            ->get();
+        $query = Game::select('id', 'title', 'publisher', 'release_date', 'average_rating', 'cover_img')
+            ->with(['genres:id,name']); // Only grab the ID and name of the genre
+
+        // Optional: Allow filtering by genre (e.g., /api/v1/games?genre=RPG)
+        if ($request->has('genre')) {
+            $query->whereHas('genres', function ($q) use ($request) {
+                $q->where('name', $request->query('genre'));
+            });
+        }
+
+        // Use pagination instead of ->take(10) so clients can load more pages
+        $games = $query->orderBy('average_rating', 'desc')->paginate(15);
 
         return response()->json([
             'success' => true,
-            'message' => 'Pobrano listę najlepszych gier',
+            'message' => 'Fetched games successfully.',
             'data' => $games
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+
+    public function apiShow(Game $game)
+    {
+        // Load relationships, restricting the fields to prevent leaking sensitive user data
+        $game->load([
+            'genres:id,name', 
+            'credits' => function ($query) {
+                $query->select('users.id', 'username')->withPivot('role');
+            }
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $game
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+
+    public function apiReviews(Game $game)
+    {
+        $reviews = $game->posts()
+            ->has('review')
+            ->with([
+                'author:id,username,avatar_media_id', // Only get public author info
+                'author.avatar', // Assuming you have an avatar relation
+                'review'         // Get the actual review data (rating, type)
+            ])
+            ->latest()
+            ->paginate(10);
+
+        // Map over the results to format them nicely for the API consumer
+        $formattedReviews = $reviews->getCollection()->map(function ($post) {
+            return [
+                'id' => $post->id,
+                'author' => $post->author->username,
+                'avatar_url' => $post->author->avatar_url ?? null,
+                'rating' => $post->review->rating,
+                'type' => $post->review->type,
+                'body' => $post->body,
+                'is_spoiler' => $post->is_spoiler,
+                'likes_count' => $post->likes_count ?? 0,
+                'created_at' => $post->created_at->toIso8601String(),
+            ];
+        });
+
+        // Replace the unformatted collection with the clean one
+        $reviews->setCollection($formattedReviews);
+
+        return response()->json([
+            'success' => true,
+            'data' => $reviews
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 }
