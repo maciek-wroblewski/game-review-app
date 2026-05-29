@@ -2,6 +2,7 @@
 
 return [
     'title' => 'Gry',
+    'browse_games' => 'Przeglądaj gry',
     'search_games' => 'Szukaj gier',
     'all_games' => 'Wszystkie gry',
     'no_games' => 'Nie znaleziono gier',

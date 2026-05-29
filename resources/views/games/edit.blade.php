@@ -51,11 +51,11 @@
         
         <div class="d-flex align-items-center justify-content-between mb-4">
             <div>
-                <h2 class="fw-bold mb-1">Edit Game Profile</h2>
-                <p class="text-muted mb-0">Update information and media for {{ $game->title }}</p>
+                <h2 class="fw-bold mb-1">{{ __('games.edit_game_profile') }}</h2>
+                <p class="text-muted mb-0">{{ __('games.update_info_media') }} {{ $game->title }}</p>
             </div>
             <a href="/games/{{ $game->id }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Game
+                <i class="bi bi-arrow-left"></i> {{ __('games.back_to_game') }}
             </a>
         </div>
 
@@ -66,15 +66,15 @@
                     @method('PATCH')
 
                     <div class="p-4 bg-light border-bottom">
-                        <h5 class="fw-bold mb-3">Game Media</h5>
+                        <h5 class="fw-bold mb-3">{{ __('games.game_media') }}</h5>
                         
                         <div class="mb-4">
-                            <label class="form-label text-muted small fw-bold">Banner Image</label>
+                            <label class="form-label text-muted small fw-bold">{{ __('games.banner_image') }}</label>
                             <div class="image-edit-container" style="height: 200px;" onclick="document.getElementById('bannerInput').click()">
                                 <img src="{{ $game->banner_img ?? asset('images/default-banner.jpg') }}" id="bannerPreview" class="object-fit-cover" alt="Banner">
                                 <div class="image-edit-overlay">
                                     <i class="bi bi-camera-fill fs-2 mb-2"></i>
-                                    <span class="fw-bold">Change Banner</span>
+                                    <span class="fw-bold">{{ __('games.change_banner') }}</span>
                                 </div>
                                 <input type="file" name="banner_img" id="bannerInput" class="d-none" accept="image/*" onchange="previewImage(this, 'bannerPreview')">
                             </div>
@@ -83,12 +83,12 @@
 
                         <div class="row g-4">
                             <div class="col-sm-6">
-                                <label class="form-label text-muted small fw-bold">Cover Image (Vertical)</label>
+                                <label class="form-label text-muted small fw-bold">{{ __('games.cover_image') }}</label>
                                 <div class="image-edit-container mx-auto" style="height: 300px; max-width: 220px;" onclick="document.getElementById('coverInput').click()">
                                     <img src="{{ $game->cover_img ?? asset('images/default-cover.jpg') }}" id="coverPreview" class="object-fit-cover" alt="Cover">
                                     <div class="image-edit-overlay">
                                         <i class="bi bi-image fs-3 mb-2"></i>
-                                        <span class="fw-bold">Change Cover</span>
+                                        <span class="fw-bold">{{ __('games.change_cover') }}</span>
                                     </div>
                                     <input type="file" name="cover_img" id="coverInput" class="d-none" accept="image/*" onchange="previewImage(this, 'coverPreview')">
                                 </div>
@@ -96,12 +96,12 @@
                             </div>
 
                             <div class="col-sm-6">
-                                <label class="form-label text-muted small fw-bold">Game Logo (Transparent PNG)</label>
+                                <label class="form-label text-muted small fw-bold">{{ __('games.game_logo') }}</label>
                                 <div class="image-edit-container mx-auto" style="height: 200px; max-width: 200px; background-image: radial-gradient(#ccc 1px, transparent 0); background-size: 15px 15px;" onclick="document.getElementById('logoInput').click()">
                                     <img src="{{ $game->logo ?? asset('images/default-logo.png') }}" id="logoPreview" class="object-fit-cover" style="object-fit: contain; padding: 1rem;" alt="Logo">
                                     <div class="image-edit-overlay">
                                         <i class="bi bi-circle-square fs-3 mb-2"></i>
-                                        <span class="fw-bold">Change Logo</span>
+                                        <span class="fw-bold">{{ __('games.change_logo') }}</span>
                                     </div>
                                     <input type="file" name="logo" id="logoInput" class="d-none" accept="image/png,image/webp,image/jpeg" onchange="previewImage(this, 'logoPreview')">
                                 </div>
@@ -111,56 +111,56 @@
                     </div>
 
                     <div class="p-4 p-lg-5">
-                        <h5 class="fw-bold mb-4">Game Information</h5>
+                        <h5 class="fw-bold mb-4">{{ __('games.game_information') }}</h5>
 
                         <div class="mb-4">
-                            <label for="title" class="form-label fw-bold">Title</label>
+                            <label for="title" class="form-label fw-bold">{{ __('games.title') }}</label>
                             <input type="text" class="form-control form-control-lg @error('title') is-invalid @enderror" id="title" name="title" value="{{ old('title', $game->title) }}" required>
                             @error('title') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
                         <div class="row g-4 mb-4">
                             <div class="col-md-6">
-                                <label for="publisher" class="form-label fw-bold">Publisher</label>
+                                <label for="publisher" class="form-label fw-bold">{{ __('games.publisher') }}</label>
                                 <input type="text" class="form-control @error('publisher') is-invalid @enderror" id="publisher" name="publisher" value="{{ old('publisher', $game->publisher) }}">
                                 @error('publisher') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-md-6">
-                                <label for="release_date" class="form-label fw-bold">Release Date</label>
+                                <label for="release_date" class="form-label fw-bold">{{ __('games.release_date') }}</label>
                                 <input type="date" class="form-control @error('release_date') is-invalid @enderror" id="release_date" name="release_date" value="{{ old('release_date', $game->release_date ? $game->release_date->format('Y-m-d') : '') }}">
                                 @error('release_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label fw-bold">Genres</label>
+                            <label class="form-label fw-bold">{{ __('games.genres') }}</label>
                             
                             <div id="activeGenres" class="d-flex flex-wrap gap-2 mb-3">
                                 </div>
 
                             <div class="position-relative">
-                                <input type="text" id="genreSearchInput" class="form-control" placeholder="Search and add genre..." autocomplete="off">
+                                <input type="text" id="genreSearchInput" class="form-control" placeholder="{{ __('games.search_add_genre') }}" autocomplete="off">
                                 <div id="genreDropdown" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1000; max-height: 200px; overflow-y: auto;">
                                     </div>
                             </div>
 
                             <div id="hiddenGenreInputs"></div>
                             
-                            <small class="text-muted mt-2 d-block">Click on an active genre to remove it.</small>
+                            <small class=\"text-muted mt-2 d-block\">{{ __('games.click_remove_genre') }}</small>
                             @error('genres') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                             @error('genres.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
 
                         <div class="mb-4">
-                            <label for="details" class="form-label fw-bold">Description / Details</label>
-                            <textarea class="form-control @error('details') is-invalid @enderror" id="details" name="details" rows="6" placeholder="Enter game description...">{{ old('details', $game->details) }}</textarea>
+                            <label for="details" class="form-label fw-bold">{{ __('games.description_details') }}</label>
+                            <textarea class="form-control @error('details') is-invalid @enderror" id="details" name="details" rows="6" placeholder="{{ __('games.enter_description') }}">{{ old('details', $game->details) }}</textarea>
                             @error('details') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
                         <div class="d-flex justify-content-end gap-2 pt-3 border-top">
-                            <a href="/games/{{ $game->id }}" class="btn btn-light">Cancel</a>
+                            <a href="/games/{{ $game->id }}" class="btn btn-light">{{ __('games.cancel') }}</a>
                             <button type="submit" class="btn btn-primary px-4 fw-bold">
-                                <i class="bi bi-check-circle me-1"></i> Save Changes
+                                <i class="bi bi-check-circle me-1"></i> {{ __('games.save_changes') }}
                             </button>
                         </div>
                     </div>

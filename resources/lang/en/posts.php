@@ -59,6 +59,9 @@ return [
     'delete_post_message' => 'Are you sure you want to delete this post? This action cannot be undone.',
     'undo' => 'Undo',
     
+    // Post editing
+    'editing' => 'Editing',
+    
     // Posts index
     'global_timeline' => 'Global Timeline',
     

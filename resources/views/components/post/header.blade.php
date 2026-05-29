@@ -29,7 +29,7 @@
                             @if(optional($post->author)->verified) 
                                 <i class="bi bi-patch-check-fill text-primary"></i> 
                             @endif
-                            <span class="js-editing-badge badge bg-warning text-dark ms-2 d-none">Editing</span>
+                            <span class="js-editing-badge badge bg-warning text-dark ms-2 d-none">{{ __('posts.editing') }}</span>
                         </div>
                     @endif
                     <div class="text-muted small d-flex flex-wrap gap-2">

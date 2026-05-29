@@ -2,6 +2,7 @@
 
 return [
     'title' => 'Games',
+    'browse_games' => 'Browse Games',
     'search_games' => 'Search Games',
     'all_games' => 'All Games',
     'no_games' => 'No games found',
@@ -35,11 +36,13 @@ return [
     'change_logo' => 'Change Logo',
     'game_information' => 'Game Information',
     'title' => 'Title',
+    'publisher' => 'Publisher',
     'release_date' => 'Release Date',
     'genres' => 'Genres',
     'search_add_genre' => 'Search and add genre...',
     'click_remove_genre' => 'Click on an active genre to remove it.',
     'description_details' => 'Description / Details',
     'enter_description' => 'Enter game description...',
+    'cancel' => 'Cancel',
     'save_changes' => 'Save Changes',
 ];

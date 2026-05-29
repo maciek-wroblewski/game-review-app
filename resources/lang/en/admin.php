@@ -20,4 +20,7 @@ return [
     'delete' => 'Delete',
     'approve' => 'Approve',
     'reject' => 'Reject',
+    'no_users_found' => 'No users found',
+    'no_posts_found' => 'No posts found',
+    'deleted_user' => 'Deleted User',
 ];

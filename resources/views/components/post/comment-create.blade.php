@@ -66,7 +66,7 @@
     {{-- Guest Call to Action --}}
     <div class="card shadow-sm mb-3 border-0 bg-light text-center p-3">
         <p class="text-muted mb-0 small">
-            <a href="{{ route('login') }}" class="text-decoration-none fw-bold">Log in</a> to leave a comment.
+            <a href="{{ route('login') }}" class="text-decoration-none fw-bold">{{ __('common.login') }}</a> to leave a comment.
         </p>
     </div>
 @endauth

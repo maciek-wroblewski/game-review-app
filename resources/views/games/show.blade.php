@@ -24,7 +24,7 @@
                 style="width: 100px; height: 100px; border: 4px solid white;">
                 <div class="text-center">
                     <span class="fs-2 fw-bold d-block lh-1">{{ $game->average_rating }}</span>
-                    <span class="small fw-bold text-uppercase" style="font-size: 0.7rem;">{{ __('Score') }}</span>
+                    <span class="small fw-bold text-uppercase" style="font-size: 0.7rem;">{{ __('reviews.score') }}</span>
                 </div>
             </div>
             @endif
@@ -48,11 +48,11 @@
                 <!-- Existing Reviews List (Now using components) -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h3 class="m-0 fw-bold">
-                        {{ __('Player Reviews') }}
+                        {{ __('reviews.player_reviews') }}
                         <span class="text-muted fs-5 fw-normal">({{ $game->posts_count }})</span>
                     </h3>
                     <a href="/games/{{ $game->id }}/discussions" class="btn btn-outline-secondary btn-sm">
-                        <i class="bi bi-chat-text me-1"></i> {{ __('View Discussions') }}
+                        <i class="bi bi-chat-text me-1"></i> {{ __('reviews.view_discussions') }}
                     </a>
                 </div>
 

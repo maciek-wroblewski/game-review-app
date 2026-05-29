@@ -6,7 +6,7 @@
 
                 <x-post.create-form />
                 <div class="container">
-                    <h1>Global Timeline</h1>
+                    <h1>{{ __('posts.global_timeline') }}</h1>
 
                     {{-- Call your unified component --}}
                     <x-post.list :posts="$posts" />

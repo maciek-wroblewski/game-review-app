@@ -32,7 +32,7 @@
         <div class="flex-grow-1 d-flex flex-column p-3 bg-white" style="min-width: 0;">
             <div class="mb-3">
                 <label class="form-label fw-bold text-muted small">Write a post...</label>
-                <textarea class="js-create-textarea form-control" rows="4" placeholder="What's on your mind?"></textarea>
+                <textarea class="js-create-textarea form-control" rows="4" placeholder="{{ __('posts.what_on_mind') }}"></textarea>
             </div>
 
             <div class="mb-3 border-bottom pb-3">

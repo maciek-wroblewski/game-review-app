@@ -1,4 +1,4 @@
-<x-layout headtitle="{{ __('Browse Games') }}">
+<x-layout headtitle="{{ __('games.browse_games') }}">
     <div class="container-xl py-5">
 
         <section class="trending-section mb-5">
