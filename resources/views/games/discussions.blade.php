@@ -38,9 +38,7 @@
                     </a>
                 </div>
 
-                    <x-post.create-form hub-type="game" :hub-id="$game->id" />
-
-                <x-post.list :posts="$posts" />
+                <x-hub-comments hub-type="game" :hub-id="$game->id" :posts="$posts" />
             </div>
         </div>
     </div>
