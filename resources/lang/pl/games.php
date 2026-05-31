@@ -12,7 +12,7 @@ return [
     'genre' => 'Gatunek',
     'platform' => 'Platforma',
     'description' => 'Opis',
-    'reviews_count' => 'Recenzji',
+    'reviews_count' => '{1} Recenzja|[2,4] Recenzje|[5,*] Recenzji',
     'average_rating' => 'Średnia ocena',
     'explore' => 'Odkrywaj gry',
     'titles_found' => 'znalezionych tytułów',

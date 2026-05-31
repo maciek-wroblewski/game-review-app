@@ -115,10 +115,10 @@
                         @empty
                         <div class="alert alert-info border-0 shadow-sm p-4 text-center">
                             <h4 class="fw-bold mb-2">
-                                No posts yet
+                                {{ __('users.no_posts_yet') }}
                             </h4>
                             <p class="mb-0">
-                                This user has not posted anything yet.
+                                {{ __('users.no_posts_detail') }}
                             </p>
                         </div>
                         @endforelse

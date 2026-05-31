@@ -1,4 +1,4 @@
-<x-layout headtitle="Edit {{ $playlist->name }}">
+<x-layout headtitle="{{ __('playlists.edit_playlist') }} - {{ $playlist->name }}">
     <style>
         /* Hover Overlay Logic */
         .hover-overlay-container {
@@ -17,8 +17,8 @@
     <div class="container py-5 max-w-2xl mx-auto">
         <div class="mb-4 d-flex justify-content-between align-items-center">
             <div>
-                <h1 class="fw-bold mb-1">Edit Playlist</h1>
-                <p class="text-muted">Update your collection details.</p>
+                <h1 class="fw-bold mb-1">{{ __('playlists.edit_playlist') }}</h1>
+                <p class="text-muted">{{ __('playlists.edit_description') }}</p>
             </div>
         </div>
 
@@ -29,7 +29,7 @@
                     @method('PUT')
 
                     <div class="mb-4">
-                        <x-input-label value="Playlist Cover" class="mb-2 fw-semibold" />
+                        <x-input-label value="{{ __('playlists.cover') }}" class="mb-2 fw-semibold" />
                         
                         <div class="hover-overlay-container position-relative rounded overflow-hidden shadow-sm" 
                              style="cursor: pointer; height: 200px; background: linear-gradient(135deg, #6c757d, #343a40);" 
@@ -43,24 +43,24 @@
                             <div class="hover-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-white">
                                 <div class="text-center">
                                     <i class="bi bi-image fs-3 mb-1"></i>
-                                    <div class="fw-semibold">Change Cover</div>
+                                    <div class="fw-semibold">{{ __('playlists.change_cover') }}</div>
                                 </div>
                             </div>
                             <input type="file" name="cover" id="coverInput" class="d-none" accept="image/*" onchange="previewImage(this, 'coverPreview')">
                         </div>
-                        <div class="form-text mt-1">Leave empty to keep your current cover.</div>
+                        <div class="form-text mt-1">{{ __('playlists.keep_current_cover') }}</div>
                         <x-input-error class="mt-2 text-danger" :messages="$errors->get('cover')" />
                     </div>
 
                     <div class="mb-3">
-                        <x-input-label for="name" value="Playlist Name" />
+                        <x-input-label for="name" value="{{ __('playlists.name') }}" />
                         <x-text-input id="name" name="name" type="text" class="form-control"
                             :value="old('name', $playlist->name)" required autofocus />
                         <x-input-error class="mt-2 text-danger" :messages="$errors->get('name')" />
                     </div>
 
                     <div class="mb-3">
-                        <x-input-label for="description" value="Description (Optional)" />
+                        <x-input-label for="description" value="{{ __('playlists.description_optional') }}" />
                         <textarea id="description" name="description"
                             class="form-control rounded-md border-gray-300 shadow-sm"
                             rows="3">{{ old('description', $playlist->description) }}</textarea>
@@ -69,14 +69,14 @@
 
                     <div class="mb-4 form-check form-switch">
                         <input type="checkbox" class="form-check-input" id="is_public" name="is_public" value="1" {{ old('is_public', $playlist->is_public) ? 'checked' : '' }}>
-                        <label class="form-check-label" for="is_public">Make this playlist public</label>
+                        <label class="form-check-label" for="is_public">{{ __('playlists.make_public') }}</label>
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 mt-4">
-                        <a href="/playlists/{{ $playlist->id }}" class="btn btn-outline-secondary">Cancel</a>
+                        <a href="/playlists/{{ $playlist->id }}" class="btn btn-outline-secondary">{{ __('common.cancel') }}</a>
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-plus-lg me-1"></i>
-                            Save Changes
+                            {{ __('common.save_changes') }}
                         </button>
                     </div>
                 </form>

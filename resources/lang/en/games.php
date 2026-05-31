@@ -12,7 +12,7 @@ return [
     'genre' => 'Genre',
     'platform' => 'Platform',
     'description' => 'Description',
-    'reviews_count' => 'Reviews',
+    'reviews_count' => '{1} Review|[2,*] Reviews',
     'average_rating' => 'Average Rating',
     'explore' => 'Explore Games',
     'titles_found' => 'titles found',

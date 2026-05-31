@@ -19,7 +19,7 @@
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-sm btn-outline-danger">
-                        <i class="bi bi-trash"></i> Remove from List
+                        <i class="bi bi-trash"></i> {{ __('playlists.remove_from_list') }}
                     </button>
                 </form>
                 @endif
@@ -29,8 +29,8 @@
         </div>
         @else
         <div class="alert alert-info border-0 shadow-sm p-4 text-center mt-5">
-            <h4 class="fw-bold mb-2">Empty Playlist</h4>
-            <p class="mb-0">There are no games in this playlist yet.</p>
+            <h4 class="fw-bold mb-2">{{ __('playlists.empty_playlist') }}</h4>
+            <p class="mb-0">{{ __('playlists.no_games_yet') }}</p>
         </div>
         @endif
         

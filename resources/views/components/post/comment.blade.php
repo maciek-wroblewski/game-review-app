@@ -76,7 +76,7 @@
 
     @else
     <div class="p-3">
-        <p class="text-muted fst-italic small m-0">[This comment has been deleted]</p>
+        <p class="text-muted fst-italic small m-0">{{ __('posts.deleted_comment') }}</p>
     </div>
     @endif
 </div>

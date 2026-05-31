@@ -23,6 +23,7 @@ $height = $post->media->count() > 0 ? '1' : '3';
                     <div class="fw-semibold small">
 
                         {{ $post->author->username ?? $post->user->username ?? 'Deleted User' }}
+                        <span class="text-muted small" style="font-size: 0.75rem;">{{ $post->created_at->diffForHumans() }}</span>
 
                     </div>
 

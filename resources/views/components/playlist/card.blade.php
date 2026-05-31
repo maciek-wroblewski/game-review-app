@@ -52,24 +52,24 @@ $backLink = $backUrl ?: ($owner ? url('/users/' . $owner->username . '/playlists
             <div class="mb-3">
                 <h3 class="fw-bold mb-2 text-truncate">{{ $playlist->name }}</h3>
                 <p class="text-muted mb-0" style="min-height: 3rem;">
-                    {{ $playlist->description ?? 'No description provided.' }}
+                    {{ $playlist->description ?? __('playlists.no_description') }}
                 </p>
             </div>
 
             <div class="mt-auto d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <small class="text-muted">
-                    {{ $gamesCount }} {{ \Illuminate\Support\Str::plural('game', $gamesCount) }}
+                    {{ $gamesCount }} {{ trans_choice('playlists.game_count', $gamesCount) }}
                 </small>
 
                 <div class="d-flex gap-2 flex-wrap justify-content-end">
                     @auth
                         @if($playlist->users->contains(auth()->id()) && !$playlist->is_system)
                         <a href="/playlists/{{ $playlist->id }}/edit" class="btn btn-sm btn-outline-primary"
-                            title="Edit playlist">
+                            title="{{ __('playlists.edit_playlist') }}">
                             <i class="bi bi-pencil"></i>
                         </a>
                         <form action="/playlists/{{ $playlist->id }}" method="POST"
-                            onsubmit="return confirm('Are you sure you want to delete this playlist?')"
+                            onsubmit="return confirm('{{ __('playlists.confirm_delete') }}')"
                             class="d-inline-block">
                             @csrf
                             @method('DELETE')
@@ -111,11 +111,11 @@ $backLink = $backUrl ?: ($owner ? url('/users/' . $owner->username . '/playlists
                         <div class="min-w-0">
                             <h1 class="fw-bold mb-2">{{ $playlist->name }}</h1>
                             <p class="text-muted mb-3">
-                                {{ $playlist->description ?? 'A collection of games' }}
+                                {{ $playlist->description ?? __('playlists.default_description') }}
                             </p>
                             @if($owner)
                             <p class="text-muted small mb-0">
-                                Created by <a href="/users/{{ $owner->username }}" class="text-decoration-none">{{
+                                {{ __('playlists.created_by') }} <a href="/users/{{ $owner->username }}" class="text-decoration-none">{{
                                     $owner->username }}</a>
                             </p>
                             @endif
@@ -125,11 +125,11 @@ $backLink = $backUrl ?: ($owner ? url('/users/' . $owner->username . '/playlists
                             @auth
                                 @if($playlist->users->contains(auth()->id()) && !$playlist->is_system)
                                 <a href="/playlists/{{ $playlist->id }}/edit" class="btn btn-sm btn-outline-primary"
-                                    title="Edit playlist">
+                                    title="{{ __('playlists.edit_playlist') }}">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 <form action="/playlists/{{ $playlist->id }}" method="POST"
-                                    onsubmit="return confirm('Are you sure you want to delete this playlist?')"
+                                    onsubmit="return confirm('{{ __('playlists.confirm_delete') }}')"
                                     class="d-inline-block">
                                     @csrf
                                     @method('DELETE')
@@ -150,23 +150,22 @@ $backLink = $backUrl ?: ($owner ? url('/users/' . $owner->username . '/playlists
                         <div class="col">
                             <div class="bg-light rounded-4 p-3 h-100 text-center">
                                 <span class="d-block fs-4 fw-semibold">{{ $gamesCount }}</span>
-                                <small class="text-muted">{{ \Illuminate\Support\Str::plural('Game', $gamesCount)
-                                    }}</small>
+                                <small class="text-muted">{{ trans_choice('playlists.game_count', $gamesCount) }}</small>
                             </div>
                         </div>
 
                         <div class="col">
                             <div class="bg-light rounded-4 p-3 h-100 text-center">
                                 <span class="d-block fs-4 fw-semibold">{{ $playlist->users->count() }}</span>
-                                <small class="text-muted">Owners</small>
+                                <small class="text-muted">{{ __('playlists.owners') }}</small>
                             </div>
                         </div>
 
                         <div class="col">
                             <div class="bg-light rounded-4 p-3 h-100 text-center">
-                                <span class="d-block fs-4 fw-semibold">{{ $playlist->created_at->format('F j, Y')
+                                <span class="d-block fs-4 fw-semibold">{{ $playlist->created_at->translatedFormat('F j, Y')
                                     }}</span>
-                                <small class="text-muted">Created</small>
+                                <small class="text-muted">{{ __('playlists.created') }}</small>
                             </div>
                         </div>
                     </div>

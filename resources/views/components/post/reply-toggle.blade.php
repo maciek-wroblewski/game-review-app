@@ -4,12 +4,12 @@
             data-hub-type="{{ $post->hubable_type ?? $post->hub_type }}" 
             data-hub-id="{{ $post->hubable_id ?? $post->hub_id }}"
             data-parent-id="{{ $post->id }}">
-            <i class="bi bi-reply me-1"></i>Reply
+            <i class="bi bi-reply me-1"></i>{{ __('posts.reply') }}
         </button>
     @else
     <button class="btn btn-sm btn-light rounded-pill border-0 small text-muted disabled" disabled
-        title="This comment is locked">
-        <i class="bi bi-lock-fill me-1"></i>{{ $post->admin_locked ? 'Locked' : 'Disabled' }}
+        title="{{ __('posts.comment_locked') }}">
+        <i class="bi bi-lock-fill me-1"></i>{{ $post->admin_locked ? __('posts.locked') : __('posts.disabled') }}
     </button>
     @endif
 

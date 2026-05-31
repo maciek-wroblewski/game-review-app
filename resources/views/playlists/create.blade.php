@@ -1,4 +1,4 @@
-<x-layout headtitle="Create Playlist">
+<x-layout headtitle="{{ __('playlists.create_playlist') }}">
     <style>
         /* Hover Overlay Logic */
         .hover-overlay-container {
@@ -16,8 +16,8 @@
 
     <div class="container py-5 max-w-2xl mx-auto">
         <div class="mb-4">
-            <h1 class="fw-bold mb-1">Create Playlist</h1>
-            <p class="text-muted">Group your favorite games into a custom collection.</p>
+            <h1 class="fw-bold mb-1">{{ __('playlists.create_playlist') }}</h1>
+            <p class="text-muted">{{ __('playlists.create_description') }}</p>
         </div>
 
         <div class="card border-0 shadow-sm">
@@ -26,7 +26,7 @@
                     @csrf
 
                     <div class="mb-4">
-                        <x-input-label value="Playlist Cover (Optional)" class="mb-2 fw-semibold" />
+                        <x-input-label value="{{ __('playlists.cover_optional') }}" class="mb-2 fw-semibold" />
                         
                         <div class="hover-overlay-container position-relative rounded overflow-hidden shadow-sm" 
                              style="cursor: pointer; height: 200px; background: linear-gradient(135deg, #6c757d, #343a40);" 
@@ -37,7 +37,7 @@
                             <div class="hover-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-white">
                                 <div class="text-center">
                                     <i class="bi bi-image fs-3 mb-1"></i>
-                                    <div class="fw-semibold">Upload Cover</div>
+                                    <div class="fw-semibold">{{ __('playlists.upload_cover') }}</div>
                                 </div>
                             </div>
                             <input type="file" name="cover" id="coverInput" class="d-none" accept="image/*" onchange="previewImage(this, 'coverPreview')">
@@ -46,13 +46,13 @@
                     </div>
 
                     <div class="mb-3">
-                        <x-input-label for="name" value="Playlist Name" />
+                        <x-input-label for="name" value="{{ __('playlists.name') }}" />
                         <x-text-input id="name" name="name" type="text" class="form-control" :value="old('name')" required autofocus />
                         <x-input-error class="mt-2 text-danger" :messages="$errors->get('name')" />
                     </div>
 
                     <div class="mb-3">
-                        <x-input-label for="description" value="Description (Optional)" />
+                        <x-input-label for="description" value="{{ __('playlists.description_optional') }}" />
                         <textarea id="description" name="description"
                             class="form-control rounded-md border-gray-300 shadow-sm"
                             rows="3">{{ old('description') }}</textarea>
@@ -61,15 +61,15 @@
 
                     <div class="mb-4 form-check form-switch">
                         <input type="checkbox" class="form-check-input" id="is_public" name="is_public" value="1" {{ old('is_public', true) ? 'checked' : '' }}>
-                        <label class="form-check-label" for="is_public">Make this playlist public</label>
-                        <div class="form-text">Public playlists can be seen by anyone visiting your profile.</div>
+                        <label class="form-check-label" for="is_public">{{ __('playlists.make_public') }}</label>
+                        <div class="form-text">{{ __('playlists.public_description') }}</div>
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 mt-4">
-                        <a href="javascript:history.back()" class="btn btn-outline-secondary">Cancel</a>
+                        <a href="javascript:history.back()" class="btn btn-outline-secondary">{{ __('common.cancel') }}</a>
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-plus-lg me-1"></i>
-                            Create Playlist
+                            {{ __('playlists.create_playlist') }}
                         </button>
                     </div>
                 </form>

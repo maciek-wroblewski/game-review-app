@@ -26,7 +26,7 @@ $isCompact = $layout === 'compact';
             {{-- Conditionally inject Avatar inside the banner for Compact view --}}
             @if($isCompact)
             <div class="position-absolute bottom-0 start-50 translate-middle-x mb-n3 z-3">
-                <x-user.static-avatar :user="$user" :layout="$layout" :interactive="$interactive" />
+                <x-user.static-avatar :user="$user" :size="'80px'" />
             </div>
             @endif
         </div>
@@ -37,7 +37,7 @@ $isCompact = $layout === 'compact';
                 {{-- Avatar (Full Layout Only) --}}
                 @if(!$isCompact)
                 <div>
-                    <x-user.static-avatar :user="$user" :layout="$layout" :interactive="$interactive" />
+                    <x-user.static-avatar :user="$user" :size="'160px'" />
                 </div>
                 @endif
 
@@ -73,7 +73,7 @@ $isCompact = $layout === 'compact';
                             </div>
 
                             <p class="text-muted {{ $isCompact ? 'small mb-2' : 'mb-3' }}">
-                                {{ __('users.member_since') }} {{ $user->created_at->format('F Y') }}
+                                {{ __('users.member_since') }} {{ $user->created_at->translatedFormat('F Y') }}
                             </p>
 
                         </div>

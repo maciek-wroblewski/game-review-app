@@ -34,7 +34,7 @@
                     <h5 class="card-title mb-0 fw-bold text-truncate w-100" style="color: #212529;">{{ $game->title }}</h5>
                     <div class="text-warning small d-flex align-items-center">
                         <i class="bi bi-star-fill me-1"></i> {{ number_format($game->average_rating, 1) }}
-                        <span class="text-muted ms-2" style="font-size: 0.75rem;">({{ $game->posts_count ?? 0 }} {{ __('games.reviews_count') }})</span>
+                        <span class="text-muted ms-2" style="font-size: 0.75rem;">({{ $game->posts_count ?? 0 }} {{ trans_choice('games.reviews_count', $game->posts_count ?? 0) }})</span>
                     </div>
                 </div>
             </div>

@@ -9,7 +9,7 @@
        data-bs-trigger="manual">
        
         {{-- Base Avatar --}}
-        <x-user.static-avatar :user="$user" :size="$size" layout="compact" />
+        <x-user.static-avatar :user="$user" :size="$size" />
         
     </span>
 

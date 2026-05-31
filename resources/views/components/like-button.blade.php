@@ -24,7 +24,7 @@
             <i class="bi bi-heart-fill icon-liked"></i>
         </span>
         <span class="like-count fw-medium">
-            {{ $count > 0 ? $count : 'Like' }}
+            {{ $count > 0 ? $count : __('posts.like') }}
         </span>
     </button>
 </form>
@@ -33,7 +33,7 @@
     @php $guestCount = $post->likes_count ?? 0; @endphp
     <button class="btn btn-sm btn-light rounded-pill border-0 small d-flex align-items-center gap-2" disabled>
         <i class="bi bi-heart"></i>
-        <span class="fw-medium">{{ $guestCount > 0 ? $guestCount : 'No likes' }}</span>
+        <span class="fw-medium">{{ $guestCount > 0 ? $guestCount : __('posts.no_likes') }}</span>
     </button>
 </div>
 @endauth
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentCount = Math.max(0, currentCount - 1);
             }
             
-            const newText = currentCount > 0 ? currentCount : 'Like';
+            const newText = currentCount > 0 ? currentCount : '{{ __('posts.like') }}';
 
             // 3. Loop through all matching instances and sync their appearance perfectly
             matchingForms.forEach(form => {

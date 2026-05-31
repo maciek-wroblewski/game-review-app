@@ -69,4 +69,31 @@ return [
     'comments' => 'Comments:',
     'replies' => 'Replies (:count)',
     'no_replies_yet' => 'No replies yet. Be the first to comment!',
+    
+    // Post toggles & actions
+    'show_replies' => 'Show Replies',
+    'no_replies' => 'No Replies',
+    'reply' => 'Reply',
+    'locked' => 'Locked',
+    'disabled' => 'Disabled',
+    'comment_locked' => 'This comment is locked',
+    'no_comments' => 'This post has no comments',
+    'spoiler' => 'Spoiler',
+    'lock_comments' => 'Lock Comments',
+    'spoiler_content' => 'Spoiler Content',
+    'deleted_comment' => '[This comment has been deleted]',
+    'confirm_delete' => 'Permanently delete this post?',
+    'hub_empty' => 'No posts shared in this hub yet. Be the first to start the conversation!',
+    'content' => 'Post Content',
+
+    // Post header
+    'suspended_user' => 'Suspended User',
+    'anonymous' => 'Anonymous',
+    'posted_in' => 'Posted in',
+    'hub' => 'Hub',
+    'lock' => 'Lock',
+    'unlock' => 'Unlock',
+    'no_likes' => 'No likes',
+
+    'read_more' => 'Read more...',
 ];

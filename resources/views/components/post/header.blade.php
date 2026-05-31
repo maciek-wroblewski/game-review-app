@@ -17,14 +17,14 @@
                 <div>
                     @if($post->author->is_suspended)
                         <div class="d-flex align-items-center">
-                            <span class="text-decoration-none fw-bold text-dark fs-5 me-2">Suspended User</span>
+                            <span class="text-decoration-none fw-bold text-dark fs-5 me-2">{{ __('posts.suspended_user') }}</span>
                             <i class="bi bi-slash-circle-fill text-danger" style="font-size: 1.25rem;"></i>
                         </div>
                     @else
                         <div class="d-flex align-items-center">
                             <a href="/users/{{ $post->author->username ?? '#' }}"
                             class="text-decoration-none fw-bold text-dark fs-5 me-2">
-                                {{ $post->author->username ?? 'Anonymous' }}
+                                {{ $post->author->username ?? __('posts.anonymous') }}
                             </a>
                             @if(optional($post->author)->verified) 
                                 <i class="bi bi-patch-check-fill text-primary"></i> 
@@ -36,7 +36,7 @@
                         <span>{{ $post->created_at->diffForHumans(null, true, true) }}</span>
                         @if($post->hub)
                             <span class="text-secondary">&bull;</span>
-                            <span>Posted in <a href="/{{ $post->hub->getTable() }}/{{ $post->hub_id }}">{{ $post->hub->title ?? $post->hub->name ?? $post->hub->username ?? 'Hub' }}</a></span>
+                            <span>{{ __('posts.posted_in') }} <a href="/{{ $post->hub->getTable() }}/{{ $post->hub_id }}">{{ $post->hub->title ?? $post->hub->name ?? $post->hub->username ?? __('posts.hub') }}</a></span>
                         @endif
                     </div>
                 </div>

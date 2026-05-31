@@ -69,4 +69,30 @@ return [
     'comments' => 'Komentarze:',
     'replies' => 'Odpowiedzi (:count)',
     'no_replies_yet' => 'Brak odpowiedzi. Bądź pierwszy!',
+    
+    // Post toggles & actions
+    'show_replies' => 'Pokaż odpowiedzi',
+    'no_replies' => 'Brak odpowiedzi',
+    'reply' => 'Odpowiedz',
+    'locked' => 'Zablokowane',
+    'disabled' => 'Wyłączone',
+    'comment_locked' => 'Ten komentarz jest zablokowany',
+    'no_comments' => 'Ten post nie ma komentarzy',
+    'spoiler' => 'Spoiler',
+    'lock_comments' => 'Zablokuj komentarze',
+    'spoiler_content' => 'Treść spoilera',
+    'deleted_comment' => '[Ten komentarz został usunięty]',
+    'confirm_delete' => 'Trwale usunąć ten post?',
+    'hub_empty' => 'Brak postów w tym hubie. Bądź pierwszy i rozpocznij dyskusję!',
+    'content' => 'Treść posta',
+
+    // Post header
+    'suspended_user' => 'Zawieszony użytkownik',
+    'anonymous' => 'Anonimowy',
+    'posted_in' => 'Opublikowano w',
+    'hub' => 'Hub',
+    'lock' => 'Zablokuj',
+    'unlock' => 'Odblokuj',
+    'no_likes' => 'Brak polubień',
+    'read_more' => 'Czytaj więcej...',
 ];
