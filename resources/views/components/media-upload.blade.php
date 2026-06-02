@@ -34,7 +34,7 @@
         <!-- Placeholder (Centered Text + Icon) -->
         <div class="text-muted small d-none flex-column align-items-center justify-content-center w-100 py-2 text-center pointer-events-none">
             <i class="bi bi-cloud-arrow-up fs-3"></i>
-            <span>Drop items here or click to add them</span>
+            <span>{{ __('posts.media_upload') }}</span>
         </div>
 
         <!-- Gallery of existing/uploaded items -->

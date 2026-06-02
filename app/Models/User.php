@@ -178,6 +178,19 @@ class User extends Authenticatable
 
     public function getAvatarUrlAttribute()
     {
-        return $this->avatar?->file_path;
+        // 1. Check if the 'avatar' relationship is already loaded (Media object)
+        if ($this->relationLoaded('avatar') && $this->getRelationValue('avatar')) {
+            return $this->getRelationValue('avatar')->file_path;
+        }
+
+        // 2. If 'avatar' is just a raw string column on the users table (e.g., from an older migration or OAuth)
+        if (array_key_exists('avatar', $this->attributes) && is_string($this->attributes['avatar'])) {
+            return $this->attributes['avatar'];
+        }
+
+        // 3. Fallback: try to fetch the relation value if it exists but wasn't explicitly caught above
+        $media = $this->getRelationValue('avatar');
+        
+        return $media ? $media->file_path : null;
     }
 }

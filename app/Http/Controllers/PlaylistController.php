@@ -33,7 +33,12 @@ class PlaylistController extends Controller
         }
 
         $playlist = Playlist::create($validated);
-        $playlist->users()->attach(auth()->id());
+    
+        $users = $request->input('users', []);
+        if (!in_array(auth()->id(), $users)) {
+            $users[] = auth()->id();
+        }
+        $playlist->users()->attach($users);
         Log::info('Created playlist: '.$playlist->name.' (ID: '.$playlist->id.') by '.(auth()->check() ? auth()->user()->username : 'guest'));
         return redirect("/playlists/{$playlist->id}")->with('success', 'Playlist created successfully!');
     }
@@ -112,6 +117,14 @@ class PlaylistController extends Controller
 
         $playlist->update($validated);
 
+        if ($request->has('users')) {
+            $users = $request->input('users');
+            if (!in_array(auth()->id(), $users)) {
+                $users[] = auth()->id();
+            }
+            $playlist->users()->sync($users);
+        }
+        Log::info('Updated playlist: '.$playlist->name.' (ID: '.$playlist->id.') by '.(auth()->check() ? auth()->user()->username : 'guest'));
         return redirect("/playlists/{$playlist->id}")->with('success', 'Playlist updated!');
     }
 
@@ -126,7 +139,7 @@ class PlaylistController extends Controller
         }
 
         $playlist->delete();
-
+        Log::info('Deleted playlist: '.$playlist->name.' (ID: '.$playlist->id.') by '.(auth()->check() ? auth()->user()->username : 'guest'));
         return redirect('/users/' . auth()->id() . '/playlists')->with('success', 'Playlist deleted.');
     }
 }

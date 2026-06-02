@@ -79,6 +79,8 @@
                             {{ __('common.save_changes') }}
                         </button>
                     </div>
+
+                    <x-user-search-selector name="users[]" :initialUsers="$playlist->users ?? [auth()->user()]" label="Playlist Owners" />
                 </form>
             </div>
         </div>

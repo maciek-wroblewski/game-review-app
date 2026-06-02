@@ -70,6 +70,7 @@
                                     {{ __('playlists.create_playlist') }}
                                 </button>
                             </div>
+                            <x-user-search-selector name="users[]" :initialUsers="$playlist->users ?? [auth()->user()]" label="Playlist Owners" />
                         </div>
             </div>
 

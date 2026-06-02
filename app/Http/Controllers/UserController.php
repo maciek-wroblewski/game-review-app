@@ -191,4 +191,33 @@ class UserController extends Controller
 
         return view('users.posts', compact('user', 'posts'));
     }
+
+    public function searchApi(Request $request)
+    {
+        $query = $request->input('q', '');
+        $filter = $request->input('filter', 'all');
+        $authUser = auth()->user();
+
+        $users = User::where('username', 'like', "%{$query}%");
+
+        if ($authUser) {
+            if ($filter === 'followers') {
+                $users->whereIn('id', $authUser->followers()->select('users.id'));
+            } elseif ($filter === 'following') {
+                $users->whereIn('id', $authUser->following()->select('users.id'));
+            } elseif ($filter === 'mutuals') {
+                $users->whereIn('id', $authUser->mutuals()->select('users.id'));
+            }
+        }
+
+        $results = $users->take(10)->get()->map(function($u) {
+            return [
+                'id' => $u->id,
+                'username' => $u->username,
+                'avatar_url' => $u->avatar_url
+            ];
+        });
+
+        return response()->json($results);
+    }
 }

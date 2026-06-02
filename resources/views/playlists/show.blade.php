@@ -2,11 +2,10 @@
     <div class="container py-5 d-flex flex-column gap-3">
         <x-playlist.card :playlist="$playlist" layout="full" />
 
-        {{-- CHANGE 1: Use $games instead of $playlist->games --}}
         @if($games->count() > 0)
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        {{-- Added ID to wrapper for the load-more script to target --}}
+        <div id="games-grid-wrapper" class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
             
-            {{-- CHANGE 2: Use $games instead of $playlist->games --}}
             @foreach($games as $game)
             <div class="col d-flex flex-column gap-2">
                 <div class="flex-grow-1">
@@ -27,6 +26,12 @@
             </div>
             @endforeach
         </div>
+
+        {{-- Load More Component --}}
+        <div class="mt-4">
+            <x-load-more :paginator="$games" target="#games-grid-wrapper" />
+        </div>
+        
         @else
         <div class="alert alert-info border-0 shadow-sm p-4 text-center mt-5">
             <h4 class="fw-bold mb-2">{{ __('playlists.empty_playlist') }}</h4>

@@ -4,7 +4,7 @@
     <div class="truncate-content">
         {{ $slot }}
     </div>
-    <button type="button" class="btn btn-link p-0 mt-1 truncate-btn d-none">Read more</button>
+    <button type="button" class="btn btn-link p-0 mt-1 truncate-btn d-none">{{ __('common.read_more') }}</button>
 </div>
 
 @once
@@ -58,7 +58,7 @@
 
                     // Animate to the full height
                     content.style.maxHeight = fullHeight + 'px';
-                    btn.textContent = 'Read less';
+                    btn.textContent = '{{ __('common.read_less') }}';
 
                     // Clean up maxHeight styling after transition finishes for responsiveness
                     const onTransitionEnd = (e) => {
@@ -79,7 +79,7 @@
 
                     // Animate down to the cached collapsed height
                     content.style.maxHeight = collapsedHeight + 'px';
-                    btn.textContent = 'Read more';
+                    btn.textContent = '{{ __('common.read_more') }}';
 
                     const onTransitionEnd = (e) => {
                         if (e.propertyName === 'max-height') {

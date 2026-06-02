@@ -10,6 +10,90 @@ use Illuminate\Support\Facades\Log;
 
 class GameController extends Controller
 {
+
+    public function create()
+    {
+        if (!auth()->check() || !auth()->user()->is_admin) {
+            abort(403, __('You do not have permission to create a game.'));
+        }
+
+        $genres = Genre::orderBy('name')->get(); 
+        return view('games.create', compact('genres')); 
+    }
+
+    public function store(Request $request)
+    {
+        if (!auth()->check() || !auth()->user()->is_admin) {
+            abort(403, __('You do not have permission to create a game.'));
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'publisher' => 'nullable|string|max:255',
+            'release_date' => 'nullable|date',
+            'details' => 'nullable|string',
+            'banner_img' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'cover_img' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'logo' => 'nullable|image|mimes:jpeg,png,webp|max:1024',
+            'genres' => 'nullable|array',
+            'credits' => 'nullable|array', // Validate credits array
+        ]);
+
+        if ($request->hasFile('banner_img')) {
+            $path = $request->file('banner_img')->store('games/banners', 'public');
+            $validated['banner_img'] = '/storage/' . $path;
+        }
+
+        if ($request->hasFile('cover_img')) {
+            $path = $request->file('cover_img')->store('games/covers', 'public');
+            $validated['cover_img'] = '/storage/' . $path;
+        }
+
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('games/logos', 'public');
+            $validated['logo'] = '/storage/' . $path;
+        }
+
+        $game = Game::create($validated);
+
+        // Sync Genres
+        $syncIds = [];
+        if ($request->has('genres')) {
+            foreach ($request->input('genres') as $genreItem) {
+                if (is_numeric($genreItem)) {
+                    $syncIds[] = (int) $genreItem;
+                } else {
+                    $newGenre = Genre::firstOrCreate(['name' => trim($genreItem)]);
+                    $syncIds[] = $newGenre->id;
+                }
+            }
+        }
+        $game->genres()->sync($syncIds);
+
+        // --- UPDATED SYNC CREDITS LOGIC ---
+        // --- NEW CREDITS LOGIC & SYNC ---
+        $syncCredits = [];
+        
+        if ($request->has('credits') && is_array($request->input('credits'))) {
+            foreach ($request->input('credits') as $key => $value) {
+                // Scenario 1: The input has roles (e.g., credits[1][role] = 'Developer')
+                // Here, $key is the User ID, and $value is the array ['role' => 'Developer']
+                if (is_array($value) && isset($value['role'])) {
+                    $syncCredits[$key] = ['role' => $value['role']];
+                } 
+                // Scenario 2: Fallback for inputs without roles (e.g., playlists sending plain IDs)
+                // Here, $value is the User ID itself
+                elseif (is_numeric($value)) {
+                    $syncCredits[$value] = ['role' => 'Developer']; // Default role
+                }
+            }
+        }
+        
+        $game->credits()->sync($syncCredits);
+
+        return redirect('/games/' . $game->id)->with('success', 'Game created successfully.');
+    }
+
     public function index(Request $request)
     {
         $games = Game::with(['genres', 'credits' => function ($query) {
@@ -211,14 +295,30 @@ class GameController extends Controller
                 }
             }
         }
-        
+
         $game->genres()->sync($syncIds);
 
-        // --- GARBAGE COLLECTION ---
-        // Delete any genres that are no longer attached to any games
-        Genre::doesntHave('games')->delete();
+        // --- NEW CREDITS LOGIC & SYNC ---
+        $syncCredits = [];
+        
+        if ($request->has('credits') && is_array($request->input('credits'))) {
+            foreach ($request->input('credits') as $key => $value) {
+                // Scenario 1: The input has roles (e.g., credits[1][role] = 'Developer')
+                // Here, $key is the User ID, and $value is the array ['role' => 'Developer']
+                if (is_array($value) && isset($value['role'])) {
+                    $syncCredits[$key] = ['role' => $value['role']];
+                } 
+                // Scenario 2: Fallback for inputs without roles (e.g., playlists sending plain IDs)
+                // Here, $value is the User ID itself
+                elseif (is_numeric($value)) {
+                    $syncCredits[$value] = ['role' => 'Developer']; // Default role
+                }
+            }
+        }
+        
+        $game->credits()->sync($syncCredits);
 
-        return redirect('/games/' . $game->id)->with('success', 'Game information updated successfully.');
+        return redirect('/games/' . $game->id)->with('success', 'Game information updated successfully.');    
     }
     
     // --- API METHODS ---

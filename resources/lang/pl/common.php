@@ -55,4 +55,8 @@ return [
     'followers_only' => 'Tylko obserwujący',
     'mutuals_only' => 'Tylko wzajemni',
     'private' => 'Prywatny',
+    'clear' => 'Wyczyść',
+    'reply' => 'Odpowiedz',
+    'read_more' => 'Czytaj więcej...',
+    'read_less' => 'Czytaj mniej...',
 ];
