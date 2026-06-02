@@ -33,7 +33,6 @@ Route::get('/users/{user:username}', [UserController::class, 'show']);
 Route::get('/users/{user:username}/followers', [UserController::class, 'followers']);
 Route::get('/users/{user:username}/following', [UserController::class, 'following']);
 Route::get('/users/{user:username}/playlists', [UserController::class, 'playlists']);
-Route::get('/playlists/{playlist}', [PlaylistController::class, 'show']);
 Route::get('/users/{user:username}/reviews', [UserController::class, 'reviews']);
 Route::get('/users/{user:username}/posts', [UserController::class, 'posts']);
 
@@ -62,9 +61,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/reviews/{review}', [GameReviewController::class, 'update']);
     Route::delete('/reviews/{review}', [GameReviewController::class, 'destroy']);
 
-    // Playlist Create/Store MUST come before {playlist} bindings
+    // Playlist routes ({playlist} binding MUST come after /create)
     Route::get('/playlists/create', [PlaylistController::class, 'create']);
     Route::post('/playlists', [PlaylistController::class, 'store']);
+    Route::get('/playlists/{playlist}', [PlaylistController::class, 'show']);
 
     Route::get('/playlists/{playlist}/edit', [PlaylistController::class, 'edit']);
     Route::put('/playlists/{playlist}', [PlaylistController::class, 'update']);

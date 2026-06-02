@@ -141,7 +141,7 @@ $backLink = $backUrl ?: ($owner ? url('/users/' . $owner->username . '/playlists
                             @endauth
 
                             <a href="{{ $backLink }}" class="btn btn-sm btn-outline-secondary align-self-start">
-                                <i class="bi bi-arrow-left me-2"></i>
+                                <i class="bi bi-arrow-left"></i>
                             </a>
                         </div>
                     </div>
