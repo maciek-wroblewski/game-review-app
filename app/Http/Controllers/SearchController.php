@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Game;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Blade;
 
 class SearchController extends Controller
 {
@@ -20,7 +21,6 @@ class SearchController extends Controller
             ]);
         }
 
-        // Fix: Eager load relations and post counts to avoid N+1 on search results
         $games = Game::where('title', 'like', "%{$query}%")
             ->with(['genres', 'credits'])
             ->withCount('posts')
@@ -28,18 +28,20 @@ class SearchController extends Controller
             ->paginate(12, ['*'], 'page_games')
             ->appends(['q' => $query]);
 
-        // Paginate users independently using 'page_users'
         $users = User::where('username', 'like', "%{$query}%")
             ->orderBy('username', 'asc')
             ->paginate(10, ['*'], 'page_users')
             ->appends(['q' => $query]);
 
-        // AJAX Optimization Framework for Infinite Scroll Elements
         if ($request->ajax()) {
+            
+            // --- GAMES AJAX ---
             if ($request->has('page_games')) {
                 $html = '';
                 foreach ($games as $game) {
-                    $html .= view('games.partials.game-card-wrapper', compact('game'))->render();
+                    $html .= '<div class="col-12 col-sm-6 col-lg-4 col-xl-3 animate-fade-in">';
+                    $html .= Blade::render('<x-game.card :game="$game" />', ['game' => $game]);
+                    $html .= '</div>';
                 }
 
                 return response()->json([
@@ -48,10 +50,13 @@ class SearchController extends Controller
                 ]);
             }
 
+            // --- USERS AJAX ---
             if ($request->has('page_users')) {
                 $html = '';
                 foreach ($users as $user) {
-                    $html .= view('users.partials.compact-card-wrapper', compact('user'))->render();
+                    $html .= '<div class="col-12 col-sm-6 col-lg-4 col-xl-3 animate-fade-in">';
+                    $html .= Blade::render('<x-user.card :user="$user" layout="compact" />', ['user' => $user]);
+                    $html .= '</div>';
                 }
 
                 return response()->json([

@@ -32,6 +32,7 @@ return [
     'commenting' => 'Komentowanie...',
 
     // Post actions
+    'load_more' => 'Załaduj więcej',
     'share' => 'Udostępnij',
     'report' => 'Zgłoś',
     'loading_comments' => 'Ładowanie komentarzy...',
@@ -95,4 +96,14 @@ return [
     'unlock' => 'Odblokuj',
     'no_likes' => 'Brak polubień',
     'read_more' => 'Czytaj więcej...',
+    'reply_as_comment' => 'Komentuj',
+    'write_your_reply' => 'Napisz swoją odpowiedź...',
+    'spoiler' => 'Spoiler',
+    'lock' => 'Zablokuj',
+    'media_upload' => 'Upuść tutaj pliki lub kliknij, aby dodać',
+    'post_submit' => 'Opublikuj',
+    'clear' => 'Wyczyść',
+    'write_post' => 'Napisz post...',
+    'post_edit' => 'Edytuj post',
+    'media' => 'Media',
 ];

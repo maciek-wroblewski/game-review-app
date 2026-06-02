@@ -55,4 +55,9 @@ return [
     'followers_only' => 'Tylko obserwujący',
     'mutuals_only' => 'Tylko wzajemni',
     'private' => 'Prywatny',
+    'clear' => 'Wyczyść',
+    'reply' => 'Odpowiedz',
+    'read_more' => 'Czytaj więcej...',
+    'read_less' => 'Czytaj mniej...',
+    'confirm_delete_post' => 'Czy na pewno chcesz usunąć ten post? Ta akcja jest nieodwracalna.',
 ];

@@ -96,4 +96,15 @@ return [
     'no_likes' => 'No likes',
 
     'read_more' => 'Read more...',
+    'reply_as_comment' => 'Comment',
+    'write_your_reply' => 'Write your reply...',
+    'spoiler' => 'Spoiler',
+    'lock' => 'Lock',
+    'media_upload' => 'Drop items here or click to add them',
+    'post_submit' => 'Post',
+    'clear' => 'Clear',
+    'write_post' => 'Write a post...',
+    'post_edit' => 'Edit Post',
+    'media' => 'Media',
+    'load_more' => 'Load More',
 ];

@@ -31,12 +31,12 @@
 
         <div class="flex-grow-1 d-flex flex-column p-3 bg-white" style="min-width: 0;">
             <div class="mb-3">
-                <label class="form-label fw-bold text-muted small">Write a post...</label>
+                <label class="form-label fw-bold text-muted small">{{ __('posts.write_post') }}</label>
                 <textarea class="js-create-textarea form-control" rows="4" placeholder="{{ __('posts.what_on_mind') }}"></textarea>
             </div>
 
             <div class="mb-3 border-bottom pb-3">
-                <label class="form-label fw-bold text-muted small">Media</label>
+                <label class="form-label fw-bold text-muted small">{{ __('posts.media') }}</label>
                 <x-media-upload 
                     multiple="true" 
                     inputName="create_media_ids[]" 

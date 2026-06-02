@@ -10,7 +10,7 @@
     <x-post.list 
         :posts="$posts" 
         feedId="hub-posts-feed-{{ $hubType }}-{{ $hubId }}"
-        emptyMessage="No posts shared in this hub yet. Be the first to start the conversation!"
-        loadMoreText="Show More Discussions"
+        emptyMessage="{{ __('posts.hub_empty') }}"
+        loadMoreText="{{ __('posts.load_more') }}"
     />
 </div>

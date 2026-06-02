@@ -63,4 +63,9 @@ return [
     'please_enter_search_term' => 'Please enter a search term to begin.',
     'no_results_found' => 'No results found for ":query". Try different keywords.',
     'search_results_for' => 'Search Results for ":query"',
+    'reply' => 'Reply',
+    'clear' => 'Clear',
+    'read_more' => 'Read more...',
+    'read_less' => 'Read less...',
+    'confirm_delete_post' => 'Are you sure you want to delete this post? This action cannot be undone.',
 ];

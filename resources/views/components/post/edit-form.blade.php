@@ -21,12 +21,12 @@
     <div class="js-edit-mode border-top border-light p-3 bg-light">
         <div class="flex-grow-1">
             <div class="mb-3">
-                <label class="form-label fw-bold text-muted small">Post Content</label>
+                <label class="form-label fw-bold text-muted small">{{ __('posts.post_edit') }}</label>
                 <textarea class="js-edit-textarea form-control" rows="4">{{ $post->body }}</textarea>
             </div>
 
             <div class="mb-3 border-bottom pb-3">
-                <label class="form-label fw-bold text-muted small">Media</label>
+                <label class="form-label fw-bold text-muted small">{{ __('posts.media') }}</label>
                 <x-media-upload 
                     multiple="true" 
                     inputName="media_ids[]" 

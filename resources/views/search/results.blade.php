@@ -21,7 +21,9 @@
                     
                     <div class="row g-4" id="games-grid">
                         @foreach($games as $game)
-                            @include('games.partials.game-card-wrapper', ['game' => $game])
+                            <div class="col-12 col-sm-6 col-lg-4 col-xl-3 animate-fade-in">
+                                <x-game.card :game="$game" />
+                            </div>
                         @endforeach
                     </div>
 
@@ -40,7 +42,9 @@
                     
                     <div class="row g-4" id="users-grid">
                         @foreach($users as $user)
-                            @include('users.partials.compact-card-wrapper', ['user' => $user])
+                            <div class="col-12 col-sm-6 col-lg-4 col-xl-3 animate-fade-in">
+                                <x-user.card :user="$user" layout="compact" />
+                            </div>
                         @endforeach
                     </div>
 

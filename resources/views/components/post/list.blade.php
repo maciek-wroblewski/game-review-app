@@ -1,8 +1,8 @@
 @props([
     'posts', 
     'feedId' => 'post-container', 
-    'emptyMessage' => 'No posts to show yet.',
-    'loadMoreText' => 'Load More'
+    'emptyMessage' => __('posts.no_posts'),
+    'loadMoreText' => __('posts.load_more')
 ])
 
 <div class="post-list-wrapper">

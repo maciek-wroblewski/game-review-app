@@ -2,8 +2,8 @@
     'clearClass' => 'js-btn-create-clear',
     'submitClass' => 'js-btn-submit-post',
     'spinnerClass' => 'js-submit-spinner',
-    'clearLabel' => 'Clear',
-    'submitLabel' => 'Post'
+    'clearLabel' => __('posts.clear'),
+    'submitLabel' => __('posts.post_submit')
 ])
 <div class="d-flex gap-2 justify-content-end">
     <button class="{{ $clearClass }} btn btn-outline-secondary btn-sm">{{ $clearLabel }}</button>

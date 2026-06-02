@@ -19,6 +19,11 @@ use App\Http\Controllers\AdminController;
 Route::get('/', function () { return view('index'); });
 Route::get('/hub', function () { return view('welcome'); });
 
+Route::middleware('auth')->group(function () {
+    Route::get('/games/create', [GameController::class, 'create'])->name('games.create');
+    Route::post('/games', [GameController::class, 'store'])->name('games.store');
+});
+
 Route::get('/games', [GameController::class, 'index']);
 Route::get('/search', [SearchController::class, 'index']);
 Route::get('/games/{game}', [GameController::class, 'show']);
@@ -28,14 +33,20 @@ Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{post}', [PostController::class, 'show']);
 Route::get('/posts/{post}/replies', [PostController::class, 'getReplies']);
 
-// Scoped User Relations (Public or Handled by Controller Guards)
+// Scoped User Relations
 Route::get('/users/{user:username}', [UserController::class, 'show']);
 Route::get('/users/{user:username}/followers', [UserController::class, 'followers']);
 Route::get('/users/{user:username}/following', [UserController::class, 'following']);
 Route::get('/users/{user:username}/playlists', [UserController::class, 'playlists']);
-Route::get('/playlists/{playlist}', [PlaylistController::class, 'show']);
 Route::get('/users/{user:username}/reviews', [UserController::class, 'reviews']);
 Route::get('/users/{user:username}/posts', [UserController::class, 'posts']);
+
+Route::middleware('auth')->group(function () {
+    Route::get('/playlists/create', [PlaylistController::class, 'create']);
+    Route::post('/playlists', [PlaylistController::class, 'store']);
+});
+
+Route::get('/playlists/{playlist}', [PlaylistController::class, 'show']);
 
 // Locale Switcher
 Route::get('/lang/{locale}', [\App\Http\Controllers\LocaleController::class, 'setLocale'])->name('lang.switch');
@@ -62,10 +73,6 @@ Route::middleware('auth')->group(function () {
     Route::put('/reviews/{review}', [GameReviewController::class, 'update']);
     Route::delete('/reviews/{review}', [GameReviewController::class, 'destroy']);
 
-    // Playlist Create/Store MUST come before {playlist} bindings
-    Route::get('/playlists/create', [PlaylistController::class, 'create']);
-    Route::post('/playlists', [PlaylistController::class, 'store']);
-
     Route::get('/playlists/{playlist}/edit', [PlaylistController::class, 'edit']);
     Route::put('/playlists/{playlist}', [PlaylistController::class, 'update']);
     Route::delete('/playlists/{playlist}', [PlaylistController::class, 'destroy']);
@@ -81,6 +88,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile/media', [ProfileController::class, 'updateMedia'])->name('profile.media.update');
     Route::post('/users/{user:username}/follow', [FollowController::class, 'toggle']);
 
+    // Component User Search API
+    Route::get('/api/users/search', [UserController::class, 'searchApi']);
+
     // Admin Routes
     Route::get('/admin', [AdminController::class, 'index']);
     Route::post('/admin/users/{user}/verify', [AdminController::class, 'verifyUser']);
@@ -88,13 +98,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/users/{user}/suspend', [AdminController::class, 'toggleSuspend']);
     Route::post('/admin/posts/{post}/pin', [AdminController::class, 'togglePinned']);
     Route::post('/admin/posts/{post}/lock', [AdminController::class, 'toggleLock']);
+    
     // Notifications
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 });
-// public API
 
+// public API
 Route::prefix('api')->group(function () {
     Route::get('/games/top', [GameController::class, 'apiIndex']);
 });

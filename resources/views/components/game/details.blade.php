@@ -91,8 +91,59 @@
                         methodInput.value = 'POST';
                     }
                 }
-                // Run on page load
-                document.addEventListener('DOMContentLoaded', updatePlaylistButtonState);
+
+                document.addEventListener('DOMContentLoaded', () => {
+                    // Initial update on load
+                    updatePlaylistButtonState();
+
+                    // Hijack form submission for AJAX
+                    const form = document.getElementById('playlist_form');
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        
+                        const btn = document.getElementById('playlist_submit_btn');
+                        btn.disabled = true;
+                        
+                        const originalBtnContent = btn.innerHTML;
+                        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+                        const method = document.getElementById('form_method').value;
+
+                        fetch(form.action, {
+                            method: method === 'DELETE' ? 'DELETE' : 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                                'Accept': 'application/json',
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network response was not ok.');
+                            return response.json();
+                        })
+                        .then(data => {
+                            const select = document.getElementById('playlist_select');
+                            const option = select.options[select.selectedIndex];
+                            
+                            // Swap data-in-list boolean
+                            if (option.getAttribute('data-in-list') === 'true') {
+                                option.setAttribute('data-in-list', 'false');
+                            } else {
+                                option.setAttribute('data-in-list', 'true');
+                            }
+                            
+                            // Re-run state function to instantly visually change the button styling
+                            updatePlaylistButtonState();
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            btn.innerHTML = 'Error!';
+                            setTimeout(() => updatePlaylistButtonState(), 2000);
+                        })
+                        .finally(() => {
+                            btn.disabled = false;
+                        });
+                    });
+                });
             </script>
             @endif
         </div>
