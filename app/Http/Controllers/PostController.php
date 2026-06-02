@@ -233,7 +233,7 @@ class PostController extends Controller
          * If it does NOT have a parent_id, it's a root post! Send back the full card HTML.
          */
         if ($post->parent_id) {
-            $html = view('components.post.comment', ['comment' => $post])->render();
+            $html = view('components.post.comment', compact('post'))->render();
         } else {
             $html = view('components.post', compact('post'))->render();
         }
