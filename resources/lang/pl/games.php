@@ -22,4 +22,5 @@ return [
     'not_specified' => 'Nie określono',
     'add_to_list' => 'Dodaj do listy',
     'remove_from_list' => 'Usuń z listy',
+    'add_game' => 'Dodaj grę',
 ];

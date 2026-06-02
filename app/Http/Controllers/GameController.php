@@ -298,7 +298,6 @@ class GameController extends Controller
 
         $game->genres()->sync($syncIds);
 
-        // --- NEW CREDITS LOGIC & SYNC ---
         $syncCredits = [];
         
         if ($request->has('credits') && is_array($request->input('credits'))) {

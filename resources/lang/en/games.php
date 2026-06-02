@@ -45,4 +45,5 @@ return [
     'enter_description' => 'Enter game description...',
     'cancel' => 'Cancel',
     'save_changes' => 'Save Changes',
+    'add_game' => 'Add Game',
 ];

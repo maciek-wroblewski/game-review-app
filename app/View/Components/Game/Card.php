@@ -18,8 +18,8 @@ class GameCard extends Component
         // load missing relations safely to minimize redundant query fragmentation.
         $this->game->loadMissing(['genres', 'credits']);
         
-        if (!isset($this->game->posts_count)) {
-            $this->game->loadCount('posts');
+        if (!isset($this->game->reviews_count)) {
+            $this->game->loadCount('reviews');
         }
     }
 

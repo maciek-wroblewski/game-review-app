@@ -43,6 +43,13 @@ class Game extends Model
         return $this->morphMany(Post::class, 'hub');
     }
 
+    // 1.a Convenience relationship for only posts that are reviews
+    public function reviews()
+    {
+        // Return only hub posts which have a related `review` record
+        return $this->morphMany(Post::class, 'hub')->has('review');
+    }
+
     // 2. The Taxonomy (Genres)
     public function genres()
     {
