@@ -106,4 +106,6 @@ return [
     'write_post' => 'Napisz post...',
     'post_edit' => 'Edytuj post',
     'media' => 'Media',
+    'click_to_load_replies' => 'Kliknij, aby załadować odpowiedzi',
+    'deleted_post' => 'Usunięty post',
 ];

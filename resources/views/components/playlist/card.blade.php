@@ -40,7 +40,7 @@ $backLink = $backUrl ?: ($owner ? url('/users/' . $owner->username . '/playlists
         <img src="{{ $coverUrl }}" class="card-img-top p-1 rounded-4" alt="{{ $playlist->name }}"
             style="aspect-ratio: 1/1; object-fit: cover;">
         @else
-        <div class="card-img-top d-flex align-items-center justify-content-center text-white border border-white border-1"
+        <div class="card-img-top d-flex align-items-center justify-content-center text-white border border-transparent rounded-4"
             style="aspect-ratio: 1/1; {{ $gradientStyle }}">
             <span class="fw-bold opacity-75" style="font-size: 4rem; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">
                 {{ $initials }}
@@ -96,7 +96,7 @@ $backLink = $backUrl ?: ($owner ? url('/users/' . $owner->username . '/playlists
                 <img src="{{ $coverUrl }}" alt="{{ $playlist->name }}" class="img-fluid w-100 h-100 p-2 rounded-4 object-fit-cover"
                     style="aspect-ratio: 1/1; object-fit: cover;">
                 @else
-                <div class="h-100 w-100 d-flex align-items-center justify-content-center text-white border border-white border-1"
+                <div class="h-100 w-100 d-flex align-items-center justify-content-center text-white border border-transparent rounded-4"
                     style="aspect-ratio: 1/1; min-height: 220px; {{ $gradientStyle }}">
                     <span class="fw-bold opacity-75" style="font-size: 6rem; text-shadow: 0 2px 15px rgba(0,0,0,0.2);">
                         {{ $initials }}

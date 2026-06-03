@@ -130,6 +130,7 @@ return [
         \App\Models\Game::class,
         \App\Models\Genre::class,
         \App\Models\User::class,
+        \App\Models\Playlist::class,
 
         // Laravel Core Database & Pagination Classes
         \Illuminate\Database\Eloquent\Collection::class,
@@ -139,6 +140,7 @@ return [
         \Illuminate\Support\Carbon::class,
         \Carbon\Carbon::class,
         \Carbon\CarbonImmutable::class,
+        
     ],
 
 ];

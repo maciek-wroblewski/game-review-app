@@ -1,13 +1,5 @@
-@props(['user', 'layout' => 'full', 'interactive' => true])
-
-@php
-$isCompact = $layout === 'compact';
-@endphp
-
-{{-- Added position-relative to the wrapper so the absolute overlay maps to it perfectly --}}
 <div class="user-card-component d-flex flex-column row-gap-4 animate-fade-in position-relative">
 
-    {{-- Suspended Overlay --}}
     @if($user->is_suspended)
     <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center text-center p-4"
         style="background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(10px); z-index: 100; border-radius: 0.75rem;">
@@ -23,7 +15,6 @@ $isCompact = $layout === 'compact';
         <div class="position-relative">
             <x-user.banner :user="$user" :layout="$layout" />
 
-            {{-- Conditionally inject Avatar inside the banner for Compact view --}}
             @if($isCompact)
             <div class="position-absolute bottom-0 start-50 translate-middle-x mb-n3 z-3">
                 <x-user.static-avatar :user="$user" :size="'80px'" />
@@ -34,7 +25,6 @@ $isCompact = $layout === 'compact';
         <div class="card-body {{ $isCompact ? 'pt-5 p-3' : 'p-4' }} position-relative">
             <div class="d-flex {{ $isCompact ? 'flex-column' : 'flex-column flex-lg-row gap-4' }}">
 
-                {{-- Avatar (Full Layout Only) --}}
                 @if(!$isCompact)
                 <div>
                     <x-user.static-avatar :user="$user" :size="'160px'" />
@@ -56,14 +46,12 @@ $isCompact = $layout === 'compact';
                                     </a>
                                 </h1>
 
-                                {{-- Verified Badge --}}
                                 @if($user->verified)
                                 <span class="verified-badge" title="{{ __('users.verified_user') }}">
                                     <i class="bi bi-patch-check-fill"></i>
                                 </span>
                                 @endif
 
-                                {{-- Admin Badge --}}
                                 @if($user->is_admin)
                                 <span class="badge rounded-pill bg-danger px-3 py-2 fw-semibold shadow-sm">
                                     {{ __('users.admin') }}
@@ -88,7 +76,6 @@ $isCompact = $layout === 'compact';
                                     {{ __('users.edit_profile') }}
                                 </a>
 
-                                {{-- Admin Panel Button --}}
                                 @if(auth()->user()->is_admin)
                                 <a href="/admin"
                                     class="btn btn-dark {{ $isCompact ? 'btn-sm' : 'btn-lg px-4' }} fw-semibold shadow-sm">
@@ -106,7 +93,6 @@ $isCompact = $layout === 'compact';
 
                     </div>
 
-                    {{-- Compact Bio --}}
                     @if($isCompact)
                     <div class="mt-2 text-secondary small">
                         <x-truncate-text size="2">
@@ -115,7 +101,6 @@ $isCompact = $layout === 'compact';
                     </div>
                     @endif
 
-                    {{-- Full Bio --}}
                     @if(!$isCompact)
                     <div class="mt-4">
                         <div class="bg-light rounded-4 p-4 border">
@@ -131,26 +116,25 @@ $isCompact = $layout === 'compact';
             </div>
         </div>
 
-        {{-- Compact Footer --}}
         @if($isCompact)
             <div class="card-footer bg-white border-top-0 d-flex justify-content-around py-3">
                 <div class="text-center">
                     <div class="followers-count fw-bold fs-5" data-user-id="{{ $user->id }}">
-                        {{ $user->followers_count ?? 0 }}
+                        {{ $followersCount }}
                     </div>
                     <div class="text-muted small">{{ __('users.followers') }}</div>
                 </div>
 
                 <div class="text-center">
                     <div class="fw-bold fs-5">
-                        {{ $user->following_count ?? 0 }}
+                        {{ $followingCount }}
                     </div>
                     <div class="text-muted small">{{ __('users.following') }}</div>
                 </div>
 
                 <div class="text-center">
                     <div class="fw-bold fs-5">
-                        {{ $user->reviews_count ?? 0 }}
+                        {{ $reviewsCount }}
                     </div>
                     <div class="text-muted small">{{ __('users.reviews') }}</div>
                 </div>
@@ -160,10 +144,8 @@ $isCompact = $layout === 'compact';
 
 </div>
 
-{{-- Full Stats --}}
 @if(!$isCompact)
 <div class="row g-4 mb-5 mt-1">
-    {{-- Reviews --}}
     <div class="col">
         <a href="/users/{{ $user->username }}/reviews" class="text-decoration-none">
             <div class="card shadow-sm border-0 text-center h-100 hover-card">
@@ -172,7 +154,7 @@ $isCompact = $layout === 'compact';
                         <i class="bi bi-star-fill text-primary fs-1"></i>
                     </div>
                     <h2 class="fw-bold display-5 mb-1 text-dark">
-                        {{ $user->reviews_count ?? 0 }}
+                        {{ $reviewsCount }}
                     </h2>
                     <p class="text-muted mb-0 fs-5">{{ __('users.reviews') }}</p>
                 </div>
@@ -180,7 +162,6 @@ $isCompact = $layout === 'compact';
         </a>
     </div>
 
-    {{-- Posts --}}
     <div class="col">
         <a href="/users/{{ $user->username }}/posts" class="text-decoration-none">
             <div class="card shadow-sm border-0 text-center h-100 hover-card">
@@ -189,7 +170,7 @@ $isCompact = $layout === 'compact';
                         <i class="bi bi-pencil-square text-info fs-1"></i>
                     </div>
                     <h2 class="fw-bold display-5 mb-1 text-dark">
-                        {{ $user->posts_count ?? 0 }}
+                        {{ $postsCount }}
                     </h2>
                     <p class="text-muted mb-0 fs-5">{{ __('users.posts') }}</p>
                 </div>
@@ -197,7 +178,6 @@ $isCompact = $layout === 'compact';
         </a>
     </div>
 
-    {{-- Playlists --}}
     <div class="col">
         <a href="/users/{{ $user->username }}/playlists" class="text-decoration-none">
             <div class="card shadow-sm border-0 text-center h-100 hover-card">
@@ -206,7 +186,7 @@ $isCompact = $layout === 'compact';
                         <i class="bi bi-collection-play-fill text-success fs-1"></i>
                     </div>
                     <h2 class="fw-bold display-5 mb-1 text-dark">
-                        {{ $user->playlists_count ?? 0 }}
+                        {{ $playlistsCount }}
                     </h2>
                     <p class="text-muted mb-0 fs-5">{{ __('users.playlists') }}</p>
                 </div>
@@ -214,7 +194,6 @@ $isCompact = $layout === 'compact';
         </a>
     </div>
 
-    {{-- Following --}}
     <div class="col">
         <a href="/users/{{ $user->username }}/following" class="text-decoration-none">
             <div class="card shadow-sm border-0 text-center h-100 hover-card">
@@ -223,7 +202,7 @@ $isCompact = $layout === 'compact';
                         <i class="bi bi-person-plus-fill text-warning fs-1"></i>
                     </div>
                     <h2 class="fw-bold display-5 mb-1 text-dark">
-                        {{ $user->following_count ?? 0 }}
+                        {{ $followingCount }}
                     </h2>
                     <p class="text-muted mb-0 fs-5">{{ __('users.following') }}</p>
                 </div>
@@ -231,7 +210,6 @@ $isCompact = $layout === 'compact';
         </a>
     </div>
 
-    {{-- Followers --}}
     <div class="col">
         <a href="/users/{{ $user->username }}/followers" class="text-decoration-none">
             <div class="card shadow-sm border-0 text-center h-100 hover-card">
@@ -240,7 +218,7 @@ $isCompact = $layout === 'compact';
                         <i class="bi bi-people-fill text-danger fs-1"></i>
                     </div>
                     <h2 class="followers-count fw-bold display-5 mb-1 text-dark" data-user-id="{{ $user->id }}">
-                        {{ $user->followers_count ?? 0 }}
+                        {{ $followersCount }}
                     </h2>
                     <p class="text-muted mb-0 fs-5">{{ __('users.followers') }}</p>
                 </div>
@@ -278,12 +256,10 @@ $isCompact = $layout === 'compact';
         filter: drop-shadow(0 0 10px rgba(13, 110, 253, 0.4));
     }
 
-    /* Prevents the avatar from clipping underneath the card body background */
     .z-3 {
         z-index: 3;
     }
 
-    /* Pulls avatar down past the banner boundary safely */
     .mb-n3 {
         margin-bottom: -1.5rem !important;
     }

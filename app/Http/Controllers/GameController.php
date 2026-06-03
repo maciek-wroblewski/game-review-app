@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreGameRequest;
+use App\Http\Requests\UpdateGameRequest;
 use App\Models\Game;
 use App\Models\Genre;
+use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Cache;
@@ -21,31 +24,31 @@ class GameController extends Controller
         return view('games.create', compact('genres'));
     }
 
-    public function store(Request $request)
+    public function store(StoreGameRequest $request)
     {
         $this->authorize('create', Game::class);
 
-        $validated = $this->validateGame($request);
+        $validated = $request->validated();
         $validated = $this->handleUploads($request, $validated);
 
         $game = Game::create($validated);
         $this->syncRelations($game, $request);
 
-        return redirect('/games/'.$game->id)->with('success', 'Game created successfully.');
+        return redirect('/games/'.$game->id)->with('success', __('common.game_created'));
     }
 
     public function index(Request $request)
     {
         $page = $request->get('page', 1);
 
-        $games = Cache::remember('games_index_page_'.$page, 600, function () {
-            return Game::with(['genres', 'credits' => function ($query) {
-                $query->withPivot('role');
+        $games = Game::with(['genres', 'credits' => function ($query) {
+            $query->withPivot('role');
+        }])
+            ->withCount(['posts as reviews_count' => function ($query) {
+                $query->has('review');
             }])
-                ->withCount('reviews')
-                ->orderBy('average_rating', 'desc')
-                ->paginate(12);
-        });
+            ->orderBy('average_rating', 'desc')
+            ->paginate(12);
 
         if ($request->ajax()) {
             $html = '';
@@ -67,14 +70,22 @@ class GameController extends Controller
     public function show(Request $request, Game $game)
     {
         $game->load(['genres', 'credits']);
-        $game->loadCount('reviews');
+
+        // Fix: Use the relationship method to avoid morph map issues and cache the query.
+        $game->reviews_count = Cache::remember("game_{$game->id}_reviews_count", 3600, function() use ($game) {
+            return $game->reviews()->count();
+        });
 
         $userId = auth()->id() ?? null;
         $user = auth()->user();
+        
+        // Cache user playlists query related to this game
         $playlists = $user
-            ? $user->playlists()->with(['games' => function ($query) use ($game) {
-                $query->where('games.id', $game->id);
-            }])->get()
+            ? Cache::remember("user_{$userId}_game_{$game->id}_playlists", 300, function() use ($user, $game) {
+                return $user->playlists()->with(['games' => function ($query) use ($game) {
+                    $query->where('games.id', $game->id);
+                }])->get();
+            })
             : collect();
 
         $userReviewPost = $userId
@@ -108,7 +119,9 @@ class GameController extends Controller
         $games = Game::with(['genres', 'credits' => function ($query) {
             $query->withPivot('role');
         }])
-            ->withCount('reviews') // <-- CHANGED from 'posts'
+            ->withCount(['posts as reviews_count' => function ($query) {
+                $query->has('review');
+            }])
             ->orderBy('average_rating', 'desc')
             ->paginate(12, ['*'], 'page', $page);
 
@@ -138,36 +151,31 @@ class GameController extends Controller
         $user = auth()->user();
 
         $playlists = $user
-            ? $user->playlists()->with(['games' => function ($query) use ($game) {
-                $query->where('games.id', $game->id);
-            }])->get()
+            ? Cache::remember("user_{$userId}_game_{$game->id}_playlists", 300, function() use ($user, $game) {
+                return $user->playlists()->with(['games' => function ($query) use ($game) {
+                    $query->where('games.id', $game->id);
+                }])->get();
+            })
             : collect();
 
-        // 1. Fetch posts, turning off the redundant eager loads
         $posts = $game->posts()
             ->doesntHave('review')
-            ->withFeedRelations(['hub' => false, 'review' => false]) // <-- Turn off hub and review
+            ->withMinimalFeedRelations(['hub' => false, 'review' => false])
             ->orderByDesc('is_pinned')
             ->latest()
             ->paginate(10);
 
-        // 2. Manually map the data to prevent N+1 fallbacks
         $posts->getCollection()->each(function ($post) use ($game) {
-            // Attach the hub we already fetched
             $post->setRelation('hub', $game);
-
-            // Tell Laravel there is no review to block N+1 on $post->isReview()
             $post->setRelation('review', null);
 
-            // If this post is a reply, the parent also shares the same hub
             if ($post->relationLoaded('parent') && $post->parent) {
                 $post->parent->setRelation('hub', $game);
-
-                // Assuming parent posts in this view also aren't reviews
                 $post->parent->setRelation('review', null);
             }
         });
 
+        // FIXED: Changed $request->request->ajax() to $request->ajax()
         if ($request->ajax()) {
             return view('components.post.items', compact('posts'))->render();
         }
@@ -184,44 +192,19 @@ class GameController extends Controller
         return view('games.edit', compact('game', 'genres'));
     }
 
-    public function update(Request $request, Game $game)
+    public function update(UpdateGameRequest $request, Game $game)
     {
         $this->authorize('update', $game);
 
-        $validated = $this->validateGame($request);
+        $validated = $request->validated();
         $validated = $this->handleUploads($request, $validated);
 
         $game->update($validated);
         $this->syncRelations($game, $request);
 
-        return redirect('/games/'.$game->id)->with('success', 'Game information updated successfully.');
+        return redirect('/games/'.$game->id)->with('success', __('common.game_updated'));
     }
 
-    /* =========================================================================
-     * PRIVATE HELPER METHODS (The magic happens here)
-     * ========================================================================= */
-
-    /**
-     * Standardizes validation rules for creating and updating.
-     */
-    private function validateGame(Request $request): array
-    {
-        return $request->validate([
-            'title'        => 'required|string|max:255',
-            'publisher'    => 'nullable|string|max:255',
-            'release_date' => 'nullable|date',
-            'details'      => 'nullable|string',
-            'banner_img'   => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'cover_img'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'logo'         => 'nullable|image|mimes:jpeg,png,webp|max:1024',
-            'genres'       => 'nullable|array',
-            'credits'      => 'nullable|array',
-        ]);
-    }
-
-    /**
-     * DRYs out the file upload process for banners, covers, and logos.
-     */
     private function handleUploads(Request $request, array $validated): array
     {
         $files = [
@@ -240,12 +223,8 @@ class GameController extends Controller
         return $validated;
     }
 
-    /**
-     * Handles the complex logic of syncing Genres and Credits.
-     */
     private function syncRelations(Game $game, Request $request): void
     {
-        // 1. Sync Genres
         if ($request->has('genres')) {
             $syncIds = [];
             foreach ($request->input('genres') as $genreItem) {
@@ -256,7 +235,6 @@ class GameController extends Controller
             $game->genres()->sync($syncIds);
         }
 
-        // 2. Sync Credits
         if ($request->has('credits') && is_array($request->input('credits'))) {
             $syncCredits = collect($request->input('credits'))->mapWithKeys(function ($value, $key) {
                 if (is_array($value) && isset($value['role'])) {
@@ -264,32 +242,26 @@ class GameController extends Controller
                 } elseif (is_numeric($value)) {
                     return [$value => ['role' => 'Developer']];
                 }
-                return []; // Ignore invalid structures
+                return []; 
             })->toArray();
 
             $game->credits()->sync($syncCredits);
         }
     }
 
-    // --- API METHODS ---
-
     public function apiIndex(Request $request)
     {
         $query = Game::select('id', 'title', 'publisher', 'release_date', 'average_rating', 'cover_img')
-            ->with(['genres:id,name']); // Only grab the ID and name of the genre
+            ->with(['genres:id,name']); 
 
-        // Optional: Allow filtering by genre (e.g., /api/v1/games?genre=RPG)
         if ($request->has('genre')) {
             $query->whereHas('genres', function ($q) use ($request) {
                 $q->where('name', $request->query('genre'));
             });
         }
 
-        // Use pagination instead of ->take(10) so clients can load more pages
-        // Create a unique cache key based on the page number and genre filter
         $cacheKey = 'api_games_page_'.$request->get('page', 1).'_genre_'.$request->get('genre', 'all');
 
-        // Cache the API results for 5 minutes (300 seconds)
         $games = Cache::remember($cacheKey, 300, function () use ($query) {
             return $query->orderBy('average_rating', 'desc')->paginate(15);
         });
@@ -303,7 +275,6 @@ class GameController extends Controller
 
     public function apiShow(Game $game)
     {
-        // Load relationships, restricting the fields to prevent leaking sensitive user data
         $game->load([
             'genres:id,name',
             'credits' => function ($query) {
@@ -328,7 +299,6 @@ class GameController extends Controller
             ->latest()
             ->paginate(10);
 
-        // Map over the results to format them nicely for the API consumer
         $formattedReviews = $reviews->getCollection()->map(function ($post) {
             return [
                 'id' => $post->id,
@@ -343,7 +313,6 @@ class GameController extends Controller
             ];
         });
 
-        // Replace the unformatted collection with the clean one
         $reviews->setCollection($formattedReviews);
 
         return response()->json([

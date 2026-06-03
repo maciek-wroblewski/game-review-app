@@ -8,7 +8,7 @@
         @else
             {{-- Lazy-loaded Accordion Mode: Placeholder until expanded --}}
             <div class="text-center text-muted small py-4">
-                <i class="bi bi-chat-dots me-1"></i> Click to load replies
+                <i class="bi bi-chat-dots me-1"></i> {{ __('posts.click_to_load_replies') }}
             </div>
         @endif
     </div>

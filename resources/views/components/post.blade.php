@@ -1,9 +1,8 @@
 @props(['post', 'showReplies' => true])
 
 @php
-$isReview = method_exists($post, 'isReview') && $post->isReview() && $post->review;
-// Consolidated, efficient auth checks
-$isAdmin = auth()->user()?->is_admin ?? false;
+    $isReview = $post->isReview();
+    $isAdmin = auth()->check() && auth()->user()->is_admin;
 @endphp
 
 <style>
@@ -18,7 +17,6 @@ $isAdmin = auth()->user()?->is_admin ?? false;
         z-index: 2;
     }
 
-    /* Admin feature styles imported from main */
     .admin-moderation-outline {
         border: 1px solid rgba(220, 53, 69, .25) !important;
         box-shadow: 0 0 0 1px rgba(220, 53, 69, .06), 0 0 18px rgba(220, 53, 69, .08) !important;
@@ -45,7 +43,7 @@ $isAdmin = auth()->user()?->is_admin ?? false;
         @if($post->trashed())
         <p class="card-text text-muted fst-italic p-3">{{ __('common.this_post_has_been_deleted') }}</p>
         @else
-        {{-- PINNED BANNER --}}
+        
         @if($post->is_pinned)
         <div class="pinned-banner px-3 py-2 border-bottom"
             style="background: linear-gradient(90deg, rgba(255,193,7,.18), rgba(255,193,7,.05));">
@@ -54,14 +52,12 @@ $isAdmin = auth()->user()?->is_admin ?? false;
         </div>
         @endif
 
-        {{-- SUSPENDED AUTHOR BANNER --}}
         @if($post->user?->is_suspended)
         <div class="alert alert-danger rounded-0 border-0 mb-0">
             <i class="bi bi-slash-circle-fill me-1"></i> {{ __('common.author_suspended') }}
         </div>
         @endif
 
-        {{-- Admin Moderation Bar --}}
         @if($isAdmin)
         <div class="px-3 py-2 border-bottom bg-danger-subtle d-flex justify-content-between align-items-center">
             <div class="small fw-semibold text-danger">
@@ -79,10 +75,8 @@ $isAdmin = auth()->user()?->is_admin ?? false;
             <x-post.content :post="$post" />
             <x-post.footer :post="$post" showReplies="{{ $showReplies }}" />
 
-            {{-- Moderation Controls --}}
             @if($isAdmin)
             <div class="px-3 pb-3 d-flex gap-2 flex-wrap">
-                {{-- Delete --}}
                 <form method="POST" action="/posts/{{ $post->id }}" onsubmit="return confirm('{{ __('common.confirm_delete_post') }}')">
                     @csrf @method('DELETE')
                     <button class="btn btn-sm btn-outline-danger admin-tool-btn">
@@ -90,9 +84,6 @@ $isAdmin = auth()->user()?->is_admin ?? false;
                     </button>
                 </form>
 
-                {{-- Admin Only Controls --}}
-
-                {{-- Pin --}}
                 <form method="POST" action="/admin/posts/{{ $post->id }}/pin">
                     @csrf
                     <button
@@ -100,7 +91,7 @@ $isAdmin = auth()->user()?->is_admin ?? false;
                         <i class="bi bi-pin-angle-fill me-1"></i> {{ $post->is_pinned ? __('common.unpin') : __('common.pin') }}
                     </button>
                 </form>
-                {{-- Lock --}}
+                
                 <form method="POST" action="/admin/posts/{{ $post->id }}/lock">
                     @csrf
                     <button
@@ -118,12 +109,12 @@ $isAdmin = auth()->user()?->is_admin ?? false;
 
 
         <x-post.reply-container :post="$post">
-            {{-- Only allow comments if NOT locked by user and NOT locked by admin --}}
             @if(!$post->is_locked && !$post->admin_locked)
             <x-post.comment-create :hubType="$post->hubable_type ?? $post->hub_type"
                 :hubId="$post->hubable_id ?? $post->hub_id" :parentId="$post->id" />
             @endif
         </x-post.reply-container>
+        
         @if($showReplies)
         <x-post.replies-container :postId="$post->id" id="accordion-{{ $post->id }}">
             <x-post.replies-list />

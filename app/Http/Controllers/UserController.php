@@ -24,7 +24,8 @@ class UserController extends Controller
 
     public function show(Request $request, User $user)
     {
-        $user->loadCount(['followers', 'following', 'reviews', 'posts', 'playlists'])
+        // Preload all counts in a single batch query
+        $user->loadCount(['followers', 'following', 'playlists', 'posts', 'reviews'])
              ->load(['settings', 'avatar']);
 
         if (! $user->canViewProfile(Auth::user())) {
@@ -32,15 +33,12 @@ class UserController extends Controller
         }
 
         // 1. Authored Posts
-        $posts = $user->posts()
+        $posts = Post::where('user_id', $user->id)
             ->latest()
-            ->withFeedRelations(['review' => false, 'author' => false]) 
-            ->paginate(10, ['*'], 'posts_page');
+            ->withFeedRelations(['author' => false])
+            ->paginate(3, ['*'], 'posts_page');
 
-        $posts->getCollection()->each(function ($post) use ($user) {
-            $post->setRelation('author', $user);
-            $post->setRelation('review', null); 
-        });
+        $posts->getCollection()->each(fn($post) => $post->setRelation('author', $user));
 
         // 2. Profile Comments
         $comments = Post::query()
@@ -50,7 +48,7 @@ class UserController extends Controller
             ->orderByDesc('is_pinned')
             ->latest()
             ->withFeedRelations(['hub' => false, 'review' => false]) 
-            ->paginate(10, ['*'], 'comments_page');
+            ->paginate(3, ['*'], 'comments_page');
 
         $comments->getCollection()->each(function ($comment) use ($user) {
             $comment->setRelation('hub', $user);
@@ -74,7 +72,10 @@ class UserController extends Controller
 
     public function followers(Request $request, User $user)
     {
-        $connections = $user->followers()->latest()->paginate(20);
+        $connections = $user->followers()
+            ->withCompactCounts()
+            ->latest()
+            ->paginate(20);
 
         if ($request->ajax()) {
             return $this->respondWithAjaxCards($connections, 'components.user.card', 'user', ['layout' => 'compact']);
@@ -85,7 +86,10 @@ class UserController extends Controller
 
     public function following(Request $request, User $user)
     {
-        $connections = $user->following()->latest()->paginate(20);
+        $connections = $user->following()
+            ->withCompactCounts()
+            ->latest()
+            ->paginate(20);
 
         if ($request->ajax()) {
             return $this->respondWithAjaxCards($connections, 'components.user.card', 'user', ['layout' => 'compact']);
@@ -113,10 +117,13 @@ class UserController extends Controller
     public function reviews(Request $request, User $user)
     {
         $posts = $user->reviews()
-            ->withFeedRelations()
+            ->withFeedRelations(['author' => false])
             ->orderByDesc('is_pinned')
             ->latest()
             ->paginate(5);
+
+        // Set the author relation to the already-loaded profile user to avoid N+1
+        $posts->getCollection()->each(fn($post) => $post->setRelation('author', $user));
 
         if ($request->ajax()) {
             return $this->respondWithAjaxFeed($posts);
@@ -129,8 +136,11 @@ class UserController extends Controller
     {
         $posts = $user->posts()
             ->latest()
-            ->withFeedRelations()
+            ->withFeedRelations(['author' => false])
             ->paginate(10);
+
+        // Set the author relation to the already-loaded profile user to avoid N+1
+        $posts->getCollection()->each(fn($post) => $post->setRelation('author', $user));
 
         if ($request->ajax()) {
             return $this->respondWithAjaxFeed($posts);

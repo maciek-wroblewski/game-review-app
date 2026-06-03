@@ -29,6 +29,7 @@ class SearchController extends Controller
             ->appends(['q' => $query]);
 
         $users = User::where('username', 'like', "%{$query}%")
+            ->withCompactCounts()
             ->orderBy('username', 'asc')
             ->paginate(10, ['*'], 'page_users')
             ->appends(['q' => $query]);

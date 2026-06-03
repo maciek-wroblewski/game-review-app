@@ -32,7 +32,7 @@ return [
     'delete_warning' => 'Po usunięciu konta wszystkie jego zasoby i dane zostaną trwale usunięte.',
     'delete_account' => 'Usuń konto',
     'save_privacy' => 'Zapisz ustawienia prywatności',
-    'save_images' => 'Zapisz obrazy',
+    'save_changes' => 'Zapisz zmiany',
     'enter_password_confirm' => 'Wprowadź hasło, aby potwierdzić',
     'customize_account' => 'Dostosuj wygląd swojego konta',
     'change_banner' => 'Zmień baner',

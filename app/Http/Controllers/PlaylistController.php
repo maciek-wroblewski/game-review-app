@@ -26,7 +26,7 @@ class PlaylistController extends Controller
             'cover' => 'nullable|image|max:2048', // <-- Validate as image (max 2MB)
         ]);
 
-        $validated['is_public'] = $request->has('is_public');
+        $validated['is_public'] = $request->boolean('is_public');
 
         if ($request->hasFile('cover')) {
             $validated['cover'] = $request->file('cover')->store('playlist-covers', 'public');
@@ -40,7 +40,7 @@ class PlaylistController extends Controller
         }
         $playlist->users()->attach($users);
         Log::info('Created playlist: '.$playlist->name.' (ID: '.$playlist->id.') by '.(auth()->check() ? auth()->user()->username : 'guest'));
-        return redirect("/playlists/{$playlist->id}")->with('success', 'Playlist created successfully!');
+        return redirect("/playlists/{$playlist->id}")->with('success', __('common.playlist_created'));
     }
 
     public function show(Request $request, Playlist $playlist)
@@ -113,7 +113,7 @@ class PlaylistController extends Controller
             'cover' => 'nullable|image|max:2048', // <-- Validation
         ]);
 
-        $validated['is_public'] = $request->has('is_public');
+        $validated['is_public'] = $request->boolean('is_public');
 
         if ($request->hasFile('cover')) {
             if ($playlist->cover) {
@@ -132,7 +132,7 @@ class PlaylistController extends Controller
             $playlist->users()->sync($users);
         }
         Log::info('Updated playlist: '.$playlist->name.' (ID: '.$playlist->id.') by '.(auth()->check() ? auth()->user()->username : 'guest'));
-        return redirect("/playlists/{$playlist->id}")->with('success', 'Playlist updated!');
+        return redirect("/playlists/{$playlist->id}")->with('success', __('common.playlist_updated'));
     }
 
     public function destroy(Playlist $playlist)
@@ -147,6 +147,6 @@ class PlaylistController extends Controller
 
         $playlist->delete();
         Log::info('Deleted playlist: '.$playlist->name.' (ID: '.$playlist->id.') by '.(auth()->check() ? auth()->user()->username : 'guest'));
-        return redirect('/users/' . auth()->id() . '/playlists')->with('success', 'Playlist deleted.');
+        return redirect('/users/' . auth()->id() . '/playlists')->with('success', __('common.playlist_deleted'));
     }
 }

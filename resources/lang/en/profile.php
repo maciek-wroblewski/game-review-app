@@ -32,7 +32,7 @@ return [
     'delete_warning' => 'Once your account is deleted, all of its resources and data will be permanently deleted.',
     'delete_account' => 'Delete Account',
     'save_privacy' => 'Save Privacy Settings',
-    'save_images' => 'Save Images',
+    'save_changes' => 'Save Changes',
     'enter_password_confirm' => 'Enter your password to confirm',
     'customize_account' => 'Customize your account appearance',
     'change_banner' => 'Change Banner',

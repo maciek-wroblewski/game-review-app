@@ -27,39 +27,31 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
-
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
-        $request->user()->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
-    }
-
-    public function updateMedia(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
-            'banner' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'],
-        ]);
-
         $user = $request->user();
+        $validated = $request->validated();
 
+        // Handle avatar upload
         if ($request->hasFile('avatar')) {
             $path = $request->file('avatar')->store('users/avatars', 'public');
             $user->avatar = '/storage/' . $path;
         }
 
+        // Handle banner upload
         if ($request->hasFile('banner')) {
             $path = $request->file('banner')->store('users/banners', 'public');
             $user->banner = '/storage/' . $path;
         }
 
+        // Update profile fields (excluding file fields)
+        $user->fill(array_diff_key($validated, array_flip(['avatar', 'banner'])));
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
         $user->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-media-updated');
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     public function updatePrivacy(Request $request): RedirectResponse

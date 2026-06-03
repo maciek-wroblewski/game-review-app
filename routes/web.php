@@ -30,7 +30,7 @@ Route::get('/games/{game}', [GameController::class, 'show']);
 Route::get('/games/{game}/discussions', [GameController::class, 'discussions']);
 
 Route::get('/posts', [PostController::class, 'index']);
-Route::get('/posts/{post}', [PostController::class, 'show']);
+Route::get('/posts/{post}', [PostController::class, 'show'])->withTrashed();
 Route::get('/posts/{post}/replies', [PostController::class, 'getReplies']);
 
 // Scoped User Relations
@@ -59,7 +59,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/games/{game}/edit', [GameController::class, 'edit'])->name('games.edit');
     Route::patch('/games/{game}', [GameController::class, 'update'])->name('games.update');
         
-    Route::get('/dashboard', function () { return view('dashboard'); })->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'show'])->name('dashboard');
 
     // Posts
     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
@@ -85,19 +85,20 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/profile/privacy', [ProfileController::class, 'updatePrivacy']);
-    Route::patch('/profile/media', [ProfileController::class, 'updateMedia'])->name('profile.media.update');
     Route::post('/users/{user:username}/follow', [FollowController::class, 'toggle']);
 
     // Component User Search API
     Route::get('/api/users/search', [UserController::class, 'searchApi']);
 
     // Admin Routes
-    Route::get('/admin', [AdminController::class, 'index']);
-    Route::post('/admin/users/{user}/verify', [AdminController::class, 'verifyUser']);
-    Route::post('/admin/users/{user}/admin', [AdminController::class, 'toggleAdmin']);
-    Route::post('/admin/users/{user}/suspend', [AdminController::class, 'toggleSuspend']);
-    Route::post('/admin/posts/{post}/pin', [AdminController::class, 'togglePinned']);
-    Route::post('/admin/posts/{post}/lock', [AdminController::class, 'toggleLock']);
+    Route::middleware(['admin'])->group(function () {
+        Route::get('/admin', [AdminController::class, 'index']);
+        Route::post('/admin/users/{user}/verify', [AdminController::class, 'verifyUser']);
+        Route::post('/admin/users/{user}/admin', [AdminController::class, 'toggleAdmin']);
+        Route::post('/admin/users/{user}/suspend', [AdminController::class, 'toggleSuspend']);
+        Route::post('/admin/posts/{post}/pin', [AdminController::class, 'togglePinned']);
+        Route::post('/admin/posts/{post}/lock', [AdminController::class, 'toggleLock']);
+    });
     
     // Notifications
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
