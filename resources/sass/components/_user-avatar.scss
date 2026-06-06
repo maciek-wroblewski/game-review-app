@@ -19,6 +19,7 @@
     border: none !important;
     background: transparent !important;
     filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.12));
+    max-width: 320px !important;
 }
 
 .user-card-popover .popover-arrow {
@@ -38,4 +39,8 @@
 .user-card-popover.show .popover-body {
     opacity: 1;
     transform: translateY(0) scale(1);
+}
+
+.user-card-compact {
+    width: 320px;
 }

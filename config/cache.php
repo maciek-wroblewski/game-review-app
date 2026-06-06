@@ -131,6 +131,10 @@ return [
         \App\Models\Genre::class,
         \App\Models\User::class,
         \App\Models\Playlist::class,
+        App\Models\Post::class,
+        App\Models\Review::class,
+        App\Models\Comment::class,
+        App\Models\Media::class,
 
         // Laravel Core Database & Pagination Classes
         \Illuminate\Database\Eloquent\Collection::class,

@@ -8,47 +8,53 @@ export default class Lightbox {
         this.mediaItems = [];
         this.currentIndex = 0;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            this.overlay = document.getElementById('globalLightbox');
-            this.container = document.getElementById('lightboxContentContainer');
-            this.counter = document.getElementById('lightboxCounter');
-            this.btnPrev = document.getElementById('lightboxPrev');
-            this.btnNext = document.getElementById('lightboxNext');
+        document.addEventListener('DOMContentLoaded', this.init.bind(this));
+    }
 
-            if (!this.overlay) return;
+    init() {
+        this.overlay = document.getElementById('globalLightbox');
+        this.container = document.getElementById('lightboxContentContainer');
+        this.counter = document.getElementById('lightboxCounter');
+        this.btnPrev = document.getElementById('lightboxPrev');
+        this.btnNext = document.getElementById('lightboxNext');
 
-            // Expose to window for inline onclick handlers
-            window.Lightbox = {
-                open: (items, startIndex = 0) => this.open(items, startIndex),
-                close: () => this.close(),
-                prev: (e) => this.prev(e),
-                next: (e) => this.next(e)
-            };
+        if (!this.overlay) return;
 
-            // Event delegation for triggers
-            document.body.addEventListener('click', (e) => {
-                const trigger = e.target.closest('.js-lightbox-trigger');
-                if (!trigger) return;
+        // Expose to window for inline onclick handlers
+        window.Lightbox = {
+            open: (items, startIndex = 0) => this.open(items, startIndex),
+            close: () => this.close(),
+            prev: (e) => this.prev(e),
+            next: (e) => this.next(e)
+        };
 
-                e.preventDefault();
+        // Event delegation for triggers
+        document.body.addEventListener('click', this.handleTriggerClick.bind(this));
 
-                const mediaContainer = trigger.closest('.js-media-container');
-                if (mediaContainer && mediaContainer.dataset.media) {
-                    const mediaData = JSON.parse(mediaContainer.dataset.media);
-                    const startIndex = trigger.dataset.index || 0;
-                    window.Lightbox.open(mediaData, startIndex);
-                }
-            });
+        // Keyboard support
+        document.addEventListener('keydown', this.handleKeyDown.bind(this));
+    }
 
-            // Keyboard support
-            document.addEventListener('keydown', (e) => {
-                if (!this.overlay || !this.overlay.classList.contains('show')) return;
+    handleTriggerClick(e) {
+        const trigger = e.target.closest('.js-lightbox-trigger');
+        if (!trigger) return;
 
-                if (e.key === 'Escape') window.Lightbox.close();
-                if (e.key === 'ArrowLeft') window.Lightbox.prev();
-                if (e.key === 'ArrowRight') window.Lightbox.next();
-            });
-        });
+        e.preventDefault();
+
+        const mediaContainer = trigger.closest('.js-media-container');
+        if (mediaContainer && mediaContainer.dataset.media) {
+            const mediaData = JSON.parse(mediaContainer.dataset.media);
+            const startIndex = trigger.dataset.index || 0;
+            this.open(mediaData, startIndex);
+        }
+    }
+
+    handleKeyDown(e) {
+        if (!this.overlay || !this.overlay.classList.contains('show')) return;
+
+        if (e.key === 'Escape') this.close();
+        if (e.key === 'ArrowLeft') this.prev();
+        if (e.key === 'ArrowRight') this.next();
     }
 
     open(items, startIndex = 0) {

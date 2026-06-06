@@ -2,70 +2,74 @@ export default class MediaUploader {
     constructor() {
         this.csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
-        document.addEventListener('click', (e) => {
-            // 1. REMOVE MEDIA (Priority 1)
-            const removeBtn = e.target.closest('.remove-icon');
-            if (removeBtn) {
-                e.stopPropagation();
-                const uploader = e.target.closest('.js-media-uploader');
-                const itemToRemove = e.target.closest('.media-upload-item');
-                const gallery = uploader.querySelector('.js-uploader-gallery');
-                const container = uploader.querySelector('.js-uploader-gallery-container');
+        document.addEventListener('click', this.handleClick.bind(this));
+        document.addEventListener('change', this.handleChange.bind(this));
+        document.addEventListener('dragover', this.handleDragOver.bind(this));
+        document.addEventListener('dragleave', this.handleDragLeave.bind(this));
+        document.addEventListener('drop', this.handleDrop.bind(this));
+    }
 
-                itemToRemove.remove();
-
-                if (gallery.children.length === 0) {
-                    gallery.classList.add('d-none');
-                    container.classList.add('is-empty');
-                }
-                return;
-            }
-
-            // 2. TRIGGER FILE PICKER (Priority 2)
-            const container = e.target.closest('.js-uploader-gallery-container');
-            if (container) {
-                const uploader = container.closest('.js-media-uploader');
-                uploader.querySelector('.js-upload-input').click();
-            }
-        });
-
-        // 3. HANDLE FILE SELECTION (Input Change)
-        document.addEventListener('change', (e) => {
-            if (!e.target.matches('.js-upload-input')) return;
+    handleClick(e) {
+        // 1. REMOVE MEDIA (Priority 1)
+        const removeBtn = e.target.closest('.remove-icon');
+        if (removeBtn) {
+            e.stopPropagation();
             const uploader = e.target.closest('.js-media-uploader');
-            this.processFiles(e.target.files, uploader);
-        });
+            const itemToRemove = e.target.closest('.media-upload-item');
+            const gallery = uploader.querySelector('.js-uploader-gallery');
+            const container = uploader.querySelector('.js-uploader-gallery-container');
 
-        // 4. DRAG AND DROP LOGIC
-        document.addEventListener('dragover', (e) => {
-            const container = e.target.closest('.js-uploader-gallery-container');
-            if (container) {
-                e.preventDefault();
-                container.classList.add('drag-over');
+            itemToRemove.remove();
+
+            if (gallery.children.length === 0) {
+                gallery.classList.add('d-none');
+                container.classList.add('is-empty');
             }
-        });
+            return;
+        }
 
-        document.addEventListener('dragleave', (e) => {
-            const container = e.target.closest('.js-uploader-gallery-container');
-            if (container) {
-                container.classList.remove('drag-over');
+        // 2. TRIGGER FILE PICKER (Priority 2)
+        const container = e.target.closest('.js-uploader-gallery-container');
+        if (container) {
+            const uploader = container.closest('.js-media-uploader');
+            uploader.querySelector('.js-upload-input').click();
+        }
+    }
+
+    handleChange(e) {
+        if (!e.target.matches('.js-upload-input')) return;
+        const uploader = e.target.closest('.js-media-uploader');
+        this.processFiles(e.target.files, uploader);
+    }
+
+    handleDragOver(e) {
+        const container = e.target.closest('.js-uploader-gallery-container');
+        if (container) {
+            e.preventDefault();
+            container.classList.add('drag-over');
+        }
+    }
+
+    handleDragLeave(e) {
+        const container = e.target.closest('.js-uploader-gallery-container');
+        if (container) {
+            container.classList.remove('drag-over');
+        }
+    }
+
+    handleDrop(e) {
+        const container = e.target.closest('.js-uploader-gallery-container');
+        if (container) {
+            e.preventDefault();
+            container.classList.remove('drag-over');
+
+            const uploader = container.closest('.js-media-uploader');
+            const files = e.dataTransfer.files;
+
+            if (files.length > 0) {
+                this.processFiles(files, uploader);
             }
-        });
-
-        document.addEventListener('drop', (e) => {
-            const container = e.target.closest('.js-uploader-gallery-container');
-            if (container) {
-                e.preventDefault();
-                container.classList.remove('drag-over');
-
-                const uploader = container.closest('.js-media-uploader');
-                const files = e.dataTransfer.files;
-
-                if (files.length > 0) {
-                    this.processFiles(files, uploader);
-                }
-            }
-        });
+        }
     }
 
     async processFiles(files, uploader) {

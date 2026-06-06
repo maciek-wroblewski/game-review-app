@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 
 // Public Guest Routes
-Route::get('/', function () { return view('index'); });
+Route::get('/', [\App\Http\Controllers\HomeController::class, 'index']);
 Route::get('/hub', function () { return view('welcome'); });
 
 Route::middleware('auth')->group(function () {

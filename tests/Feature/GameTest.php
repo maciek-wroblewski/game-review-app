@@ -241,3 +241,17 @@ test('authenticated user can access review creation page', function () {
 
     $response->assertOk();
 });
+
+test('ajax game list pagination returns json grid', function () {
+    Game::factory()->count(15)->create();
+
+    $response = $this->get('/games', [
+        'X-Requested-With' => 'XMLHttpRequest',
+    ]);
+
+    $response->assertOk();
+    $response->assertJsonStructure([
+        'html',
+        'next_page_url',
+    ]);
+});

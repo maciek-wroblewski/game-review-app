@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use App\Models\Game;
 use App\Models\Media;
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\Notification;
 use App\Mail\NewPostMail;
 use App\Mail\NewCommentMail;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Concerns\HasPaginatedResponses;
@@ -25,30 +28,82 @@ class PostController extends Controller
         // Validate scoped hub filters if provided
         $request->validate([
             'hub_type' => 'nullable|string|in:game,playlist,user',
-            'hub_id' => 'nullable|integer',
+            'hub_id'   => 'nullable|integer',
+            'filter'   => 'nullable|string|in:latest,trending,reviews',
         ]);
 
-        $posts = Post::query()
-            ->withFeedRelations() // Leveraging your built-in clean relation loader scope
-            ->whereNull('parent_id')
-            ->latest();
+        $filter = $request->query('filter', 'latest');
 
         // Context filter: Is it a specific Hub? (e.g., Playlist or Profile view)
         if ($request->filled('hub_type') && $request->filled('hub_id')) {
-            $posts->where('hub_type', $request->input('hub_type'))
-                ->where('hub_id', $request->input('hub_id'));
+            $posts = Post::query()
+                ->withFeedRelations()
+                ->whereNull('parent_id')
+                ->where('hub_type', $request->input('hub_type'))
+                ->where('hub_id', $request->input('hub_id'))
+                ->latest()
+                ->paginate(10);
+        } elseif ($filter === 'trending') {
+            $posts = Post::query()
+                ->withFeedRelations()
+                ->whereNull('parent_id')
+                ->withCount('replies')
+                ->orderByRaw('(likes_count + replies_count) DESC')
+                ->latest()
+                ->paginate(10);
+        } elseif ($filter === 'reviews') {
+            $posts = Post::query()
+                ->withFeedRelations()
+                ->whereNull('parent_id')
+                ->has('review')
+                ->latest()
+                ->paginate(10);
         } else {
-            // Global feed filter: Only show standard feed items or fallback constraints if needed
-            // optional: ->whereNull('hub_type'); // dynamic depending on if global feed shows everything
+            // Default: latest global feed
+            $posts = Post::query()
+                ->withFeedRelations()
+                ->whereNull('parent_id')
+                ->latest()
+                ->paginate(10);
         }
-
-        $posts = $posts->paginate(10);
 
         if ($request->ajax()) {
-            return $this->ajaxFeed($posts, $request->only(['hub_type', 'hub_id']));
+            return $this->ajaxFeed($posts, array_filter([
+                'hub_type' => $request->input('hub_type'),
+                'hub_id'   => $request->input('hub_id'),
+                'filter'   => $filter !== 'latest' ? $filter : null,
+            ]));
         }
 
-        return view('posts.index', compact('posts'));
+        // Sidebar widgets (shared with home page)
+        $topGames = Cache::remember('home_top_games', 3600, function () {
+            return Game::query()
+                ->withCount(['posts as reviews_count' => function ($query) {
+                    $query->has('review');
+                }])
+                ->orderBy('average_rating', 'desc')
+                ->take(5)
+                ->get();
+        });
+
+        $activeUsers = Cache::remember('home_active_users', 3600, function () {
+            return User::query()
+                ->with('avatar')
+                ->withCount(['posts', 'followers'])
+                ->orderBy('followers_count', 'desc')
+                ->orderBy('posts_count', 'desc')
+                ->take(5)
+                ->get();
+        });
+
+        if (auth()->check()) {
+            $followingIds = auth()->user()->following()->pluck('users.id')->toArray();
+            foreach ($activeUsers as $userItem) {
+                $userItem->setAttribute('is_followed_by_auth', in_array($userItem->id, $followingIds));
+            }
+        }
+
+        return view('posts.index', compact('posts', 'topGames', 'activeUsers'));
     }
 
     /**

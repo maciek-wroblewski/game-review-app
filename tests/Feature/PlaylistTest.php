@@ -242,3 +242,33 @@ test('authenticated user can remove a game from their playlist', function () {
 
     expect($playlist->fresh()->games->pluck('id'))->not()->toContain($game->id);
 });
+
+test('playlist sidebar on the home page fetches only system playlists', function () {
+    $user = User::factory()->create();
+
+    // User automatically gets 4 system playlists via UserObserver
+    
+    // Create a custom (non-system) playlist for the user
+    $customPlaylist = Playlist::create([
+        'name' => 'Custom Playlist',
+        'is_system' => false,
+        'is_public' => true,
+        'description' => 'My custom list',
+        'cover' => null,
+    ]);
+    $user->playlists()->attach($customPlaylist->id, ['role' => 'owner']);
+
+    // Call the home page
+    $response = $this->actingAs($user)->get('/');
+
+    $response->assertOk();
+    
+    // Assert system playlists are passed to index view
+    $response->assertViewHas('playlists', function ($playlists) use ($customPlaylist) {
+        $hasCustom = $playlists->contains('id', $customPlaylist->id);
+        $allSystem = $playlists->every('is_system', true);
+        
+        return !$hasCustom && $allSystem && $playlists->count() === 4;
+    });
+});
+

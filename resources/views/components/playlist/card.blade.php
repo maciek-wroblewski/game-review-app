@@ -35,12 +35,12 @@ $backLink = $backUrl ?: ($owner ? url('/users/' . $owner->username . '/playlists
 @if($playlist->is_public || (auth()->check() && $playlist->users->contains(auth()->id())))
 @if($isCompact)
 <div class="col-md-6 col-lg-4 animate-fade-in">
-    <div class="card shadow-sm border rounded-4 h-100">
+    <div class="card shadow-sm border rounded-4 h-100 p-1">
         @if($coverUrl)
-        <img src="{{ $coverUrl }}" class="card-img-top p-1 rounded-4" alt="{{ $playlist->name }}"
+        <img src="{{ $coverUrl }}" class="card-img-top rounded-4" alt="{{ $playlist->name }}"
             style="aspect-ratio: 1/1; object-fit: cover;">
         @else
-        <div class="card-img-top d-flex align-items-center justify-content-center text-white border border-transparent rounded-4"
+        <div class="card-img-top d-flex align-items-center justify-content-center text-white rounded-4"
             style="aspect-ratio: 1/1; {{ $gradientStyle }}">
             <span class="fw-bold opacity-75" style="font-size: 4rem; text-shadow: 0 2px 10px rgba(0,0,0,0.2);">
                 {{ $initials }}
@@ -91,12 +91,12 @@ $backLink = $backUrl ?: ($owner ? url('/users/' . $owner->username . '/playlists
 <div class="playlist-card-component animate-fade-in">
     <div class="card shadow-sm border rounded-4 overflow-hidden">
         <div class="row g-0 align-items-center">
-            <div class="col-lg-4">
+            <div class="col-lg-4 p-1">
                 @if($coverUrl)
                 <img src="{{ $coverUrl }}" alt="{{ $playlist->name }}" class="img-fluid w-100 h-100 p-2 rounded-4 object-fit-cover"
                     style="aspect-ratio: 1/1; object-fit: cover;">
                 @else
-                <div class="h-100 w-100 d-flex align-items-center justify-content-center text-white border border-transparent rounded-4"
+                <div class="h-100 w-100 d-flex align-items-center justify-content-center text-white rounded-4"
                     style="aspect-ratio: 1/1; min-height: 220px; {{ $gradientStyle }}">
                     <span class="fw-bold opacity-75" style="font-size: 6rem; text-shadow: 0 2px 15px rgba(0,0,0,0.2);">
                         {{ $initials }}

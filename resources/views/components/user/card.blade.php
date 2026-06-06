@@ -1,4 +1,4 @@
-<div class="user-card-component d-flex flex-column row-gap-4 animate-fade-in position-relative">
+<div class="user-card-component d-flex flex-column row-gap-4 animate-fade-in position-relative {{ $isCompact ? 'user-card-compact' : '' }}">
 
     @if($user->is_suspended)
     <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center text-center p-4"
@@ -144,7 +144,7 @@
 
 </div>
 
-@if(!$isCompact)
+@if(!$isCompact && !$user->is_suspended)
 <div class="row g-4 mb-5 mt-1">
     <div class="col">
         <a href="/users/{{ $user->username }}/reviews" class="text-decoration-none">

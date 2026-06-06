@@ -7,7 +7,7 @@
 
 <div class="post-list-wrapper">
     {{-- The Container where new posts will be appended --}}
-    <div id="{{ $feedId }}" class="d-flex flex-column gap-3 mb-4">
+    <div id="{{ $feedId }}" class="d-flex flex-column gap-3 mb-4 js-post-list-container">
         
         @if($posts->isNotEmpty())
             {{-- Render the exact same partial the AJAX request returns --}}
@@ -24,7 +24,7 @@
     <div class="mt-2">
         <x-load-more 
             :paginator="$posts" 
-            target="#{{ $feedId }}" 
+            target=".js-post-list-container" 
             buttonClass="btn btn-outline-primary btn-sm px-4 rounded-pill shadow-sm"
             :text="$loadMoreText" 
         />

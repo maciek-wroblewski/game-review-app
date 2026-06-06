@@ -106,7 +106,7 @@ class UserController extends Controller
             ->with('users')
             ->withCount('games')
             ->latest()
-            ->paginate(20);
+            ->paginate(6);
 
         if ($request->ajax()) {
             return $this->ajaxCardGrid($playlists, 'components.playlist.card', 'playlist', ['layout' => 'compact'], false);

@@ -64,6 +64,7 @@ return [
     
     // Posts index
     'global_timeline' => 'Global Timeline',
+    'global_timeline_description' => 'Explore what the community is sharing right now.',
     
     // Post show
     'comments' => 'Comments:',

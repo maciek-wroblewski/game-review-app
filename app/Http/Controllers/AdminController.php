@@ -66,12 +66,43 @@ class AdminController extends Controller
     public function togglePinned(Post $post)
     {
         $post->update(['is_pinned' => !$post->is_pinned]);
+        
+        if (request()->ajax() || request()->wantsJson()) {
+            $post->load(['author.avatar', 'media', 'review', 'hub']);
+            if (auth()->check()) {
+                $post->loadExists(['likes as liked_by_auth' => function ($q) {
+                    $q->where('user_id', auth()->id());
+                }]);
+            }
+            $html = view('components.post', compact('post'))->render();
+            return response()->json([
+                'success' => true,
+                'is_pinned' => $post->is_pinned,
+                'html' => $html
+            ]);
+        }
+        
         return back();
     }
 
     public function toggleLock(Post $post)
     {
         $post->update(['admin_locked' => !$post->admin_locked]);
+        
+        if (request()->ajax() || request()->wantsJson()) {
+            $post->load(['author.avatar', 'media', 'review', 'hub']);
+            if (auth()->check()) {
+                $post->loadExists(['likes as liked_by_auth' => function ($q) {
+                    $q->where('user_id', auth()->id());
+                }]);
+            }
+            $html = view('components.post', compact('post'))->render();
+            return response()->json([
+                'success' => true,
+                'admin_locked' => $post->admin_locked,
+                'html' => $html
+            ]);
+        }
         
         return back();
     }

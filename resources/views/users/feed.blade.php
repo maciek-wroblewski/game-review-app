@@ -48,7 +48,7 @@
             </div>
         @else
             {{-- Your dynamic component handles the rest! --}}
-            <x-post.list :posts="$posts" />
+            <x-post.list :posts="$posts" feedId="user-feed-posts" />
         @endif
 
     </div>

@@ -56,7 +56,7 @@
                     </a>
                 </div>
 
-                <x-post.list :posts="$posts" emptyMessage="{{ __('reviews.no_reviews_yet') }}" />
+                <x-post.list :posts="$posts" feedId="game-reviews-container" emptyMessage="{{ __('reviews.no_reviews_yet') }}" />
             </div>
         </div>
     </div>

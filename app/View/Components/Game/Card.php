@@ -1,13 +1,13 @@
 <?php
 
-namespace App\View\Components;
+namespace App\View\Components\Game;
 
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 use App\Models\Game;
 
-class GameCard extends Component
+class Card extends Component
 {
     /**
      * Create a new component instance.
