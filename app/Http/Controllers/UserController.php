@@ -7,9 +7,11 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Concerns\HasPaginatedResponses;
 
 class UserController extends Controller
 {
+    use HasPaginatedResponses;
     /**
      * Common guard to check profile permissions across all sub-pages.
      */
@@ -58,10 +60,10 @@ class UserController extends Controller
         // 3. Handle AJAX Requests
         if ($request->ajax()) {
             if ($request->has('posts_page')) {
-                return $this->respondWithAjaxFeed($posts);
+                return $this->ajaxFeed($posts);
             }
             if ($request->has('comments_page')) {
-                return $this->respondWithAjaxFeed($comments);
+                return $this->ajaxFeed($comments);
             }
         }
 
@@ -78,7 +80,7 @@ class UserController extends Controller
             ->paginate(20);
 
         if ($request->ajax()) {
-            return $this->respondWithAjaxCards($connections, 'components.user.card', 'user', ['layout' => 'compact']);
+            return $this->ajaxCardGrid($connections, 'components.user.card', 'user', ['layout' => 'compact']);
         }
 
         return view('users.connections', ['user' => $user, 'connections' => $connections, 'type' => 'followers']);
@@ -92,7 +94,7 @@ class UserController extends Controller
             ->paginate(20);
 
         if ($request->ajax()) {
-            return $this->respondWithAjaxCards($connections, 'components.user.card', 'user', ['layout' => 'compact']);
+            return $this->ajaxCardGrid($connections, 'components.user.card', 'user', ['layout' => 'compact']);
         }
 
         return view('users.connections', ['user' => $user, 'connections' => $connections, 'type' => 'following']);
@@ -107,8 +109,7 @@ class UserController extends Controller
             ->paginate(20);
 
         if ($request->ajax()) {
-            // Note: wrapInGrid is false here because your original playlist view didn't wrap them in col-divs inside the loop
-            return $this->respondWithAjaxCards($playlists, 'components.playlist.card', 'playlist', ['layout' => 'compact'], false);
+            return $this->ajaxCardGrid($playlists, 'components.playlist.card', 'playlist', ['layout' => 'compact'], false);
         }
 
         return view('users.playlists', compact('user', 'playlists'));
@@ -126,7 +127,7 @@ class UserController extends Controller
         $posts->getCollection()->each(fn($post) => $post->setRelation('author', $user));
 
         if ($request->ajax()) {
-            return $this->respondWithAjaxFeed($posts);
+            return $this->ajaxFeed($posts);
         }
 
         return view('users.feed', ['user' => $user, 'posts' => $posts, 'type' => 'reviews']);
@@ -136,14 +137,21 @@ class UserController extends Controller
     {
         $posts = $user->posts()
             ->latest()
-            ->withFeedRelations(['author' => false])
+            ->withFeedRelations(['author' => false, 'review' => false])
             ->paginate(10);
 
         // Set the author relation to the already-loaded profile user to avoid N+1
-        $posts->getCollection()->each(fn($post) => $post->setRelation('author', $user));
+        $posts->getCollection()->each(function ($post) use ($user) {
+            $post->setRelation('author', $user);
+            $post->setRelation('review', null);
+
+            if ($post->relationLoaded('parent') && $post->parent) {
+                $post->parent->setRelation('review', null);
+            }
+        });
 
         if ($request->ajax()) {
-            return $this->respondWithAjaxFeed($posts);
+            return $this->ajaxFeed($posts);
         }
 
         return view('users.feed', ['user' => $user, 'posts' => $posts, 'type' => 'posts']);
@@ -176,42 +184,4 @@ class UserController extends Controller
         return response()->json($results);
     }
 
-    /* =========================================================================
-     * PRIVATE AJAX HELPER METHODS
-     * ========================================================================= */
-
-    /**
-     * Handles standard feed pagination (posts, comments, reviews).
-     */
-    private function respondWithAjaxFeed($paginator)
-    {
-        return response()->json([
-            'html' => view('components.post.items', ['posts' => $paginator])->render(),
-            'next_page_url' => $paginator->nextPageUrl(),
-        ]);
-    }
-
-    /**
-     * Handles card grid pagination (users, playlists).
-     */
-    private function respondWithAjaxCards($paginator, string $viewName, string $dataKey, array $extraData = [], bool $wrapInGrid = true)
-    {
-        $html = '';
-        
-        foreach ($paginator as $item) {
-            // Render the component's view directly instead of using the slower Blade::render() parser
-            $content = view($viewName, array_merge([$dataKey => $item], $extraData))->render();
-            
-            if ($wrapInGrid) {
-                $html .= '<div class="col-12 col-sm-6 col-lg-4 col-xl-3 animate-fade-in">' . $content . '</div>';
-            } else {
-                $html .= $content;
-            }
-        }
-
-        return response()->json([
-            'html' => $html,
-            'next_page_url' => $paginator->nextPageUrl(),
-        ]);
-    }
 }

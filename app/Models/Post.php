@@ -158,6 +158,18 @@ class Post extends Model
     }
 
     /**
+     * Scope a query to retrieve standard replies feed details.
+     */
+    public function scopeWithRepliesFeed($query)
+    {
+        return $query->with(['author.avatar', 'media'])
+            ->withCount('replies')
+            ->withLikedByAuth()
+            ->latest()
+            ->orderByDesc('is_pinned');
+    }
+
+    /**
      * Minimal feed relations - loads only what's needed to render posts without author stats.
      * Use for game discussions, playlist discussions, etc. where author counts aren't displayed.
      * Saves 2-3 queries per user by not loading: followers_count, following_count, posts_count.

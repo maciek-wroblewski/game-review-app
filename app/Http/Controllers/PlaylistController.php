@@ -9,9 +9,11 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
+use App\Http\Controllers\Concerns\HasPaginatedResponses;
 
 class PlaylistController extends Controller
 {
+    use HasPaginatedResponses;
 
     public function create()
     {
@@ -56,34 +58,26 @@ class PlaylistController extends Controller
             ->where('hub_id', $playlist->id)
             ->whereNull('parent_id')
             ->latest()
-            ->withFeedRelations() 
+            ->withFeedRelations(['hub' => false, 'review' => false]) 
             ->paginate(10, ['*'], 'posts_page');
 
+        $posts->getCollection()->each(function ($post) use ($playlist) {
+            $post->setRelation('hub', $playlist);
+            $post->setRelation('review', null);
+
+            if ($post->relationLoaded('parent') && $post->parent) {
+                $post->parent->setRelation('hub', $playlist);
+                $post->parent->setRelation('review', null);
+            }
+        });
+
         if ($request->ajax()) {
-
             if ($request->has('games_page')) {
-                $html = '';
-                foreach ($games as $game) {
-                    $html .= '<div class="col-12 col-sm-6 col-lg-4 col-xl-3 animate-fade-in">';
-                    $html .= Blade::render('<x-game.card :game="$game" :playlist="$playlist" />', [
-                        'game' => $game,
-                        'playlist' => $playlist
-                    ]);
-                    $html .= '</div>';
-                }
-
-                return response()->json([
-                    'html' => $html,
-                    'next_page_url' => $games->nextPageUrl(),
-                ]);
+                return $this->ajaxCardGrid($games, 'components.game.card', 'game', ['playlist' => $playlist]);
             }
 
             if ($request->has('posts_page')) {
-                return response()->json([
-                    // Your posts component handles its own layout, so we render it directly
-                    'html' => view('components.post.items', compact('posts'))->render(),
-                    'next_page_url' => $posts->nextPageUrl(),
-                ]);
+                return $this->ajaxFeed($posts);
             }
         }
 

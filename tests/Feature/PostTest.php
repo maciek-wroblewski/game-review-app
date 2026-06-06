@@ -341,6 +341,8 @@ test('authenticated user can reply to a post', function () {
     $parentPost = Post::factory()->create([
         'hub_type' => 'game',
         'hub_id' => $game->id,
+        'is_locked' => false,
+        'admin_locked' => false,
     ]);
 
     $response = $this->actingAs($user)->postJson('/posts', [
@@ -401,6 +403,8 @@ test('replies are created on the correct hub context', function () {
     $parentPost = Post::factory()->create([
         'hub_type' => 'playlist',
         'hub_id' => $playlist->id,
+        'is_locked' => false,
+        'admin_locked' => false,
     ]);
 
     $response = $this->actingAs($user)->postJson('/posts', [

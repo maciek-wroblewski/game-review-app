@@ -52,7 +52,7 @@
         </div>
         @endif
 
-        @if($post->user?->is_suspended)
+        @if($post->author?->is_suspended)
         <div class="alert alert-danger rounded-0 border-0 mb-0">
             <i class="bi bi-slash-circle-fill me-1"></i> {{ __('common.author_suspended') }}
         </div>

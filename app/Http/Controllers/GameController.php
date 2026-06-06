@@ -12,9 +12,11 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Gate;
+use App\Http\Controllers\Concerns\HasPaginatedResponses;
 
 class GameController extends Controller
 {
+    use HasPaginatedResponses;
     public function create()
     {
         $this->authorize('create', Game::class);
@@ -39,8 +41,6 @@ class GameController extends Controller
 
     public function index(Request $request)
     {
-        $page = $request->get('page', 1);
-
         $games = Game::with(['genres', 'credits' => function ($query) {
             $query->withPivot('role');
         }])
@@ -51,17 +51,7 @@ class GameController extends Controller
             ->paginate(12);
 
         if ($request->ajax()) {
-            $html = '';
-            foreach ($games as $game) {
-                $html .= Blade::render('<div class="col-12 col-sm-6 col-lg-4 col-xl-3 animate-fade-in">
-                                            <x-game.card :game="$game" />
-                                        </div>', ['game' => $game]);
-            }
-
-            return response()->json([
-                'html' => $html,
-                'next_page_url' => $games->nextPageUrl(),
-            ]);
+            return $this->ajaxCardGrid($games, 'components.game.card', 'game');
         }
 
         return view('games.index', compact('games'));
@@ -91,18 +81,28 @@ class GameController extends Controller
         $userReviewPost = $userId
                     ? $game->reviews()
                         ->where('user_id', $userId)
-                        ->withFeedRelations()
+                        ->withFeedRelations(['hub' => false])
                         ->first()
                     : null;
+        if ($userReviewPost) {
+            $userReviewPost->setRelation('hub', $game);
+        }
 
         $posts = $game->reviews()
-            ->withFeedRelations()
+            ->withFeedRelations(['hub' => false])
             ->when($userId, function ($query) use ($userId) {
                 $query->where('user_id', '!=', $userId);
             })
             ->orderByDesc('is_pinned')
             ->latest()
             ->paginate(10);
+
+        $posts->getCollection()->each(function ($post) use ($game) {
+            $post->setRelation('hub', $game);
+            if ($post->relationLoaded('parent') && $post->parent) {
+                $post->parent->setRelation('hub', $game);
+            }
+        });
 
         if ($request->ajax()) {
             return view('components.post.items', compact('posts'))->render();
@@ -112,33 +112,6 @@ class GameController extends Controller
         return view('games.show', compact('game', 'playlists', 'userReviewPost', 'posts'));
     }
 
-    public function loadMore(Request $request)
-    {
-        $page = $request->get('page', 1);
-
-        $games = Game::with(['genres', 'credits' => function ($query) {
-            $query->withPivot('role');
-        }])
-            ->withCount(['posts as reviews_count' => function ($query) {
-                $query->has('review');
-            }])
-            ->orderBy('average_rating', 'desc')
-            ->paginate(12, ['*'], 'page', $page);
-
-        $html = '';
-        foreach ($games as $game) {
-            $html .= Blade::render('<div class="col-12 col-sm-6 col-lg-4 col-xl-3 animate-fade-in">
-                                        <x-game.card :game="$game" />
-                                    </div>',
-                                    ['game' => $game]);
-        }
-
-        return response()->json([
-            'html' => $html,
-            'hasMore' => $games->hasMorePages(),
-            'nextPage' => $games->currentPage() + 1,
-        ]);
-    }
 
     public function discussions(Request $request, Game $game)
     {

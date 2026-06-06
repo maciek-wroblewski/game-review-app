@@ -25,13 +25,13 @@
         <ul class="nav nav-tabs mb-4">
             <li class="nav-item">
                 <a class="nav-link {{ $isFollowers ? 'active fw-bold' : 'text-muted' }}" 
-                   href="{{ url('/users/'.$user->id.'/followers') }}">
+                   href="{{ url('/users/'.$user->username.'/followers') }}">
                     {{ __('users.followers_title') }}
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ ! $isFollowers ? 'active fw-bold' : 'text-muted' }}" 
-                   href="{{ url('/users/'.$user->id.'/following') }}">
+                   href="{{ url('/users/'.$user->username.'/following') }}">
                     {{ __('users.following_title') }}
                 </a>
             </li>
@@ -48,17 +48,7 @@
                 </p>
             </div>
         @else
-            {{-- Dynamic ID for the Load More target --}}
-            <div id="{{ $type }}-grid-wrapper" class="row g-4">
-                @foreach($connections as $connectionUser)
-                    <div class="col-12 col-sm-6 col-lg-4 col-xl-3 animate-fade-in">
-                        {{-- Render component directly - bypassing the junk wrapper file! --}}
-                        <x-user.card :user="$connectionUser" layout="compact" />
-                    </div>
-                @endforeach
-            </div>
-
-            <x-load-more :paginator="$connections" target="#{{ $type }}-grid-wrapper" />
+            <x-user.list :users="$connections" feedId="{{ $type }}-grid-wrapper" />
         @endif
     </div>
 </x-layout>

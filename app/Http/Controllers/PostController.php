@@ -12,9 +12,11 @@ use App\Mail\NewPostMail;
 use App\Mail\NewCommentMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Concerns\HasPaginatedResponses;
 
 class PostController extends Controller
 {
+    use HasPaginatedResponses;
     /**
      * Display a listing of top-level posts (Feed).
      */
@@ -43,11 +45,7 @@ class PostController extends Controller
         $posts = $posts->paginate(10);
 
         if ($request->ajax()) {
-            return response()->json([
-                // Reuses your uniform post view stack
-                'html' => view('components.post.items', compact('posts'))->render(),
-                'next_page_url' => $posts->appends($request->only(['hub_type', 'hub_id']))->nextPageUrl(),
-            ]);
+            return $this->ajaxFeed($posts, $request->only(['hub_type', 'hub_id']));
         }
 
         return view('posts.index', compact('posts'));
@@ -97,7 +95,14 @@ class PostController extends Controller
             Log::info("User {$currentUser->id} created Review for Post {$post->id}");
         }
 
-        return response()->json(['message' => 'Post created successfully', 'post' => $post]);
+        $this->loadPostRelations($post);
+        $html = $this->renderPostHtml($post);
+
+        return response()->json([
+            'message' => 'Post created successfully',
+            'post' => $post,
+            'html' => $html,
+        ]);
     }
 
     /**
@@ -178,15 +183,7 @@ class PostController extends Controller
         }
 
         $replies = $post->replies()
-            ->with(['author', 'media'])
-            ->withCount('replies')
-            ->when(auth()->check(), function ($query) {
-                $query->withExists(['likes as liked_by_auth' => function ($q) {
-                    $q->where('user_id', auth()->id());
-                }]);
-            })
-            ->latest()
-            ->orderByDesc('is_pinned')
+            ->withRepliesFeed()
             ->paginate(10)
             ->withPath(url("/posts/{$post->id}/replies"));
 
@@ -240,9 +237,21 @@ class PostController extends Controller
      */
     private function loadPostRelations(Post $post): void
     {
-        $post->load(['author', 'media', 'review', 'hub']);
+        $post->load('parent');
+
+        $postsToLoad = new \Illuminate\Database\Eloquent\Collection([$post]);
+        if ($post->parent) {
+            $postsToLoad->push($post->parent);
+        }
+
+        $postsToLoad->load(['author.avatar', 'media', 'review', 'hub']);
+
+        if ($post->parent) {
+            $post->parent->loadCount('replies');
+        }
+
         if (auth()->check()) {
-            $post->loadExists(['likes as liked_by_auth' => function ($q) {
+            $postsToLoad->loadExists(['likes as liked_by_auth' => function ($q) {
                 $q->where('user_id', auth()->id());
             }]);
         }
@@ -267,6 +276,9 @@ class PostController extends Controller
     {
         $this->authorize('delete', $post);
         $parentId = $post->parent_id;
+        $hubType = $post->hub_type;
+        $hubId = $post->hub_id;
+        $isReview = $post->isReview();
         
         // Determine if the action is taking place on the post's dedicated show view
         $referer = request()->headers->get('referer');
@@ -276,10 +288,19 @@ class PostController extends Controller
         $post->delete();
 
         if ($request->ajax() || $request->wantsJson()) {
+            $html = '';
+            if ($isReview && $hubType === 'game') {
+                $html = view('components.post.create-form', [
+                    'hubType' => 'game',
+                    'hubId' => $hubId,
+                    'reviewType' => 'recommendation'
+                ])->render();
+            }
+
             return response()->json([
                 'message' => __('common.post_deleted'),
                 'success' => true,
-                'html'    => '' // Allows frontend to cleanly empty the DOM element if handled like update/create
+                'html'    => $html
             ]);
         }
 
@@ -299,20 +320,9 @@ class PostController extends Controller
     public function getReplies(Request $request, Post $post)
     {
         $replies = $post->replies()
-            ->with(['author', 'media'])
-            ->withCount('replies')
-            ->when(auth()->check(), function ($query) {
-                $query->withExists(['likes as liked_by_auth' => function ($q) {
-                    $q->where('user_id', auth()->id());
-                }]);
-            })
-            ->latest()
-            ->orderByDesc('is_pinned')
+            ->withRepliesFeed()
             ->paginate(10);
 
-        return response()->json([
-            'html' => view('components.post.replies-items', compact('replies'))->render(),
-            'next_page_url' => $replies->nextPageUrl(),
-        ]);
+        return $this->ajaxFeed($replies, [], 'components.post.replies-items', 'replies');
     }
 }
