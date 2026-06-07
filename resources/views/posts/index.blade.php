@@ -204,7 +204,7 @@
                              style="background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);">
                             <i class="bi bi-people-fill text-white fs-1 mb-3 d-block"></i>
                             <h5 class="text-white fw-bold mb-2">{{ __('auth.join_community') }}</h5>
-                            <p class="text-white-50 small mb-3">Share reviews, discover games, connect with players.</p>
+                            <p class="text-white-50 small mb-3">{{ __('common.login_ad') }}</p>
                             <div class="d-grid gap-2">
                                 <a href="/register" class="btn btn-light fw-semibold rounded-pill">
                                     {{ __('common.register') }}
