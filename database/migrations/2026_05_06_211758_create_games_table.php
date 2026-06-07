@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->string('banner_img')->nullable();
             $table->decimal('average_rating', 3, 2)->default(0.00);
+            $table->string('publisher')->nullable()->after('details');
             $table->timestamps();
         });
     }

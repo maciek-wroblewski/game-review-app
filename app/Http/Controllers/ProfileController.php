@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use Illuminate\Validation\Rule;
-use App\Models\Media;
 
 class ProfileController extends Controller
 {
@@ -28,41 +27,26 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
-
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
-        $request->user()->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
-    }
-
-    /**
-     * Update the user's avatar or banner via uploaded media IDs.
-     */
-    public function updateMedia(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'avatar_media_id' => ['nullable', 'exists:media,id'],
-            'banner_media_id' => ['nullable', 'exists:media,id'],
-        ]);
-
         $user = $request->user();
+        $validated = $request->validated();
 
-        if (!empty($validated['avatar_media_id'])) {
-            $media = Media::find($validated['avatar_media_id']);
-            if ($media) {
-                $user->avatar = $media->file_path;
-            }
+        // Handle avatar upload
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->store('users/avatars', 'public');
+            $user->avatar = '/storage/' . $path;
         }
 
-        if (!empty($validated['banner_media_id'])) {
-            $media = Media::find($validated['banner_media_id']);
-            if ($media) {
-                $user->banner = $media->file_path;
-            }
+        // Handle banner upload
+        if ($request->hasFile('banner')) {
+            $path = $request->file('banner')->store('users/banners', 'public');
+            $user->banner = '/storage/' . $path;
+        }
+
+        // Update profile fields (excluding file fields)
+        $user->fill(array_diff_key($validated, array_flip(['avatar', 'banner'])));
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
         $user->save();

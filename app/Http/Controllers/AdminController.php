@@ -10,12 +10,6 @@ class AdminController extends Controller
 {
     public function index()
     {
-        if (!auth()->check() || !auth()->user()->is_admin) {
-
-            abort(403);
-
-        }
-
         $userCount = User::count();
 
         $postCount = Post::count();
@@ -29,120 +23,87 @@ class AdminController extends Controller
             ->get();
 
         $latestPosts = Post::latest()
-            ->with('user')
+            ->with('author')
             ->take(5)
             ->get();
 
         return view('admin.index', [
-
             'userCount' => $userCount,
             'postCount' => $postCount,
             'reviewCount' => $reviewCount,
             'notificationCount' => $notificationCount,
-
             'latestUsers' => $latestUsers,
             'latestPosts' => $latestPosts,
-
         ]);
     }
 
     public function verifyUser(User $user)
     {
-        if (!auth()->check() || !auth()->user()->is_admin) {
-
-            abort(403);
-
-        }
-
-        $user->update([
-
-            'verified' => !$user->verified
-
-        ]);
-
+        $user->update(['verified' => !$user->verified]);
         return back();
     }
 
     public function toggleAdmin(User $user)
     {
-        if (!auth()->check() || !auth()->user()->is_admin) {
-
-            abort(403);
-
-        }
-
         if ($user->id === auth()->id()) {
-
-            return back();
-
+            return back(); // Prevent removing own admin status
         }
-
-        $user->update([
-
-            'is_admin' => !$user->is_admin
-
-        ]);
-
+        
+        $user->update(['is_admin' => !$user->is_admin]);
         return back();
     }
 
     public function toggleSuspend(User $user)
     {
-        if (!auth()->check() || !auth()->user()->is_admin) {
-
-            abort(403);
-
-        }
-
         if ($user->id === auth()->id()) {
-
-            return back();
-
+            return back(); // Prevent suspending self
         }
-
-        $user->update([
-
-            'is_suspended' => !$user->is_suspended
-
-        ]);
-
+        
+        $user->update(['is_suspended' => !$user->is_suspended]);
         return back();
     }
 
     public function togglePinned(Post $post)
     {
-        if (!auth()->check() || !auth()->user()->is_admin) {
-
-            abort(403);
-
+        $post->update(['is_pinned' => !$post->is_pinned]);
+        
+        if (request()->ajax() || request()->wantsJson()) {
+            $post->load(['author.avatar', 'media', 'review', 'hub']);
+            if (auth()->check()) {
+                $post->loadExists(['likes as liked_by_auth' => function ($q) {
+                    $q->where('user_id', auth()->id());
+                }]);
+            }
+            $html = view('components.post', compact('post'))->render();
+            return response()->json([
+                'success' => true,
+                'is_pinned' => $post->is_pinned,
+                'html' => $html
+            ]);
         }
-
-        $post->update([
-
-            'is_pinned' => !$post->is_pinned
-
-        ]);
-
+        
         return back();
     }
 
     public function toggleLock(Post $post)
     {
-        if (
-            !auth()->check() ||
-            !auth()->user()->is_admin
-        ) {
-
-            abort(403);
-
+        $post->update(['admin_locked' => !$post->admin_locked]);
+        
+        if (request()->ajax() || request()->wantsJson()) {
+            $post->load(['author.avatar', 'media', 'review', 'hub']);
+            if (auth()->check()) {
+                $post->loadExists(['likes as liked_by_auth' => function ($q) {
+                    $q->where('user_id', auth()->id());
+                }]);
+            }
+            $html = view('components.post', compact('post'))->render();
+            return response()->json([
+                'success' => true,
+                'admin_locked' => $post->admin_locked,
+                'html' => $html
+            ]);
         }
-
-        $post->update([
-
-            'is_locked' => !$post->is_locked
-
-        ]);
-
+        
         return back();
     }
 }

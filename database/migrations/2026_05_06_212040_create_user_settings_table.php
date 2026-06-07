@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->enum('comments', ['everyone', 'mutuals', 'nobody'])->default('everyone');
             $table->enum('dms', ['everyone', 'mutuals', 'nobody'])->default('mutuals');
+            $table->string('profile_visibility')->default('public');
+            $table->string('playlist_visibility')->default('public');
             $table->timestamps();
         });
     }

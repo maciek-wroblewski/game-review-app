@@ -125,6 +125,26 @@ return [
     |
     */
 
-    'serializable_classes' => false,
+    'serializable_classes' => [
+        // Your Models
+        \App\Models\Game::class,
+        \App\Models\Genre::class,
+        \App\Models\User::class,
+        \App\Models\Playlist::class,
+        App\Models\Post::class,
+        App\Models\Review::class,
+        App\Models\Comment::class,
+        App\Models\Media::class,
+
+        // Laravel Core Database & Pagination Classes
+        \Illuminate\Database\Eloquent\Collection::class,
+        \Illuminate\Pagination\LengthAwarePaginator::class,
+        \Illuminate\Database\Eloquent\Relations\Pivot::class,
+
+        \Illuminate\Support\Carbon::class,
+        \Carbon\Carbon::class,
+        \Carbon\CarbonImmutable::class,
+        
+    ],
 
 ];

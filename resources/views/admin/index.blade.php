@@ -1,4 +1,4 @@
-<x-layout headtitle="Admin Panel">
+<x-layout headtitle="{{ __('Admin Panel') }}">
 
     <div class="container py-5">
 
@@ -11,13 +11,13 @@
 
                     <i class="bi bi-shield-lock-fill text-danger me-2"></i>
 
-                    Admin Panel
+                    {{ __('Admin Panel') }}
 
                 </h1>
 
                 <p class="text-muted mb-0">
 
-                    Moderation dashboard and platform analytics
+                    {{ __('Moderation dashboard and platform analytics') }}
 
                 </p>
 
@@ -25,7 +25,7 @@
 
             <span class="badge bg-danger fs-6 px-3 py-2">
 
-                ADMIN ACCESS
+                {{ __('ADMIN ACCESS') }}
 
             </span>
 
@@ -50,7 +50,7 @@
                         </h2>
 
                         <p class="text-muted mb-0">
-                            Users
+                            {{ __('Users') }}
                         </p>
 
                     </div>
@@ -75,7 +75,7 @@
                         </h2>
 
                         <p class="text-muted mb-0">
-                            Posts
+                            {{ __('Posts') }}
                         </p>
 
                     </div>
@@ -100,7 +100,7 @@
                         </h2>
 
                         <p class="text-muted mb-0">
-                            Reviews
+                            {{ __('Reviews') }}
                         </p>
 
                     </div>
@@ -125,7 +125,7 @@
                         </h2>
 
                         <p class="text-muted mb-0">
-                            Notifications
+                            {{ __('Notifications') }}
                         </p>
 
                     </div>
@@ -149,7 +149,7 @@
 
                             <i class="bi bi-person-plus-fill text-primary me-2"></i>
 
-                            Latest Users
+                            {{ __('Latest Users') }}
 
                         </h4>
 
@@ -178,7 +178,7 @@
 
                                         <small class="text-muted">
 
-                                            Joined {{ $user->created_at->diffForHumans() }}
+                                            {{ __('Joined :date', ['date' => $user->created_at->diffForHumans()]) }}
 
                                         </small>
 
@@ -189,7 +189,7 @@
                                 <a href="/users/{{ $user->username }}"
                                    class="btn btn-sm btn-outline-primary">
 
-                                    View
+                                    {{ __('View') }}
 
                                 </a>
 
@@ -222,7 +222,7 @@
 
                             <i class="bi bi-chat-left-fill text-success me-2"></i>
 
-                            Latest Posts
+                            {{ __('Latest Posts') }}
 
                         </h4>
 
@@ -240,7 +240,7 @@
 
                                         <div class="fw-semibold">
 
-                                            {{ $post->user->username ?? 'Deleted User' }}
+                                            {{ $post->author->username ?? 'Deleted User' }}
 
                                         </div>
 
@@ -271,7 +271,7 @@
 
                                 <div class="text-muted small">
 
-                                    {{ Str::limit($post->content, 120) }}
+                                    {{ Str::limit($post->body, 120) }}
 
                                 </div>
 

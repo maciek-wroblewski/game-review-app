@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'hero_title' => 'Your Gaming Community',
+    'hero_subtitle' => 'Discover games, share reviews, and connect with fellow gamers',
+    'start_exploring' => 'Start Exploring',
+    'section_title' => 'Latest Reviews',
+    'view_all_reviews' => 'View All Reviews',
+    'no_reviews' => 'No reviews yet',
+    'be_first_to_review' => 'Be the first to share your thoughts on a game',
+    'hello_bro' => 'hello bro',
+    'upload' => 'Upload',
+    'something_went_wrong_upload' => 'Something went wrong during the upload.',
+    'unexpected_error' => 'An unexpected error occurred.',
+    'hub_empty' => 'Your hub is empty, go add some games to it',
+    'my_feed' => 'My Feed',
+    'global_feed' => 'Global Feed',
+    'trending_posts' => 'Trending Posts',
+    'popular_reviews' => 'Popular Reviews',
+    'top_rated_games' => 'Top Rated Games',
+    'active_members' => 'Active Members',
+    'my_playlists' => 'My Playlists',
+    'welcome_back' => 'Welcome back, :username!',
+    'no_feed_posts' => 'No posts from users you follow yet. Check out the Global Feed!',
+    'top_reviewers' => 'Top Reviewers',
+];

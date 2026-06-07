@@ -6,19 +6,22 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
-class post extends Component
+class Post extends Component
 {
-    /**
-     * Create a new component instance.
-     */
-    public function __construct()
+    public $post;
+    public $showReplies;
+    public $isReview;
+    public $isAdmin;
+
+    public function __construct($post, $showReplies = true)
     {
-        //
+        $this->post = $post;
+        $this->showReplies = $showReplies;
+        
+        $this->isReview = method_exists($post, 'isReview') && $post->isReview() && $post->review;
+        $this->isAdmin = auth()->user()?->is_admin ?? false;
     }
 
-    /**
-     * Get the view / contents that represent the component.
-     */
     public function render(): View|Closure|string
     {
         return view('components.post');

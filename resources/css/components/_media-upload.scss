@@ -1,0 +1,13 @@
+// Media Upload Styles
+// Drag-and-drop file upload with gallery previews
+
+// Empty state logic: show placeholder when gallery is empty
+.js-uploader-gallery-container.is-empty .text-muted {
+    display: flex !important;
+}
+
+// Drag and drop visual feedback
+.js-uploader-gallery-container.drag-over {
+    border: 2px dashed #0d6efd !important;
+    background-color: #e9ecef !important;
+}

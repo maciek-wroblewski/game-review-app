@@ -15,25 +15,28 @@
             <div class="d-flex align-items-center column-gap-4">
                 <x-user.avatar :user="$post->author" layout="compact" :size="'50px'" />
                 <div>
-                    <div class="d-flex align-items-center">
-                        <a href="/users/{{ $post->author->username ?? '#' }}"
-                           class="text-decoration-none fw-bold text-dark fs-5 me-2">
-                            {{ $post->author->username ?? 'Anonymous' }}
-                        </a>
-                        @if(optional($post->author)->verified) 
-                            <i class="bi bi-patch-check-fill text-primary"></i> 
-                        @endif
-                        <span class="js-editing-badge badge bg-warning text-dark ms-2 d-none">Editing</span>
-                    </div>
+                    @if($post->author->is_suspended)
+                        <div class="d-flex align-items-center">
+                            <span class="text-decoration-none fw-bold text-dark fs-5 me-2">{{ __('posts.suspended_user') }}</span>
+                            <i class="bi bi-slash-circle-fill text-danger" style="font-size: 1.25rem;"></i>
+                        </div>
+                    @else
+                        <div class="d-flex align-items-center">
+                            <a href="/users/{{ $post->author->username ?? '#' }}"
+                            class="text-decoration-none fw-bold text-dark fs-5 me-2">
+                                {{ $post->author->username ?? __('posts.anonymous') }}
+                            </a>
+                            @if(optional($post->author)->verified) 
+                                <i class="bi bi-patch-check-fill text-primary"></i> 
+                            @endif
+                            <span class="js-editing-badge badge bg-warning text-dark ms-2 d-none">{{ __('posts.editing') }}</span>
+                        </div>
+                    @endif
                     <div class="text-muted small d-flex flex-wrap gap-2">
                         <span>{{ $post->created_at->diffForHumans(null, true, true) }}</span>
-                        @if($post->created_at->ne($post->updated_at))
-                            <span class="fst-italic"
-                                  title="Edited on {{ $post->updated_at->diffForHumans(null, true, true) }}">(Edited)</span>
-                        @endif
                         @if($post->hub)
                             <span class="text-secondary">&bull;</span>
-                            <span>Posted in <a href="/{{ $post->hub->getTable() }}/{{ $post->hub_id }}">{{ $post->hub->title ?? $post->hub->name ?? $post->hub->username ?? 'Hub' }}</a></span>
+                            <span>{{ __('posts.posted_in') }} <a href="/{{ $post->hub->getTable() }}/{{ $post->hub_id }}">{{ $post->hub->title ?? $post->hub->name ?? $post->hub->username ?? __('posts.hub') }}</a></span>
                         @endif
                     </div>
                 </div>

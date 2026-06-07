@@ -12,6 +12,8 @@ class Notification extends Model
         'type',
         'message',
         'read',
+        'target_url',
+        'post_id',
     ];
 
     public function user()
@@ -22,5 +24,28 @@ class Notification extends Model
     public function fromUser()
     {
         return $this->belongsTo(User::class, 'from_user_id');
+    }
+
+    public function post()
+    {
+        return $this->belongsTo(Post::class);
+    }
+
+    public function getMessageAttribute($value)
+    {
+        $username = $this->fromUser ? $this->fromUser->username : '';
+
+        switch ($this->type) {
+            case 'follow':
+                return __('notifications.started_following', ['username' => $username]);
+            case 'comment':
+                return __('notifications.commented_on_post', ['username' => $username]);
+            case 'new_post':
+                return __('notifications.posted_new_post', ['username' => $username]);
+            case 'like':
+                return __('notifications.liked_post', ['username' => $username]);
+            default:
+                return $value;
+        }
     }
 }

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Log;
 
 class RegisteredUserController extends Controller
 {
@@ -43,7 +44,7 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
-
+        Log::info('New user registered: '.$user->username.' (ID: '.$user->id.')');
         Auth::login($user);
 
         return redirect(route('dashboard', absolute: false));

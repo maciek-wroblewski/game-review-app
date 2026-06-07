@@ -18,16 +18,18 @@ class Post extends Model
         'parent_id',
         'is_spoiler',
         'is_locked',
-        'is_pinned',
-        'is_locked',
+        'admin_locked', // <-- Added
+        'is_pinned',    // <-- Added
     ];
 
     protected function casts(): array
     {
         return [
             'is_locked' => 'boolean',
+            'admin_locked' => 'boolean', // <-- Added
             'is_spoiler' => 'boolean',
-        ];
+            'is_pinned' => 'boolean',    // <-- Added        
+            ];
     }
 
     // Who wrote it?
@@ -66,18 +68,22 @@ class Post extends Model
 
     public function toggleLike($userId)
     {
-        // toggle() returns an array like: ['attached' => [1], 'detached' => []]
+        // toggle() returns ['attached' => [...], 'detached' => [...]]
         $changes = $this->likes()->toggle($userId);
 
         // If a record was attached (created), increment the cache
         if (! empty($changes['attached'])) {
             $this->increment('likes_count', 1);
+            return true; // liked
         }
 
         // If a record was detached (deleted), decrement the cache
         if (! empty($changes['detached'])) {
             $this->decrement('likes_count', 1);
+            return false; // unliked
         }
+
+        return null; // no change
     }
 
     public function review()
@@ -96,30 +102,45 @@ class Post extends Model
         return $this->review()->exists();
     }
 
-    public function scopeWithFeedRelations($query)
+    public function scopeWithFeedRelations($query, array $options = [])
     {
-        return $query->with([
-            // ⚡ Eager load the author's avatar AND pre-compute all 3 popover aggregate counters
-            'author' => function ($q) {
-                $q->with('avatar')->withCount(['followers', 'following', 'posts']);
-            },
+        $loadReview = $options['review'] ?? true;
+        $loadHub = $options['hub'] ?? true;
+        $loadAuthor = $options['author'] ?? true;
+
+        $relations = [
             'media',
-            'review',
-            'hub',
-            // ⚡ Apply the exact same optimization to parent/quoted posts to satisfy their popovers too
-            'parent' => function ($q) {
+            'parent' => function ($q) use ($loadReview, $loadHub) {
                 $q->withCount('replies')
                     ->with([
                         'author' => function ($sq) {
-                            $sq->with('avatar')->withCount(['followers', 'following', 'posts']);
+                            // Minimal author data for nested posts (no counts needed)
+                            $sq->with('avatar');
                         },
                         'media',
-                        'review',
-                        'hub'
                     ])
+                    ->when($loadReview, fn($q) => $q->with('review'))
+                    ->when($loadHub, fn($q) => $q->with('hub'))
                     ->withLikedByAuth();
             },
-        ])
+        ];
+
+        // Only load the top-level author if requested
+        if ($loadAuthor) {
+            $relations['author'] = function ($q) {
+                $q->with('avatar')->withCount(['followers', 'following', 'posts']);
+            };
+        }
+
+        if ($loadReview) {
+            $relations[] = 'review';
+        }
+        
+        if ($loadHub) {
+            $relations[] = 'hub';
+        }
+
+        return $query->with($relations)
             ->withCount('replies')
             ->withLikedByAuth();
     }
@@ -136,6 +157,64 @@ class Post extends Model
         });
     }
 
+    /**
+     * Scope a query to retrieve standard replies feed details.
+     */
+    public function scopeWithRepliesFeed($query)
+    {
+        return $query->with(['author.avatar', 'media'])
+            ->withCount('replies')
+            ->withLikedByAuth()
+            ->latest()
+            ->orderByDesc('is_pinned');
+    }
+
+    /**
+     * Minimal feed relations - loads only what's needed to render posts without author stats.
+     * Use for game discussions, playlist discussions, etc. where author counts aren't displayed.
+     * Saves 2-3 queries per user by not loading: followers_count, following_count, posts_count.
+     */
+    public function scopeWithMinimalFeedRelations($query, array $options = [])
+    {
+        $loadReview = $options['review'] ?? true;
+        $loadHub = $options['hub'] ?? true;
+        $loadAuthor = $options['author'] ?? true;
+
+        $relations = [
+            'media',
+            'parent' => function ($q) use ($loadReview, $loadHub) {
+                $q->withCount('replies')
+                    ->with([
+                        'author' => function ($sq) {
+                            $sq->with('avatar'); // No counts
+                        },
+                        'media',
+                    ])
+                    ->when($loadReview, fn($q) => $q->with('review'))
+                    ->when($loadHub, fn($q) => $q->with('hub'))
+                    ->withLikedByAuth();
+            },
+        ];
+
+        if ($loadAuthor) {
+            $relations['author'] = function ($q) {
+                $q->with('avatar'); // No counts for minimal feed
+            };
+        }
+
+        if ($loadReview) {
+            $relations[] = 'review';
+        }
+        
+        if ($loadHub) {
+            $relations[] = 'hub';
+        }
+
+        return $query->with($relations)
+            ->withCount('replies')
+            ->withLikedByAuth();
+    }
+
     protected static function booted()
     {
         // Hook into the deleting event
@@ -146,13 +225,11 @@ class Post extends Model
                 // ^ This fires the deleted event in your ReviewObserver!
             }
             
+            // Delete notifications created in its creation
+            \App\Models\Notification::where('post_id', $post->id)->delete();
+
             // You can also delete media here if you want to clean up files!
             // if ($post->media) { $post->media()->delete(); }
         });
-    }
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
     }
 }

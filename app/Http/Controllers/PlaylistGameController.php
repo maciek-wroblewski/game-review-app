@@ -20,13 +20,23 @@ class PlaylistGameController extends Controller
             $playlist->games()->attach($game->id, ['order' => $maxOrder + 1]);
         }
 
-        return back()->with('success', "Game added to {$playlist->name} successfully!");
+        // Handle AJAX request
+        if (request()->wantsJson()) {
+            return response()->json(['status' => 'success', 'message' => __('common.game_added_to_playlist', ['playlist' => $playlist->name])]);
+        }
+
+        return back()->with('success', __('common.game_added_to_playlist', ['playlist' => $playlist->name]));
     }
 
     public function destroy(Playlist $playlist, Game $game)
     {
         $playlist->games()->detach($game->id);
 
-        return back()->with('success', "Game removed from {$playlist->name} successfully!");
+        // Handle AJAX request
+        if (request()->wantsJson()) {
+            return response()->json(['status' => 'success', 'message' => __('common.game_removed_from_playlist', ['playlist' => $playlist->name])]);
+        }
+
+        return back()->with('success', __('common.game_removed_from_playlist', ['playlist' => $playlist->name]));
     }
 }

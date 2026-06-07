@@ -6,9 +6,12 @@ use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Concerns\HasPaginatedResponses;
 
 class UserController extends Controller
 {
+    use HasPaginatedResponses;
     /**
      * Common guard to check profile permissions across all sub-pages.
      */
@@ -17,126 +20,96 @@ class UserController extends Controller
         $user->loadMissing('settings');
 
         if (! $user->canViewProfile(Auth::user())) {
-
             abort(403, 'This profile is private.');
         }
     }
 
-    public function show(User $user)
+    public function show(Request $request, User $user)
     {
-        $user->loadCount([
-                'followers',
-                'following',
-                'reviews',
-                'communityPosts',
-                'playlists'
-            ])
-            ->load([
-                'settings',
-                'avatar'
-            ]);
+        // Preload all counts in a single batch query
+        $user->loadCount(['followers', 'following', 'playlists', 'posts', 'reviews'])
+             ->load(['settings', 'avatar']);
 
         if (! $user->canViewProfile(Auth::user())) {
-
-            return view('users.private', [
-                'user' => $user
-            ]);
+            return view('users.private', compact('user'));
         }
 
-        $recentPosts = $user->reviews()
+        // 1. Authored Posts
+        $posts = Post::where('user_id', $user->id)
             ->latest()
-            ->withFeedRelations()
-            ->paginate(10);
+            ->withFeedRelations(['author' => false])
+            ->paginate(3, ['*'], 'posts_page');
 
-        $user->setRelation('posts', $recentPosts);
+        $posts->getCollection()->each(fn($post) => $post->setRelation('author', $user));
 
-        $posts = Post::query()
+        // 2. Profile Comments
+        $comments = Post::query()
             ->where('hub_type', 'user')
             ->where('hub_id', $user->id)
             ->whereNull('parent_id')
+            ->orderByDesc('is_pinned')
             ->latest()
-            ->withFeedRelations()
-            ->paginate(10);
+            ->withFeedRelations(['hub' => false, 'review' => false]) 
+            ->paginate(3, ['*'], 'comments_page');
 
-        return view('users.show', compact('user', 'posts'));
+        $comments->getCollection()->each(function ($comment) use ($user) {
+            $comment->setRelation('hub', $user);
+            $comment->setRelation('review', null); 
+        });
+
+        // 3. Handle AJAX Requests
+        if ($request->ajax()) {
+            if ($request->has('posts_page')) {
+                return $this->ajaxFeed($posts);
+            }
+            if ($request->has('comments_page')) {
+                return $this->ajaxFeed($comments);
+            }
+        }
+
+        Log::info('Viewing profile: '.$user->username.' (ID: '.$user->id.') by '.(Auth::check() ? Auth::user()->username : 'guest'));
+        
+        return view('users.show', compact('user', 'posts', 'comments'));
     }
 
     public function followers(Request $request, User $user)
     {
-        $followers = $user->followers()
+        $connections = $user->followers()
+            ->withCompactCounts()
             ->latest()
             ->paginate(20);
 
         if ($request->ajax()) {
-
-            $html = '';
-
-            foreach ($followers as $follower) {
-
-                $html .= view(
-                    'users.partials.follower-card-wrapper',
-                    compact('follower')
-                )->render();
-            }
-
-            return response()->json([
-                'html' => $html,
-                'next_page_url' => $followers->nextPageUrl(),
-            ]);
+            return $this->ajaxCardGrid($connections, 'components.user.card', 'user', ['layout' => 'compact']);
         }
 
-        return view('users.followers', compact('user', 'followers'));
+        return view('users.connections', ['user' => $user, 'connections' => $connections, 'type' => 'followers']);
     }
 
     public function following(Request $request, User $user)
     {
-        $following = $user->following()
+        $connections = $user->following()
+            ->withCompactCounts()
             ->latest()
             ->paginate(20);
 
         if ($request->ajax()) {
-
-            $html = '';
-
-            foreach ($following as $followedUser) {
-
-                $html .= view(
-                    'users.partials.following-card-wrapper',
-                    compact('followedUser')
-                )->render();
-            }
-
-            return response()->json([
-                'html' => $html,
-                'next_page_url' => $following->nextPageUrl(),
-            ]);
+            return $this->ajaxCardGrid($connections, 'components.user.card', 'user', ['layout' => 'compact']);
         }
 
-        return view('users.following', compact('user', 'following'));
+        return view('users.connections', ['user' => $user, 'connections' => $connections, 'type' => 'following']);
     }
 
     public function playlists(Request $request, User $user)
     {
         $playlists = $user->playlists()
+            ->with('users')
+            ->withCount('games')
             ->latest()
-            ->paginate(20);
+            ->paginate(6);
 
         if ($request->ajax()) {
-
-            $html = '';
-
-            foreach ($playlists as $playlist) {
-
-                $html .= view(
-                    'users.partials.playlist-card-wrapper',
-                    compact('playlist')
-                )->render();
-            }
-
-            return response()->json([
-                'html' => $html,
-                'next_page_url' => $playlists->nextPageUrl(),
-            ]);
+            return $this->ajaxCardGrid($playlists, 'components.playlist.card', 'playlist', ['layout' => 'compact'], false);
         }
 
         return view('users.playlists', compact('user', 'playlists'));
@@ -145,36 +118,70 @@ class UserController extends Controller
     public function reviews(Request $request, User $user)
     {
         $posts = $user->reviews()
+            ->withFeedRelations(['author' => false])
+            ->orderByDesc('is_pinned')
             ->latest()
-            ->withFeedRelations()
             ->paginate(5);
 
-        if ($request->ajax()) {
+        // Set the author relation to the already-loaded profile user to avoid N+1
+        $posts->getCollection()->each(fn($post) => $post->setRelation('author', $user));
 
-            return response()->json([
-                'html' => view('components.post.items', compact('posts'))->render(),
-                'next_page_url' => $posts->nextPageUrl(),
-            ]);
+        if ($request->ajax()) {
+            return $this->ajaxFeed($posts);
         }
 
-        return view('users.reviews', compact('user', 'posts'));
+        return view('users.feed', ['user' => $user, 'posts' => $posts, 'type' => 'reviews']);
     }
 
     public function posts(Request $request, User $user)
     {
-        $posts = $user->communityPosts()
+        $posts = $user->posts()
             ->latest()
-            ->withFeedRelations()
+            ->withFeedRelations(['author' => false, 'review' => false])
             ->paginate(10);
 
-        if ($request->ajax()) {
+        // Set the author relation to the already-loaded profile user to avoid N+1
+        $posts->getCollection()->each(function ($post) use ($user) {
+            $post->setRelation('author', $user);
+            $post->setRelation('review', null);
 
-            return response()->json([
-                'html' => view('components.post.items', compact('posts'))->render(),
-                'next_page_url' => $posts->nextPageUrl(),
-            ]);
+            if ($post->relationLoaded('parent') && $post->parent) {
+                $post->parent->setRelation('review', null);
+            }
+        });
+
+        if ($request->ajax()) {
+            return $this->ajaxFeed($posts);
         }
 
-        return view('users.posts', compact('user', 'posts'));
+        return view('users.feed', ['user' => $user, 'posts' => $posts, 'type' => 'posts']);
     }
+
+    public function searchApi(Request $request)
+    {
+        $query = $request->input('q', '');
+        $filter = $request->input('filter', 'all');
+        $authUser = auth()->user();
+
+        $users = User::where('username', 'like', "%{$query}%");
+
+        if ($authUser) {
+            if ($filter === 'followers') {
+                $users->whereIn('id', $authUser->followers()->select('users.id'));
+            } elseif ($filter === 'following') {
+                $users->whereIn('id', $authUser->following()->select('users.id'));
+            } elseif ($filter === 'mutuals') {
+                $users->whereIn('id', $authUser->mutuals()->select('users.id'));
+            }
+        }
+
+        $results = $users->take(10)->get()->map(fn($u) => [
+            'id' => $u->id,
+            'username' => $u->username,
+            'avatar_url' => $u->avatar_url
+        ]);
+
+        return response()->json($results);
+    }
+
 }

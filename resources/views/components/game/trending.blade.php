@@ -221,7 +221,7 @@
 
 
 </style>
-<div id="trendingGamesCarousel" class="carousel slide trending-carousel shadow-lg" data-bs-ride="carousel">
+<div id="trendingGamesCarousel" class="animate-fade-in carousel slide trending-carousel shadow-lg" data-bs-ride="carousel">
     <!-- Indicators -->
     <div class="carousel-indicators custom-indicators">
         @foreach($trendingGames as $game)

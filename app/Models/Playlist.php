@@ -9,7 +9,13 @@ class Playlist extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'is_system', 'is_public'];
+    protected $fillable = [
+        'name', 
+        'description', 
+        'cover', 
+        'is_system', 
+        'is_public'
+    ];
 
     protected function casts(): array
     {
