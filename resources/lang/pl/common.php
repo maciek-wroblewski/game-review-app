@@ -80,4 +80,5 @@ return [
     'password_reset_email_sent' => 'Nowe tymczasowe hasło zostało wysłane na Twój adres e-mail.',
     'password_reset_email_error' => 'Wystąpił problem z wysyłką e-maila. Skontaktuj się z administratorem.',
     'user_not_found' => 'Nie znaleźliśmy użytkownika z tym adresem e-mail.',
+    'login_ad' => 'Dziel się recenzjami, odkrywaj gry, łącz się z graczami.'
 ];

@@ -88,4 +88,5 @@ return [
     'password_reset_email_sent' => 'New temporary password has been sent to your email.',
     'password_reset_email_error' => 'There was a problem sending the email. Please contact the administrator.',
     'user_not_found' => 'We could not find a user with that email address.',
+    'login_ad' => 'Share reviews, discover games, connect with players.'
 ];
