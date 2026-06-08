@@ -239,6 +239,7 @@ class GameController extends Controller
             return $query->orderBy('average_rating', 'desc')->paginate(15);
         });
 
+        Log::info('API: Fetched games list, page '.$request->get('page', 1).', genre: '.$request->get('genre', 'all'));
         return response()->json([
             'success' => true,
             'message' => 'Fetched games successfully.',
@@ -259,6 +260,7 @@ class GameController extends Controller
             'success' => true,
             'data' => $game,
         ], 200, [], JSON_UNESCAPED_UNICODE);
+        Log::info('API: Fetched game details for game ID: '.$game->id);
     }
 
     public function apiReviews(Game $game)
@@ -287,6 +289,7 @@ class GameController extends Controller
         });
 
         $reviews->setCollection($formattedReviews);
+        Log::info('API: Fetched reviews for game ID: '.$game->id.' - Total reviews: '.$reviews->total());
 
         return response()->json([
             'success' => true,
