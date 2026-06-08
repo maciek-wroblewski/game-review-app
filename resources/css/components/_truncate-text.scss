@@ -1,0 +1,18 @@
+// Truncate Text Styles
+// Smooth expand/collapse animations for long text content
+
+.truncate-wrapper .truncate-content {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--lines, 2);
+    line-clamp: var(--lines, 2);
+    overflow: hidden;
+    transition: max-height 0.35s ease-in-out;
+}
+
+// Expanded state: remove line clamp for smooth height transitions
+.truncate-wrapper.is-expanded .truncate-content {
+    display: block;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+}

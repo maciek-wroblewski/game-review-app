@@ -92,6 +92,12 @@ class User extends Authenticatable
         return $this->morphToMany(User::class, 'followable', 'follows', 'followable_id', 'user_id')->withTimestamps();
     }
 
+    public function followedGames()
+    {
+        // Games this user is following
+        return $this->morphedByMany(Game::class, 'followable', 'follows', 'user_id', 'followable_id')->withTimestamps();
+    }
+
     public function mutuals()
     {
         return $this->following()
@@ -174,6 +180,25 @@ class User extends Authenticatable
     public function avatar()
     {
         return $this->belongsTo(Media::class, 'avatar_media_id');
+    }
+
+    /**
+     * Scope: Load only the counts needed for compact user card layout.
+     * Used in search results, follower lists, etc.
+     * Reduces 5 count queries to 3 when compact layout is rendered.
+     */
+    public function scopeWithCompactCounts($query)
+    {
+        return $query->withCount(['reviews', 'followers', 'following']);
+    }
+
+    /**
+     * Scope: Load all counts needed for full user card layout.
+     * Used in user profiles, detailed views.
+     */
+    public function scopeWithFullCounts($query)
+    {
+        return $query->withCount(['reviews', 'followers', 'following', 'posts', 'playlists']);
     }
 
     public function getAvatarUrlAttribute()
