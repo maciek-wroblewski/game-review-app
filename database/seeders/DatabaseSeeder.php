@@ -20,8 +20,8 @@ class DatabaseSeeder extends Seeder
         // =========================================================
         $this->call([
             UserSeeder::class,
-            GameSeeder::class,
             GenreSeeder::class,
+            GameSeeder::class,
             PlaylistSeeder::class,
             PostSeeder::class,
             ChatSeeder::class,
@@ -36,11 +36,13 @@ class DatabaseSeeder extends Seeder
         // 2. POPULATE GAME RELATIONSHIPS
         // =========================================================
         
-        // Assign 1 to 3 random genres to every game
+        // Assign 1 to 3 random genres to every game that doesn't have any genres yet
         $games->each(function ($game) use ($genres) {
-            $game->genres()->attach(
-                $genres->random(rand(1, 3))->pluck('id')->toArray()
-            );
+            if ($game->genres()->count() === 0) {
+                $game->genres()->attach(
+                    $genres->random(rand(1, 3))->pluck('id')->toArray()
+                );
+            }
         });
 
         // Assign game credits (developers, designers, etc.)
@@ -59,11 +61,11 @@ class DatabaseSeeder extends Seeder
         foreach ($users as $user) {
             // Make users follow 3 random other users
             $randomUsersToFollow = $users->except($user->id)->random(3)->pluck('id');
-            $user->following()->attach($randomUsersToFollow);
+            $user->following()->syncWithoutDetaching($randomUsersToFollow);
             
             // Make users block 1 random user
             $randomUserToBlock = $users->except($user->id)->random(1)->pluck('id');
-            $user->blockedUsers()->attach($randomUserToBlock);
+            $user->blockedUsers()->syncWithoutDetaching($randomUserToBlock);
         }
 
         // =========================================================
