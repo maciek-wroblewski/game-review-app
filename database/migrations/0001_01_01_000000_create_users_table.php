@@ -25,7 +25,7 @@ return new class extends Migration
             $table->boolean('is_suspended')->default(false);
             $table->rememberToken();
             $table->timestamps();
-
+            $table->softDeletes();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

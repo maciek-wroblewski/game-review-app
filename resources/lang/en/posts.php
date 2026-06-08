@@ -110,4 +110,6 @@ return [
     'load_more' => 'Load More',
     'click_to_load_replies' => 'Click to load replies',
     'deleted_post' => 'Deleted Post',
+    'login_to_comment' => ':login to leave a comment.',
+    'login_or_register_to_post' => ':login or :register to write a post.',
 ];

@@ -260,3 +260,32 @@ test('suspended user cannot create posts after suspension', function () {
     // The authorize method returns false for suspended users, which triggers 403
     $response->assertForbidden();
 });
+
+test('admin can delete a user', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($admin)->delete("/admin/users/{$user->id}");
+
+    $response->assertRedirect('/');
+    $this->assertTrue($user->fresh()->trashed());
+});
+
+test('admin cannot delete themselves', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+
+    $response = $this->actingAs($admin)->delete("/admin/users/{$admin->id}");
+
+    $response->assertRedirect();
+    $this->assertFalse($admin->fresh()->trashed());
+});
+
+test('non-admin cannot delete a user', function () {
+    $user = User::factory()->create(['is_admin' => false]);
+    $target = User::factory()->create();
+
+    $response = $this->actingAs($user)->delete("/admin/users/{$target->id}");
+
+    $response->assertForbidden();
+    $this->assertFalse($target->fresh()->trashed());
+});

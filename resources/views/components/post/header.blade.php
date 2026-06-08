@@ -15,7 +15,12 @@
             <div class="d-flex align-items-center column-gap-4">
                 <x-user.avatar :user="$post->author" layout="compact" :size="'50px'" />
                 <div>
-                    @if($post->author->is_suspended)
+                    @if($post->author->trashed())
+                        <div class="d-flex align-items-center">
+                            <span class="text-decoration-none fw-bold text-muted fs-5 me-2">{{ __('users.deleted_user') }}</span>
+                            <i class="bi bi-trash-fill text-secondary" style="font-size: 1.25rem;"></i>
+                        </div>
+                    @elseif($post->author->is_suspended)
                         <div class="d-flex align-items-center">
                             <span class="text-decoration-none fw-bold text-dark fs-5 me-2">{{ __('posts.suspended_user') }}</span>
                             <i class="bi bi-slash-circle-fill text-danger" style="font-size: 1.25rem;"></i>
@@ -43,7 +48,7 @@
             </div>
 
             <div class="d-flex align-items-center gap-2">
-                @if($post->author)
+                @if($post->author && !$post->author->trashed())
                     <x-follow-button :target-user="$post->author" /> 
                 @endif
                 <x-post.menu :post="$post" />

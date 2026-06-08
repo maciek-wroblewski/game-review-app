@@ -106,4 +106,15 @@ class AdminController extends Controller
         
         return back();
     }
+
+    public function destroyUser(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'You cannot delete your own account.');
+        }
+
+        $user->delete();
+
+        return redirect('/')->with('success', 'User account deleted successfully.');
+    }
 }

@@ -17,6 +17,6 @@ class DashboardController extends Controller
         // Preload counts to avoid N+1 queries when rendering
         $user->loadCount(['posts', 'playlists', 'followers', 'following']);
 
-        return view('dashboard');
+        return view('dashboard', compact('user'));
     }
 }

@@ -1,17 +1,24 @@
-@props(['hubType' => null, 'hubId' => null, 'parentId' => null, 'reviewType' => null])
+@props([
+    'hubType' => null,
+    'hubId' => null,
+    'parentId' => null,
+    'reviewType' => null,
+    'isComment' => false
+])
 
 @php
-    $isRecommendation = $reviewType === 'recommendation';
+    $isComment = $isComment || !empty($parentId);
+    $isRecommendation = !$isComment && $reviewType === 'recommendation';
     $uid = \Illuminate\Support\Str::random(8);
 @endphp
 
 @auth
     {{-- Added position-relative to the wrapper --}}
-    <div class="position-relative animate-fade-in js-create-post-card card shadow-sm mb-4 border-0 overflow-hidden {{ $isRecommendation ? 'd-flex flex-row align-items-stretch' : '' }}"
+    <div class="position-relative card shadow-sm border-0 overflow-hidden {{ $isComment ? 'js-create-comment-card mb-3 bg-white' : 'animate-fade-in js-create-post-card mb-4 ' . ($isRecommendation ? 'd-flex flex-row align-items-stretch' : '') }}"
         data-hub-type="{{ $hubType }}"
         data-hub-id="{{ $hubId }}"
         data-parent-id="{{ $parentId }}"
-        data-review-type="{{ $reviewType }}">
+        @if(!$isComment) data-review-type="{{ $reviewType }}" @endif>
 
         {{-- Suspended Overlay --}}
         @if(auth()->user()->is_suspended)
@@ -29,17 +36,24 @@
             <x-post.rating-meter :rating="10" editable="true" />
         @endif
 
-        <div class="flex-grow-1 d-flex flex-column p-3 bg-white" style="min-width: 0;">
+        <div class="{{ $isComment ? '' : 'flex-grow-1 d-flex flex-column' }} p-3 bg-white" style="min-width: 0;">
             <div class="mb-3">
-                <label class="form-label fw-bold text-muted small">{{ __('posts.write_post') }}</label>
-                <textarea class="js-create-textarea form-control" rows="4" placeholder="{{ __('posts.what_on_mind') }}"></textarea>
+                <label class="form-label fw-bold text-muted small">
+                    {{ $isComment ? __('posts.reply_as_comment') : __('posts.write_post') }}
+                </label>
+                <textarea 
+                    class="{{ $isComment ? 'js-comment-textarea' : 'js-create-textarea' }} form-control" 
+                    rows="{{ $isComment ? 3 : 4 }}" 
+                    placeholder="{{ $isComment ? __('posts.write_your_reply') : __('posts.what_on_mind') }}"></textarea>
             </div>
 
             <div class="mb-3 border-bottom pb-3">
-                <label class="form-label fw-bold text-muted small">{{ __('posts.media') }}</label>
+                <label class="form-label fw-bold text-muted small">
+                    {{ $isComment ? __('common.media') : __('posts.media') }}
+                </label>
                 <x-media-upload 
                     multiple="true" 
-                    inputName="create_media_ids[]" 
+                    inputName="{{ $isComment ? 'comment_media_ids[]' : 'create_media_ids[]' }}" 
                     accept="image/*,video/mp4" 
                     previewClass="rounded border bg-dark"
                     previewStyle="height: 80px; width: 80px; object-fit: cover;"
@@ -48,25 +62,40 @@
 
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mt-3">
                 <x-post.form-toggles 
-                    :spoilerClass="'js-create-spoiler'" 
-                    :lockClass="'js-create-locked'"
-                    :spoilerId="'createSpoiler-' . $uid"
-                    :lockId="'createLocked-' . $uid"
+                    :spoilerClass="$isComment ? 'js-comment-spoiler' : 'js-create-spoiler'" 
+                    :lockClass="$isComment ? 'js-comment-locked' : 'js-create-locked'"
+                    :spoilerId="($isComment ? 'commentSpoiler-' : 'createSpoiler-') . $uid"
+                    :lockId="($isComment ? 'commentLocked-' : 'createLocked-') . $uid"
                 />
                 
                 <x-post.form-actions 
-                    :clearClass="'js-btn-create-clear'"
-                    :submitClass="'js-btn-submit-post'"
-                    :spinnerClass="'js-submit-spinner'"
+                    :clearClass="$isComment ? 'js-btn-comment-clear' : 'js-btn-create-clear'"
+                    :submitClass="$isComment ? 'js-btn-comment-submit' : 'js-btn-submit-post'"
+                    :spinnerClass="$isComment ? 'js-comment-submit-spinner' : 'js-submit-spinner'"
+                    :clearLabel="$isComment ? __('common.clear') : null"
+                    :submitLabel="$isComment ? __('common.reply') : null"
                 />
             </div>
         </div>
     </div>
 @else
     {{-- Guest Call to Action --}}
-    <div class="card shadow-sm mb-4 border-0 bg-light text-center p-4">
-        <p class="text-muted mb-0">
-            <a href="{{ route('login') }}" class="text-decoration-none fw-bold">{{ __('common.login') }}</a> or <a href="{{ route('register') }}" class="text-decoration-none fw-bold">{{ __('common.register') }}</a> to write a post.
-        </p>
-    </div>
+    @if($isComment)
+        <div class="card shadow-sm mb-3 border-0 bg-light text-center p-3">
+            <p class="text-muted mb-0 small">
+                {!! __('posts.login_to_comment', [
+                    'login' => '<a href="' . route('login') . '" class="text-decoration-none fw-bold">' . __('common.login') . '</a>'
+                ]) !!}
+            </p>
+        </div>
+    @else
+        <div class="card shadow-sm mb-4 border-0 bg-light text-center p-4">
+            <p class="text-muted mb-0">
+                {!! __('posts.login_or_register_to_post', [
+                    'login' => '<a href="' . route('login') . '" class="text-decoration-none fw-bold">' . __('common.login') . '</a>',
+                    'register' => '<a href="' . route('register') . '" class="text-decoration-none fw-bold">' . __('common.register') . '</a>'
+                ]) !!}
+            </p>
+        </div>
+    @endif
 @endauth

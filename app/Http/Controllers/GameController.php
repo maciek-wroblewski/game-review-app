@@ -41,25 +41,26 @@ class GameController extends Controller
 
     public function index(Request $request)
     {
-        $games = Game::with(['genres', 'credits' => function ($query) {
-            $query->withPivot('role');
-        }])
-            ->withCount(['posts as reviews_count' => function ($query) {
-                $query->has('review');
-            }])
+        $games = Game::with(['genres', 'credits:id,username'])
+            ->withCount('reviews')
             ->orderBy('average_rating', 'desc')
-            ->paginate(12);
+            ->simplePaginate(12);
 
         if ($request->ajax()) {
             return $this->ajaxCardGrid($games, 'components.game.card', 'game');
         }
 
-        return view('games.index', compact('games'));
+        $gamesTotal = Cache::remember('games_total_count', 3600, fn() => Game::count());
+
+        return view('games.index', compact('games', 'gamesTotal'));
     }
 
     public function show(Request $request, Game $game)
     {
-        $game->load(['genres', 'credits']);
+        $game = Cache::remember("game_show_model_{$game->id}", 3600, function() use ($game) {
+            $game->load(['genres', 'credits']);
+            return $game;
+        });
 
         // Fix: Use the relationship method to avoid morph map issues and cache the query.
         $game->reviews_count = Cache::remember("game_{$game->id}_reviews_count", 3600, function() use ($game) {
@@ -88,14 +89,13 @@ class GameController extends Controller
             $userReviewPost->setRelation('hub', $game);
         }
 
-        $posts = $game->reviews()
-            ->withFeedRelations(['hub' => false])
-            ->when($userId, function ($query) use ($userId) {
-                $query->where('user_id', '!=', $userId);
-            })
-            ->orderByDesc('is_pinned')
-            ->latest()
-            ->paginate(10);
+        $posts = Cache::remember("game_{$game->id}_reviews_page_" . $request->get('page', 1), 600, function() use ($game) {
+            return $game->reviews()
+                ->withFeedRelations(['hub' => false])
+                ->orderByDesc('is_pinned')
+                ->latest()
+                ->simplePaginate(10);
+        });
 
         $posts->getCollection()->each(function ($post) use ($game) {
             $post->setRelation('hub', $game);
@@ -103,6 +103,17 @@ class GameController extends Controller
                 $post->parent->setRelation('hub', $game);
             }
         });
+
+        if ($userId) {
+            $posts->setCollection(
+                $posts->getCollection()->filter(fn($post) => $post->user_id !== $userId)
+            );
+        }
+
+        $this->setLikedByAuthForPosts($posts);
+        if ($userReviewPost) {
+            $this->setLikedByAuthForPosts($userReviewPost);
+        }
 
         if ($request->ajax()) {
             return view('components.post.items', compact('posts'))->render();
@@ -136,7 +147,7 @@ class GameController extends Controller
             ->withMinimalFeedRelations(['hub' => false, 'review' => false])
             ->orderByDesc('is_pinned')
             ->latest()
-            ->paginate(10);
+            ->simplePaginate(10);
 
         $posts->getCollection()->each(function ($post) use ($game) {
             $post->setRelation('hub', $game);
@@ -174,6 +185,8 @@ class GameController extends Controller
 
         $game->update($validated);
         $this->syncRelations($game, $request);
+
+        Cache::forget("game_show_model_{$game->id}");
 
         return redirect('/games/'.$game->id)->with('success', __('common.game_updated'));
     }
@@ -239,6 +252,7 @@ class GameController extends Controller
             return $query->orderBy('average_rating', 'desc')->paginate(15);
         });
 
+        Log::info('API: Fetched games list, page '.$request->get('page', 1).', genre: '.$request->get('genre', 'all'));
         return response()->json([
             'success' => true,
             'message' => 'Fetched games successfully.',
@@ -259,6 +273,7 @@ class GameController extends Controller
             'success' => true,
             'data' => $game,
         ], 200, [], JSON_UNESCAPED_UNICODE);
+        Log::info('API: Fetched game details for game ID: '.$game->id);
     }
 
     public function apiReviews(Game $game)
@@ -287,6 +302,7 @@ class GameController extends Controller
         });
 
         $reviews->setCollection($formattedReviews);
+        Log::info('API: Fetched reviews for game ID: '.$game->id.' - Total reviews: '.$reviews->total());
 
         return response()->json([
             'success' => true,

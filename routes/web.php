@@ -34,12 +34,12 @@ Route::get('/posts/{post}', [PostController::class, 'show'])->withTrashed();
 Route::get('/posts/{post}/replies', [PostController::class, 'getReplies']);
 
 // Scoped User Relations
-Route::get('/users/{user:username}', [UserController::class, 'show']);
-Route::get('/users/{user:username}/followers', [UserController::class, 'followers']);
-Route::get('/users/{user:username}/following', [UserController::class, 'following']);
-Route::get('/users/{user:username}/playlists', [UserController::class, 'playlists']);
-Route::get('/users/{user:username}/reviews', [UserController::class, 'reviews']);
-Route::get('/users/{user:username}/posts', [UserController::class, 'posts']);
+Route::get('/users/{user:username}', [UserController::class, 'show'])->withTrashed();
+Route::get('/users/{user:username}/followers', [UserController::class, 'followers'])->withTrashed();
+Route::get('/users/{user:username}/following', [UserController::class, 'following'])->withTrashed();
+Route::get('/users/{user:username}/playlists', [UserController::class, 'playlists'])->withTrashed();
+Route::get('/users/{user:username}/reviews', [UserController::class, 'reviews'])->withTrashed();
+Route::get('/users/{user:username}/posts', [UserController::class, 'posts'])->withTrashed();
 
 Route::middleware('auth')->group(function () {
     Route::get('/playlists/create', [PlaylistController::class, 'create']);
@@ -96,6 +96,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/users/{user}/verify', [AdminController::class, 'verifyUser']);
         Route::post('/admin/users/{user}/admin', [AdminController::class, 'toggleAdmin']);
         Route::post('/admin/users/{user}/suspend', [AdminController::class, 'toggleSuspend']);
+        Route::delete('/admin/users/{user}', [AdminController::class, 'destroyUser']);
         Route::post('/admin/posts/{post}/pin', [AdminController::class, 'togglePinned']);
         Route::post('/admin/posts/{post}/lock', [AdminController::class, 'toggleLock']);
     });

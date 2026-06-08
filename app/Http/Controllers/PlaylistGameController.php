@@ -20,6 +20,8 @@ class PlaylistGameController extends Controller
             $playlist->games()->attach($game->id, ['order' => $maxOrder + 1]);
         }
 
+        \Illuminate\Support\Facades\Cache::forget("playlist_show_model_{$playlist->id}");
+
         // Handle AJAX request
         if (request()->wantsJson()) {
             return response()->json(['status' => 'success', 'message' => __('common.game_added_to_playlist', ['playlist' => $playlist->name])]);
@@ -31,6 +33,8 @@ class PlaylistGameController extends Controller
     public function destroy(Playlist $playlist, Game $game)
     {
         $playlist->games()->detach($game->id);
+
+        \Illuminate\Support\Facades\Cache::forget("playlist_show_model_{$playlist->id}");
 
         // Handle AJAX request
         if (request()->wantsJson()) {

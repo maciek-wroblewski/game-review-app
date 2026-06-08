@@ -16,20 +16,26 @@ class NotificationComposer
         $user = auth()->user();
 
         if ($user) {
-            // Single query: get paginated recent notifications
-            $recentNotifications = $user->notifications()
-                ->with('fromUser.avatar')
-                ->latest()
-                ->simplePaginate(10)
-                ->withPath(route('notifications.index'));
+            $data = \Illuminate\Support\Facades\Cache::remember("user_{$user->id}_notifications_data", 3600, function () use ($user) {
+                // Single query: get paginated recent notifications
+                $recentNotifications = $user->notifications()
+                    ->with('fromUser.avatar')
+                    ->latest()
+                    ->simplePaginate(10)
+                    ->withPath(route('notifications.index'));
 
-            // Derive unread count from the loaded collection (first page)
-            // If you need the total unread count across all pages, use the separate query approach below
-            $unreadNotificationCount = $recentNotifications->count(fn($n) => !$n->read);
+                // Derive unread count from the loaded collection (first page)
+                $unreadNotificationCount = $recentNotifications->count(fn($n) => !$n->read);
+
+                return [
+                    'recentNotifications' => $recentNotifications,
+                    'unreadNotificationCount' => $unreadNotificationCount,
+                ];
+            });
 
             $view->with([
-                'unreadNotificationCount' => $unreadNotificationCount,
-                'recentNotifications' => $recentNotifications,
+                'unreadNotificationCount' => $data['unreadNotificationCount'],
+                'recentNotifications' => $data['recentNotifications'],
             ]);
         }
     }

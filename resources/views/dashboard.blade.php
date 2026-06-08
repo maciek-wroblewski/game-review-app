@@ -13,7 +13,7 @@
                     <div class="col-lg-8">
 
                         <h1 class="display-5 fw-bold mb-3">
-                            {{ __('dashboard.welcome_back', ['username' => auth()->user()->username]) }}
+                            {{ __('dashboard.welcome_back', ['username' => $user->username]) }}
                         </h1>
 
                         <p class="fs-5 text-light opacity-75 mb-0">
@@ -46,7 +46,7 @@
                         <i class="bi bi-chat-left-text-fill text-primary display-5 mb-3"></i>
 
                         <h2 class="fw-bold">
-                            {{ auth()->user()->posts_count ?? auth()->user()->posts->count() }}
+                            {{ $user->posts_count }}
                         </h2>
 
                         <p class="text-muted mb-0">
@@ -68,7 +68,7 @@
                         <i class="bi bi-collection-play-fill text-success display-5 mb-3"></i>
 
                         <h2 class="fw-bold">
-                            {{ auth()->user()->playlists_count ?? auth()->user()->playlists->count() }}
+                            {{ $user->playlists_count }}
                         </h2>
 
                         <p class="text-muted mb-0">
@@ -90,7 +90,7 @@
                         <i class="bi bi-people-fill text-warning display-5 mb-3"></i>
 
                         <h2 class="fw-bold">
-                            {{ auth()->user()->following_count ?? auth()->user()->following->count() }}
+                            {{ $user->following_count }}
                         </h2>
 
                         <p class="text-muted mb-0">
@@ -124,7 +124,7 @@
 
                     </a>
 
-                    <a href="/users/{{ auth()->user()->username }}"
+                    <a href="/users/{{ $user->username }}"
                        class="btn btn-outline-dark btn-lg">
 
                         <i class="bi bi-person-circle me-2"></i>

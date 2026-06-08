@@ -36,6 +36,7 @@ return [
     'pinned_post' => 'Pinned Post',
     'author_suspended' => 'Author suspended',
     'this_post_has_been_deleted' => '[This post has been deleted]',
+    'this_user_has_been_deleted' => '[This user has been deleted]',
     'admin_moderation_mode' => 'ADMIN MODERATION MODE',
     'edit_profile' => 'Edit Profile',
     'account_suspended' => 'Account Suspended',

@@ -11,46 +11,47 @@ class Trending extends Component
 {
     public Collection $trendingGames;
 
-    public function __construct()
+    public function __construct($games = null)
     {
-        $this->trendingGames = $this->getTrendingGames();
+        $this->trendingGames = $games ?? self::getTrendingGames();
     }
 
     /**
      * Get the games with scores, handling cache logic.
      */
-    private function getTrendingGames(): Collection
+    public static function getTrendingGames(): Collection
     {
-        // 1. Get cached scores (ID => Score)
-        $scores = Cache::remember('trending_scores_v3', now()->addDay(), function () {
-            return $this->calculateTrendingScores();
+        return Cache::remember('trending_games_v3_records', now()->addHour(), function () {
+            $scores = self::calculateTrendingScores();
+
+            if (empty($scores)) {
+                return collect();
+            }
+
+            // Fetch fresh models for these IDs
+            $gameIds = array_keys($scores);
+            
+            return Game::whereIn('id', $gameIds)
+                ->with(['genres', 'credits:id,username'])
+                ->withCount('reviews')
+                ->get()
+                ->map(function ($game) use ($scores) {
+                    // Attach the score from the cache to the fresh model
+                    $game->trending_score = $scores[$game->id] ?? 0;
+                    return $game;
+                })
+                // Since whereIn doesn't preserve order, we sort here
+                ->sortByDesc('trending_score')
+                ->values();
         });
-
-        if (empty($scores)) {
-            return collect();
-        }
-
-        // 2. Fetch fresh models for these IDs
-        $gameIds = array_keys($scores);
-        
-        return Game::whereIn('id', $gameIds, null, null)
-            ->get()
-            ->map(function ($game) use ($scores) {
-                // Attach the score from the cache to the fresh model
-                $game->trending_score = $scores[$game->id] ?? 0;
-                return $game;
-            })
-            // Since whereIn doesn't preserve order, we sort here
-            ->sortByDesc('trending_score')
-            ->values();
     }
 
     /**
      * The "Heavy Lifter" - Returns a simple [id => score] array.
      */
-    private function calculateTrendingScores(): array
+    public static function calculateTrendingScores(): array
     {
-        $gameModelClass = Game::class;
+        $gameModelClass = (new Game)->getMorphClass();
         $sevenDaysAgo = now()->subDays(7)->toDateTimeString();
 
         $data = Game::select('id')

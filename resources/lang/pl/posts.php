@@ -109,4 +109,6 @@ return [
     'media' => 'Media',
     'click_to_load_replies' => 'Kliknij, aby załadować odpowiedzi',
     'deleted_post' => 'Usunięty post',
+    'login_to_comment' => ':login, aby zostawić komentarz.',
+    'login_or_register_to_post' => ':login lub :register, aby napisać post.',
 ];

@@ -16,6 +16,17 @@ class Notification extends Model
         'post_id',
     ];
 
+    protected static function booted()
+    {
+        static::saved(function ($notification) {
+            \Illuminate\Support\Facades\Cache::forget("user_{$notification->user_id}_notifications_data");
+        });
+
+        static::deleted(function ($notification) {
+            \Illuminate\Support\Facades\Cache::forget("user_{$notification->user_id}_notifications_data");
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

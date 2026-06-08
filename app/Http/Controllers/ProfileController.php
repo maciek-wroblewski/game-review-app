@@ -51,6 +51,8 @@ class ProfileController extends Controller
 
         $user->save();
 
+        \Illuminate\Support\Facades\Cache::forget("user_profile_model_{$user->id}");
+
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
@@ -78,9 +80,10 @@ class ProfileController extends Controller
             ],
         ]);
 
-        $request->user()
-            ->settings()
-            ->update($validated);
+        $user = $request->user();
+        $user->settings()->update($validated);
+
+        \Illuminate\Support\Facades\Cache::forget("user_profile_model_{$user->id}");
 
         return back()->with('status', 'privacy-updated');
     }

@@ -35,7 +35,7 @@ class Post extends Model
     // Who wrote it?
     public function author()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id')->withTrashed();
     }
 
     public function hub()
@@ -114,21 +114,20 @@ class Post extends Model
                 $q->withCount('replies')
                     ->with([
                         'author' => function ($sq) {
-                            // Minimal author data for nested posts (no counts needed)
-                            $sq->with('avatar');
+                            // Eager-load avatar and compact counts to prevent N+1 queries when hovering nested authors
+                            $sq->with('avatar')->withCount(['followers', 'following', 'reviews']);
                         },
                         'media',
                     ])
                     ->when($loadReview, fn($q) => $q->with('review'))
-                    ->when($loadHub, fn($q) => $q->with('hub'))
-                    ->withLikedByAuth();
+                    ->when($loadHub, fn($q) => $q->with('hub'));
             },
         ];
 
         // Only load the top-level author if requested
         if ($loadAuthor) {
             $relations['author'] = function ($q) {
-                $q->with('avatar')->withCount(['followers', 'following', 'posts']);
+                $q->with('avatar')->withCount(['followers', 'following', 'posts', 'reviews']);
             };
         }
 
@@ -141,8 +140,7 @@ class Post extends Model
         }
 
         return $query->with($relations)
-            ->withCount('replies')
-            ->withLikedByAuth();
+            ->withCount('replies');
     }
 
     /**
@@ -162,9 +160,13 @@ class Post extends Model
      */
     public function scopeWithRepliesFeed($query)
     {
-        return $query->with(['author.avatar', 'media'])
+        return $query->with([
+                'author' => function ($q) {
+                    $q->with('avatar')->withCount(['followers', 'following', 'reviews']);
+                },
+                'media'
+            ])
             ->withCount('replies')
-            ->withLikedByAuth()
             ->latest()
             ->orderByDesc('is_pinned');
     }
@@ -186,19 +188,19 @@ class Post extends Model
                 $q->withCount('replies')
                     ->with([
                         'author' => function ($sq) {
-                            $sq->with('avatar'); // No counts
+                            // Eager-load avatar and compact counts to prevent N+1 queries when hovering nested authors
+                            $sq->with('avatar')->withCount(['followers', 'following', 'reviews']);
                         },
                         'media',
                     ])
                     ->when($loadReview, fn($q) => $q->with('review'))
-                    ->when($loadHub, fn($q) => $q->with('hub'))
-                    ->withLikedByAuth();
+                    ->when($loadHub, fn($q) => $q->with('hub'));
             },
         ];
 
         if ($loadAuthor) {
             $relations['author'] = function ($q) {
-                $q->with('avatar'); // No counts for minimal feed
+                $q->with('avatar')->withCount(['followers', 'following', 'reviews']);
             };
         }
 
@@ -211,8 +213,7 @@ class Post extends Model
         }
 
         return $query->with($relations)
-            ->withCount('replies')
-            ->withLikedByAuth();
+            ->withCount('replies');
     }
 
     protected static function booted()
@@ -230,6 +231,46 @@ class Post extends Model
 
             // You can also delete media here if you want to clean up files!
             // if ($post->media) { $post->media()->delete(); }
+        });
+
+        static::saved(function ($post) {
+            \Illuminate\Support\Facades\Cache::forget("post_show_model_{$post->id}");
+            if ($post->parent_id) {
+                \Illuminate\Support\Facades\Cache::forget("post_show_model_{$post->parent_id}");
+                \Illuminate\Support\Facades\Cache::forget("post_{$post->parent_id}_replies_page_1");
+            }
+            \Illuminate\Support\Facades\Cache::forget("user_{$post->user_id}_authored_posts_page_1");
+            \Illuminate\Support\Facades\Cache::forget("user_profile_model_{$post->user_id}");
+            if ($post->hub_type === 'user' && $post->hub_id) {
+                \Illuminate\Support\Facades\Cache::forget("user_{$post->hub_id}_profile_comments_page_1");
+            }
+            \Illuminate\Support\Facades\Cache::forget('home_feed_global_page_1');
+            \Illuminate\Support\Facades\Cache::forget('home_feed_trending_page_1');
+            \Illuminate\Support\Facades\Cache::forget('home_feed_popular_reviews_page_1');
+            if ($post->hub_type === 'game' && $post->hub_id) {
+                \Illuminate\Support\Facades\Cache::forget("game_{$post->hub_id}_reviews_page_1");
+                \Illuminate\Support\Facades\Cache::forget("game_{$post->hub_id}_reviews_count");
+            }
+        });
+
+        static::deleted(function ($post) {
+            \Illuminate\Support\Facades\Cache::forget("post_show_model_{$post->id}");
+            if ($post->parent_id) {
+                \Illuminate\Support\Facades\Cache::forget("post_show_model_{$post->parent_id}");
+                \Illuminate\Support\Facades\Cache::forget("post_{$post->parent_id}_replies_page_1");
+            }
+            \Illuminate\Support\Facades\Cache::forget("user_{$post->user_id}_authored_posts_page_1");
+            \Illuminate\Support\Facades\Cache::forget("user_profile_model_{$post->user_id}");
+            if ($post->hub_type === 'user' && $post->hub_id) {
+                \Illuminate\Support\Facades\Cache::forget("user_{$post->hub_id}_profile_comments_page_1");
+            }
+            \Illuminate\Support\Facades\Cache::forget('home_feed_global_page_1');
+            \Illuminate\Support\Facades\Cache::forget('home_feed_trending_page_1');
+            \Illuminate\Support\Facades\Cache::forget('home_feed_popular_reviews_page_1');
+            if ($post->hub_type === 'game' && $post->hub_id) {
+                \Illuminate\Support\Facades\Cache::forget("game_{$post->hub_id}_reviews_page_1");
+                \Illuminate\Support\Facades\Cache::forget("game_{$post->hub_id}_reviews_count");
+            }
         });
     }
 }

@@ -48,6 +48,11 @@ class FollowController extends Controller
             $status = 'followed'; // Track status for JSON
         }
 
+        \Illuminate\Support\Facades\Cache::forget("user_" . $currentUser->id . "_following_ids");
+        \Illuminate\Support\Facades\Cache::forget("user_" . $user->id . "_following_ids");
+        \Illuminate\Support\Facades\Cache::forget("user_profile_model_{$currentUser->id}");
+        \Illuminate\Support\Facades\Cache::forget("user_profile_model_{$user->id}");
+
         // Return JSON if requested via AJAX
         if ($request->wantsJson()) {
             return response()->json([

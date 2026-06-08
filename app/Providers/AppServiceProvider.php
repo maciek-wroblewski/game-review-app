@@ -31,8 +31,14 @@ class AppServiceProvider extends ServiceProvider
             'playlist' => Playlist::class,
             'user' => User::class,
         ]);
-        Route::bind('user', function (string $value) {
-            return User::where('id', $value)
+        Route::bind('user', function (string $value, $route) {
+            $query = User::query();
+
+            if ($route->allowsTrashedBindings()) {
+                $query->withTrashed();
+            }
+
+            return $query->where('id', $value)
                 ->orWhere('username', $value)
                 ->firstOrFail();
         });

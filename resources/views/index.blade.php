@@ -60,7 +60,7 @@
     <div class="container-xl py-4">
         <!-- 1. HERO CAROUSEL: Top Trending Games -->
         <section class="mb-5">
-            <x-game.trending />
+            <x-game.trending :games="$trendingGames" />
         </section>
 
         <!-- 2. MAIN GRID LAYOUT -->
@@ -133,9 +133,5 @@
                 
             </div>
         </div>
-
-        <!-- Collapsible Media Sandbox (For backwards compatibility/testing media upload) -->
-        <x-media-sandbox />
-
     </div>
 </x-layout>

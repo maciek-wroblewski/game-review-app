@@ -25,11 +25,15 @@
                     <div class="flex-grow-1 d-flex flex-column min-w-0 row-gap-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center gap-2">
-                                <span class="fw-bold small">{{ $post->author->username }}</span>
+                                @if($post->author->trashed())
+                                    <span class="fw-bold small text-muted">{{ __('users.deleted_user') }}</span>
+                                @else
+                                    <span class="fw-bold small">{{ $post->author->username }}</span>
+                                @endif
                                 <span class="text-muted small" style="font-size: 0.75rem;">{{ $post->created_at->diffForHumans() }}</span>
                             </div>
                             <div class="d-flex align-items-center gap-2">
-                                @if($post->author)
+                                @if($post->author && !$post->author->trashed())
                                     <x-follow-button :target-user="$post->author" />
                                 @endif
                                 <x-post.menu :post="$post" />
@@ -60,7 +64,7 @@
         {{-- 2. Replies / Actions (Outside the background container so it doesn't stretch!) --}}
         <div class="position-relative w-100">
             <x-post.reply-container :post="$post">
-                <x-post.comment-create :hubType="$post->hubable_type ?? $post->hub_type"
+                <x-post.create-form :hubType="$post->hubable_type ?? $post->hub_type"
                     :hubId="$post->hubable_id ?? $post->hub_id" :parentId="$post->id" />
             </x-post.reply-container>
 

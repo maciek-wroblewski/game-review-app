@@ -59,4 +59,5 @@ return [
     'what_users_think' => 'What users think of :username',
     'profile_private' => 'This profile is private.',
     'recent_posts' => 'Recent Posts',
+    'deleted_user' => 'Deleted User',
 ];

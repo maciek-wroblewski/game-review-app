@@ -26,8 +26,30 @@ class Card extends Component
         $this->interactive = $interactive;
         $this->isCompact = $layout === 'compact';
 
-        // Prefer preloaded counts from controller (set via withCount)
-        // Fall back to existing attributes if set, otherwise default to 0 to avoid per-user DB queries
+        // Lazy-load counts only if they are not already preloaded (to avoid N+1 queries in feeds)
+        $countsToLoad = [];
+        if (!array_key_exists('reviews_count', $user->getAttributes())) {
+            $countsToLoad[] = 'reviews';
+        }
+        if (!array_key_exists('followers_count', $user->getAttributes())) {
+            $countsToLoad[] = 'followers';
+        }
+        if (!array_key_exists('following_count', $user->getAttributes())) {
+            $countsToLoad[] = 'following';
+        }
+        if (!$this->isCompact) {
+            if (!array_key_exists('posts_count', $user->getAttributes())) {
+                $countsToLoad[] = 'posts';
+            }
+            if (!array_key_exists('playlists_count', $user->getAttributes())) {
+                $countsToLoad[] = 'playlists';
+            }
+        }
+
+        if (!empty($countsToLoad)) {
+            $user->loadCount($countsToLoad);
+        }
+
         $this->reviewsCount = $user->reviews_count ?? 0;
         $this->followersCount = $user->followers_count ?? 0;
         $this->followingCount = $user->following_count ?? 0;

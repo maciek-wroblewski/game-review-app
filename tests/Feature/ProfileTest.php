@@ -65,7 +65,8 @@ test('user can delete their account', function () {
         ->assertRedirect('/');
 
     $this->assertGuest();
-    $this->assertNull($user->fresh());
+    $this->assertTrue($user->fresh()->trashed());
+    $this->assertNull(User::find($user->id));
 });
 
 test('correct password must be provided to delete account', function () {
@@ -83,4 +84,33 @@ test('correct password must be provided to delete account', function () {
         ->assertRedirect('/profile');
 
     $this->assertNotNull($user->fresh());
+});
+
+test('viewing a deleted user returns the deleted view instead of a 404', function () {
+    $user = User::factory()->create([
+        'username' => 'deleteduser',
+    ]);
+    
+    $user->delete();
+    
+    $response = $this->get('/users/deleteduser');
+    
+    $response->assertStatus(200);
+    $response->assertViewIs('users.deleted');
+});
+
+test('viewing a deleted user sub-pages returns the deleted view instead of a 404', function () {
+    $user = User::factory()->create([
+        'username' => 'deleteduser',
+    ]);
+    
+    $user->delete();
+    
+    $subpages = ['followers', 'following', 'playlists', 'reviews', 'posts'];
+    
+    foreach ($subpages as $subpage) {
+        $response = $this->get("/users/deleteduser/{$subpage}");
+        $response->assertStatus(200);
+        $response->assertViewIs('users.deleted');
+    }
 });

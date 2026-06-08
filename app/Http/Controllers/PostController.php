@@ -17,9 +17,11 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Concerns\HasPaginatedResponses;
 
+use App\Http\Controllers\Concerns\HasSidebarWidgets;
+
 class PostController extends Controller
 {
-    use HasPaginatedResponses;
+    use HasPaginatedResponses, HasSidebarWidgets;
     /**
      * Display a listing of top-level posts (Feed).
      */
@@ -34,7 +36,7 @@ class PostController extends Controller
 
         $filter = $request->query('filter', 'latest');
 
-        // Context filter: Is it a specific Hub? (e.g., Playlist or Profile view)
+        // Context filter: Is it a specific Hub? (e.g., Profile view)
         if ($request->filled('hub_type') && $request->filled('hub_id')) {
             $posts = Post::query()
                 ->withFeedRelations()
@@ -42,30 +44,41 @@ class PostController extends Controller
                 ->where('hub_type', $request->input('hub_type'))
                 ->where('hub_id', $request->input('hub_id'))
                 ->latest()
-                ->paginate(10);
+                ->simplePaginate(10);
         } elseif ($filter === 'trending') {
-            $posts = Post::query()
-                ->withFeedRelations()
-                ->whereNull('parent_id')
-                ->withCount('replies')
-                ->orderByRaw('(likes_count + replies_count) DESC')
-                ->latest()
-                ->paginate(10);
+            $posts = Cache::remember("home_feed_trending_page_" . $request->get('page', 1), 600, function() {
+                return Post::query()
+                    ->whereNull('parent_id')
+                    ->withFeedRelations()
+                    ->withCount('replies')
+                    ->orderByRaw('(likes_count + replies_count) DESC')
+                    ->latest()
+                    ->simplePaginate(10);
+            });
         } elseif ($filter === 'reviews') {
-            $posts = Post::query()
-                ->withFeedRelations()
-                ->whereNull('parent_id')
-                ->has('review')
-                ->latest()
-                ->paginate(10);
+            $posts = Cache::remember("home_feed_popular_reviews_page_" . $request->get('page', 1), 600, function() {
+                return Post::query()
+                    ->whereNull('parent_id')
+                    ->has('review')
+                    ->withFeedRelations()
+                    ->whereHas('review', function ($q) {
+                        $q->where('rating', '>=', 4);
+                    })
+                    ->latest()
+                    ->simplePaginate(10);
+            });
         } else {
             // Default: latest global feed
-            $posts = Post::query()
-                ->withFeedRelations()
-                ->whereNull('parent_id')
-                ->latest()
-                ->paginate(10);
+            $posts = Cache::remember("home_feed_global_page_" . $request->get('page', 1), 600, function() {
+                return Post::query()
+                    ->whereNull('parent_id')
+                    ->withFeedRelations()
+                    ->latest()
+                    ->simplePaginate(10);
+            });
         }
+
+        $this->setLikedByAuthForPosts($posts);
 
         if ($request->ajax()) {
             return $this->ajaxFeed($posts, array_filter([
@@ -75,26 +88,10 @@ class PostController extends Controller
             ]));
         }
 
-        // Sidebar widgets (shared with home page)
-        $topGames = Cache::remember('home_top_games', 3600, function () {
-            return Game::query()
-                ->withCount(['posts as reviews_count' => function ($query) {
-                    $query->has('review');
-                }])
-                ->orderBy('average_rating', 'desc')
-                ->take(5)
-                ->get();
-        });
-
-        $activeUsers = Cache::remember('home_active_users', 3600, function () {
-            return User::query()
-                ->with('avatar')
-                ->withCount(['posts', 'followers'])
-                ->orderBy('followers_count', 'desc')
-                ->orderBy('posts_count', 'desc')
-                ->take(5)
-                ->get();
-        });
+        // Fetch unified sidebar widgets from cache
+        $sidebarData = $this->getSidebarWidgetsData();
+        $topGames = $sidebarData['top_games'];
+        $activeUsers = $sidebarData['active_users'];
 
         if (auth()->check()) {
             $followingIds = auth()->user()->following()->pluck('users.id')->toArray();
@@ -103,7 +100,16 @@ class PostController extends Controller
             }
         }
 
-        return view('posts.index', compact('posts', 'topGames', 'activeUsers'));
+        // Cache community stats for guest & member views
+        $postsCount = Cache::remember('community_posts_count', 3600, function () {
+            return Post::whereNull('parent_id')->count();
+        });
+
+        $usersCount = Cache::remember('community_users_count', 3600, function () {
+            return User::count();
+        });
+
+        return view('posts.index', compact('posts', 'topGames', 'activeUsers', 'postsCount', 'usersCount'));
     }
 
     /**
@@ -229,18 +235,51 @@ class PostController extends Controller
             return view('posts.deleted');
         }
 
-        $post->loadCount('replies');
-        $this->loadPostRelations($post);
+        // 1. Cache the user-agnostic post details
+        $post = Cache::remember("post_show_model_{$post->id}", 3600, function() use ($post) {
+            $post->loadCount('replies');
+            $post->load('parent');
+            
+            $postsToLoad = new \Illuminate\Database\Eloquent\Collection([$post]);
+            if ($post->parent) {
+                $postsToLoad->push($post->parent);
+            }
+
+            $postsToLoad->load([
+                'author' => function ($q) {
+                    $q->with('avatar')->withCount(['followers', 'following', 'reviews']);
+                },
+                'media',
+                'review',
+                'hub'
+            ]);
+
+            if ($post->parent) {
+                $post->parent->loadCount('replies');
+            }
+            return $post;
+        });
+
+        // 2. Set liked status dynamically in memory for the main post and parent
+        $this->setLikedByAuthForPosts($post);
+
         Log::info("User " . auth()->id() . " viewed Post {$post->id}");
 
         if ($request->ajax()) {
             return view('components.post', compact('post'))->render();
         }
 
-        $replies = $post->replies()
-            ->withRepliesFeed()
-            ->paginate(10)
-            ->withPath(url("/posts/{$post->id}/replies"));
+        // 3. Cache the replies paginator
+        $page = $request->get('page', 1);
+        $replies = Cache::remember("post_{$post->id}_replies_page_{$page}", 3600, function() use ($post) {
+            return $post->replies()
+                ->withRepliesFeed()
+                ->simplePaginate(10)
+                ->withPath(url("/posts/{$post->id}/replies"));
+        });
+
+        // 4. Set replies liked status dynamically in memory (1 query bulk)
+        $this->setLikedByAuthForPosts($replies);
 
         return view('posts.show', compact('post', 'replies'));
     }
@@ -299,7 +338,14 @@ class PostController extends Controller
             $postsToLoad->push($post->parent);
         }
 
-        $postsToLoad->load(['author.avatar', 'media', 'review', 'hub']);
+        $postsToLoad->load([
+            'author' => function ($q) {
+                $q->with('avatar')->withCount(['followers', 'following', 'reviews']);
+            },
+            'media',
+            'review',
+            'hub'
+        ]);
 
         if ($post->parent) {
             $post->parent->loadCount('replies');
@@ -376,7 +422,7 @@ class PostController extends Controller
     {
         $replies = $post->replies()
             ->withRepliesFeed()
-            ->paginate(10);
+            ->simplePaginate(10);
 
         return $this->ajaxFeed($replies, [], 'components.post.replies-items', 'replies');
     }

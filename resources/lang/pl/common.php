@@ -36,6 +36,7 @@ return [
     'pinned_post' => 'Przypięty post',
     'author_suspended' => 'Autor zawieszony',
     'this_post_has_been_deleted' => '[Ten post został usunięty]',
+    'this_user_has_been_deleted' => '[Ten użytkownik został usunięty]',
     'admin_moderation_mode' => 'TRYB MODERACJI ADMINISTRATORA',
     'edit_profile' => 'Edytuj profil',
     'account_suspended' => 'Konto zawieszone',

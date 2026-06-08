@@ -34,6 +34,10 @@ class GameReviewController extends Controller
             'rating' => $validated['rating'],
         ]);
 
+        \Illuminate\Support\Facades\Cache::forget("game_{$game->id}_reviews_page_1");
+        \Illuminate\Support\Facades\Cache::forget("game_{$game->id}_reviews_count");
+        \Illuminate\Support\Facades\Cache::forget("game_show_model_{$game->id}");
+
         return redirect('/games/' . $game->id)->with('success', __('common.review_submitted'));
     }
 
@@ -58,6 +62,11 @@ class GameReviewController extends Controller
             'body' => $validated['body'],
         ]);
 
+        $gameId = $review->game->id;
+        \Illuminate\Support\Facades\Cache::forget("game_{$gameId}_reviews_page_1");
+        \Illuminate\Support\Facades\Cache::forget("game_{$gameId}_reviews_count");
+        \Illuminate\Support\Facades\Cache::forget("game_show_model_{$gameId}");
+
         return redirect('/games/' . $review->game->id)->with('success', __('common.review_updated'));
     }
 
@@ -67,6 +76,10 @@ class GameReviewController extends Controller
 
         $gameId = $review->game->id;
         $review->delete();
+
+        \Illuminate\Support\Facades\Cache::forget("game_{$gameId}_reviews_page_1");
+        \Illuminate\Support\Facades\Cache::forget("game_{$gameId}_reviews_count");
+        \Illuminate\Support\Facades\Cache::forget("game_show_model_{$gameId}");
 
         return redirect('/games/' . $gameId)->with('success', __('common.review_deleted'));
     }

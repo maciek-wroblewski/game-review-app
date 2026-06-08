@@ -9,9 +9,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Concerns\HasPaginatedResponses;
 
+use App\Http\Controllers\Concerns\HasSidebarWidgets;
+
 class HomeController extends Controller
 {
-    use HasPaginatedResponses;
+    use HasPaginatedResponses, HasSidebarWidgets;
 
     /**
      * Display the home page with tabs and sidebar widgets.
@@ -27,17 +29,19 @@ class HomeController extends Controller
 
         // Fetch posts depending on current tab
         if ($tab === 'my_feed' && auth()->check()) {
-            $followingIds = auth()->user()->following()->pluck('users.id');
+            $followingIds = Cache::remember("user_" . auth()->id() . "_following_ids", 3600, function() {
+                return auth()->user()->following()->pluck('users.id');
+            });
             if ($followingIds->isNotEmpty()) {
                 $posts = Post::query()
                     ->whereNull('parent_id')
                     ->whereIn('user_id', $followingIds)
                     ->withFeedRelations()
                     ->latest()
-                    ->paginate(10);
+                    ->simplePaginate(10);
             } else {
                 // Return an empty paginator if they follow no one
-                $posts = new \Illuminate\Pagination\LengthAwarePaginator(collect(), 0, 10);
+                $posts = new \Illuminate\Pagination\Paginator(collect(), 10);
             }
         } elseif ($tab === 'trending') {
             $posts = Cache::remember("home_feed_trending_page_" . $request->get('page', 1), 600, function() {
@@ -47,7 +51,7 @@ class HomeController extends Controller
                     ->withCount('replies')
                     ->orderByRaw('(likes_count + replies_count) DESC')
                     ->latest()
-                    ->paginate(10);
+                    ->simplePaginate(10);
             });
         } elseif ($tab === 'popular_reviews') {
             $posts = Cache::remember("home_feed_popular_reviews_page_" . $request->get('page', 1), 600, function() {
@@ -59,41 +63,31 @@ class HomeController extends Controller
                         $q->where('rating', '>=', 4);
                     })
                     ->latest()
-                    ->paginate(10);
+                    ->simplePaginate(10);
             });
         } else {
             // Global feed
-            $posts = Post::query()
-                ->whereNull('parent_id')
-                ->withFeedRelations()
-                ->latest()
-                ->paginate(10);
+            $posts = Cache::remember("home_feed_global_page_" . $request->get('page', 1), 600, function() {
+                return Post::query()
+                    ->whereNull('parent_id')
+                    ->withFeedRelations()
+                    ->latest()
+                    ->simplePaginate(10);
+            });
         }
+
+        // Set liked by auth dynamically to enable caching of the queries
+        $this->setLikedByAuthForPosts($posts);
 
         if ($request->ajax()) {
             return $this->ajaxFeed($posts, ['tab' => $tab]);
         }
 
-        // Cache heavy sidebar/global widgets
-        $topGames = Cache::remember('home_top_games', 3600, function () {
-            return Game::query()
-                ->withCount(['posts as reviews_count' => function ($query) {
-                    $query->has('review');
-                }])
-                ->orderBy('average_rating', 'desc')
-                ->take(5)
-                ->get();
-        });
-
-        $activeUsers = Cache::remember('home_active_users', 3600, function () {
-            return User::query()
-                ->with('avatar')
-                ->withCount(['posts', 'followers'])
-                ->orderBy('followers_count', 'desc')
-                ->orderBy('posts_count', 'desc')
-                ->take(5)
-                ->get();
-        });
+        // Fetch unified sidebar widgets from cache
+        $sidebarData = $this->getSidebarWidgetsData();
+        $topGames = $sidebarData['top_games'];
+        $activeUsers = $sidebarData['active_users'];
+        $trendingGames = $sidebarData['trending_games'];
 
         // Calculate following status dynamically outside the cache
         if (auth()->check()) {
@@ -108,6 +102,6 @@ class HomeController extends Controller
             ? auth()->user()->playlists()->withCount('games')->where('is_system', true)->get()
             : collect();
 
-        return view('index', compact('posts', 'topGames', 'activeUsers', 'playlists', 'tab'));
+        return view('index', compact('posts', 'topGames', 'activeUsers', 'playlists', 'tab', 'trendingGames'));
     }
 }

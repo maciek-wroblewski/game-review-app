@@ -110,7 +110,7 @@
 
         <x-post.reply-container :post="$post">
             @if(!$post->is_locked && !$post->admin_locked)
-            <x-post.comment-create :hubType="$post->hubable_type ?? $post->hub_type"
+            <x-post.create-form :hubType="$post->hubable_type ?? $post->hub_type"
                 :hubId="$post->hubable_id ?? $post->hub_id" :parentId="$post->id" />
             @endif
         </x-post.reply-container>

@@ -41,17 +41,24 @@ class PlaylistController extends Controller
             $users[] = auth()->id();
         }
         $playlist->users()->attach($users);
+        foreach ($users as $userId) {
+            \Illuminate\Support\Facades\Cache::forget("user_profile_model_{$userId}");
+        }
         Log::info('Created playlist: '.$playlist->name.' (ID: '.$playlist->id.') by '.(auth()->check() ? auth()->user()->username : 'guest'));
         return redirect("/playlists/{$playlist->id}")->with('success', __('common.playlist_created'));
     }
 
     public function show(Request $request, Playlist $playlist)
     {
-        $playlist->load('users')->loadCount('games');
+        $playlist = \Illuminate\Support\Facades\Cache::remember("playlist_show_model_{$playlist->id}", 3600, function() use ($playlist) {
+            $playlist->load('users')->loadCount('games');
+            return $playlist;
+        });
 
         $games = $playlist->games()
-            ->with(['genres', 'credits'])
-            ->paginate(12, ['*'], 'games_page');
+            ->with(['genres', 'credits:id,username'])
+            ->withCount('reviews')
+            ->simplePaginate(12, ['*'], 'games_page');
 
         $posts = Post::query()
             ->where('hub_type', 'playlist')
@@ -59,7 +66,7 @@ class PlaylistController extends Controller
             ->whereNull('parent_id')
             ->latest()
             ->withFeedRelations(['hub' => false, 'review' => false]) 
-            ->paginate(10, ['*'], 'posts_page');
+            ->simplePaginate(10, ['*'], 'posts_page');
 
         $posts->getCollection()->each(function ($post) use ($playlist) {
             $post->setRelation('hub', $playlist);
@@ -70,6 +77,8 @@ class PlaylistController extends Controller
                 $post->parent->setRelation('review', null);
             }
         });
+
+        $this->setLikedByAuthForPosts($posts);
 
         if ($request->ajax()) {
             if ($request->has('games_page')) {
@@ -125,6 +134,7 @@ class PlaylistController extends Controller
             }
             $playlist->users()->sync($users);
         }
+        \Illuminate\Support\Facades\Cache::forget("playlist_show_model_{$playlist->id}");
         Log::info('Updated playlist: '.$playlist->name.' (ID: '.$playlist->id.') by '.(auth()->check() ? auth()->user()->username : 'guest'));
         return redirect("/playlists/{$playlist->id}")->with('success', __('common.playlist_updated'));
     }
@@ -135,11 +145,18 @@ class PlaylistController extends Controller
             abort(403);
         }
 
+        $userIds = $playlist->users->pluck('id')->toArray();
+
         if ($playlist->cover) {
             Storage::disk('public')->delete($playlist->cover);
         }
 
         $playlist->delete();
+
+        foreach ($userIds as $userId) {
+            \Illuminate\Support\Facades\Cache::forget("user_profile_model_{$userId}");
+        }
+
         Log::info('Deleted playlist: '.$playlist->name.' (ID: '.$playlist->id.') by '.(auth()->check() ? auth()->user()->username : 'guest'));
         return redirect('/users/' . auth()->id() . '/playlists')->with('success', __('common.playlist_deleted'));
     }

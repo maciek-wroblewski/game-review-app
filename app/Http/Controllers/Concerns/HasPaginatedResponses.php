@@ -71,4 +71,45 @@ trait HasPaginatedResponses
             'next_page_url' => $paginatorData->nextPageUrl(),
         ]);
     }
+
+    /**
+     * Set liked_by_auth attribute for posts in bulk to avoid subquery overhead and allow caching.
+     */
+    protected function setLikedByAuthForPosts($posts)
+    {
+        $isSingle = $posts instanceof \App\Models\Post;
+        $postsCollection = $isSingle ? collect([$posts]) : $posts;
+
+        if (auth()->check()) {
+            $postIds = collect();
+            foreach ($postsCollection as $post) {
+                $postIds->push($post->id);
+                if ($post->relationLoaded('parent') && $post->parent) {
+                    $postIds->push($post->parent->id);
+                }
+            }
+            
+            $likedPostIds = \Illuminate\Support\Facades\DB::table('likes')
+                ->where('user_id', auth()->id())
+                ->where('likeable_type', (new \App\Models\Post)->getMorphClass())
+                ->whereIn('likeable_id', $postIds->filter()->unique())
+                ->pluck('likeable_id')
+                ->toArray();
+
+            foreach ($postsCollection as $post) {
+                $post->setAttribute('liked_by_auth', in_array($post->id, $likedPostIds));
+                if ($post->relationLoaded('parent') && $post->parent) {
+                    $post->parent->setAttribute('liked_by_auth', in_array($post->parent->id, $likedPostIds));
+                }
+            }
+        } else {
+            foreach ($postsCollection as $post) {
+                $post->setAttribute('liked_by_auth', false);
+                if ($post->relationLoaded('parent') && $post->parent) {
+                    $post->parent->setAttribute('liked_by_auth', false);
+                }
+            }
+        }
+        return $posts;
+    }
 }

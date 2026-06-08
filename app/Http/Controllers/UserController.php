@@ -26,36 +26,58 @@ class UserController extends Controller
 
     public function show(Request $request, User $user)
     {
-        // Preload all counts in a single batch query
-        $user->loadCount(['followers', 'following', 'playlists', 'posts', 'reviews'])
-             ->load(['settings', 'avatar']);
+        if ($user->trashed()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'message' => __('common.this_user_has_been_deleted'),
+                    'success' => false
+                ], 404);
+            }
+            return view('users.deleted');
+        }
+
+        // Preload all counts in a single batch query and cache it
+        $user = \Illuminate\Support\Facades\Cache::remember("user_profile_model_{$user->id}", 3600, function() use ($user) {
+            $user->loadCount(['followers', 'following', 'playlists', 'posts', 'reviews'])
+                 ->load(['settings', 'avatar']);
+            return $user;
+        });
 
         if (! $user->canViewProfile(Auth::user())) {
             return view('users.private', compact('user'));
         }
 
         // 1. Authored Posts
-        $posts = Post::where('user_id', $user->id)
-            ->latest()
-            ->withFeedRelations(['author' => false])
-            ->paginate(3, ['*'], 'posts_page');
+        $postsPage = $request->get('posts_page', 1);
+        $posts = \Illuminate\Support\Facades\Cache::remember("user_{$user->id}_authored_posts_page_{$postsPage}", 3600, function() use ($user) {
+            return Post::where('user_id', $user->id)
+                ->latest()
+                ->withFeedRelations(['author' => false])
+                ->simplePaginate(3, ['*'], 'posts_page');
+        });
 
         $posts->getCollection()->each(fn($post) => $post->setRelation('author', $user));
 
         // 2. Profile Comments
-        $comments = Post::query()
-            ->where('hub_type', 'user')
-            ->where('hub_id', $user->id)
-            ->whereNull('parent_id')
-            ->orderByDesc('is_pinned')
-            ->latest()
-            ->withFeedRelations(['hub' => false, 'review' => false]) 
-            ->paginate(3, ['*'], 'comments_page');
+        $commentsPage = $request->get('comments_page', 1);
+        $comments = \Illuminate\Support\Facades\Cache::remember("user_{$user->id}_profile_comments_page_{$commentsPage}", 3600, function() use ($user) {
+            return Post::query()
+                ->where('hub_type', 'user')
+                ->where('hub_id', $user->id)
+                ->whereNull('parent_id')
+                ->orderByDesc('is_pinned')
+                ->latest()
+                ->withFeedRelations(['hub' => false, 'review' => false]) 
+                ->simplePaginate(3, ['*'], 'comments_page');
+        });
 
         $comments->getCollection()->each(function ($comment) use ($user) {
             $comment->setRelation('hub', $user);
             $comment->setRelation('review', null); 
         });
+
+        $this->setLikedByAuthForPosts($posts);
+        $this->setLikedByAuthForPosts($comments);
 
         // 3. Handle AJAX Requests
         if ($request->ajax()) {
@@ -74,10 +96,20 @@ class UserController extends Controller
 
     public function followers(Request $request, User $user)
     {
+        if ($user->trashed()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'message' => __('common.this_user_has_been_deleted'),
+                    'success' => false
+                ], 404);
+            }
+            return view('users.deleted');
+        }
+
         $connections = $user->followers()
             ->withCompactCounts()
             ->latest()
-            ->paginate(20);
+            ->simplePaginate(20);
 
         if ($request->ajax()) {
             return $this->ajaxCardGrid($connections, 'components.user.card', 'user', ['layout' => 'compact']);
@@ -88,10 +120,20 @@ class UserController extends Controller
 
     public function following(Request $request, User $user)
     {
+        if ($user->trashed()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'message' => __('common.this_user_has_been_deleted'),
+                    'success' => false
+                ], 404);
+            }
+            return view('users.deleted');
+        }
+
         $connections = $user->following()
             ->withCompactCounts()
             ->latest()
-            ->paginate(20);
+            ->simplePaginate(20);
 
         if ($request->ajax()) {
             return $this->ajaxCardGrid($connections, 'components.user.card', 'user', ['layout' => 'compact']);
@@ -102,11 +144,21 @@ class UserController extends Controller
 
     public function playlists(Request $request, User $user)
     {
+        if ($user->trashed()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'message' => __('common.this_user_has_been_deleted'),
+                    'success' => false
+                ], 404);
+            }
+            return view('users.deleted');
+        }
+
         $playlists = $user->playlists()
             ->with('users')
             ->withCount('games')
             ->latest()
-            ->paginate(6);
+            ->simplePaginate(6);
 
         if ($request->ajax()) {
             return $this->ajaxCardGrid($playlists, 'components.playlist.card', 'playlist', ['layout' => 'compact'], false);
@@ -117,11 +169,21 @@ class UserController extends Controller
 
     public function reviews(Request $request, User $user)
     {
+        if ($user->trashed()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'message' => __('common.this_user_has_been_deleted'),
+                    'success' => false
+                ], 404);
+            }
+            return view('users.deleted');
+        }
+
         $posts = $user->reviews()
             ->withFeedRelations(['author' => false])
             ->orderByDesc('is_pinned')
             ->latest()
-            ->paginate(5);
+            ->simplePaginate(5);
 
         // Set the author relation to the already-loaded profile user to avoid N+1
         $posts->getCollection()->each(fn($post) => $post->setRelation('author', $user));
@@ -135,10 +197,20 @@ class UserController extends Controller
 
     public function posts(Request $request, User $user)
     {
+        if ($user->trashed()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'message' => __('common.this_user_has_been_deleted'),
+                    'success' => false
+                ], 404);
+            }
+            return view('users.deleted');
+        }
+
         $posts = $user->posts()
             ->latest()
             ->withFeedRelations(['author' => false, 'review' => false])
-            ->paginate(10);
+            ->simplePaginate(10);
 
         // Set the author relation to the already-loaded profile user to avoid N+1
         $posts->getCollection()->each(function ($post) use ($user) {

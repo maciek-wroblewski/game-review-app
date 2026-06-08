@@ -24,8 +24,8 @@ class SearchController extends Controller
         }
 
         $games = Game::where('title', 'like', "%{$query}%")
-            ->with(['genres', 'credits'])
-            ->withCount('posts')
+            ->with(['genres', 'credits:id,username'])
+            ->withCount('reviews')
             ->orderBy('title', 'asc')
             ->paginate(12, ['*'], 'page_games')
             ->appends(['q' => $query]);

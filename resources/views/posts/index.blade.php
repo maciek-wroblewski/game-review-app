@@ -130,11 +130,11 @@
                 {{-- Live stat pills --}}
                 <div class="d-flex gap-2 flex-wrap">
                     <div class="community-hero-stat text-center">
-                        <div class="text-white fw-bold fs-5 lh-1 mb-1">{{ \App\Models\Post::whereNull('parent_id')->count() }}</div>
+                        <div class="text-white fw-bold fs-5 lh-1 mb-1">{{ $postsCount }}</div>
                         <div class="text-white-50 small">{{ __('posts.title') }}</div>
                     </div>
                     <div class="community-hero-stat text-center">
-                        <div class="text-white fw-bold fs-5 lh-1 mb-1">{{ \App\Models\User::count() }}</div>
+                        <div class="text-white fw-bold fs-5 lh-1 mb-1">{{ $usersCount }}</div>
                         <div class="text-white-50 small">{{ __('home.top_reviewers') }}</div>
                     </div>
                 </div>

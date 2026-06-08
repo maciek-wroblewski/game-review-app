@@ -135,10 +135,14 @@ return [
         App\Models\Review::class,
         App\Models\Comment::class,
         App\Models\Media::class,
+        App\Models\UserSetting::class,
+        App\Models\Notification::class,
 
         // Laravel Core Database & Pagination Classes
         \Illuminate\Database\Eloquent\Collection::class,
         \Illuminate\Pagination\LengthAwarePaginator::class,
+        \Illuminate\Pagination\Paginator::class,
+        \Illuminate\Support\Collection::class,
         \Illuminate\Database\Eloquent\Relations\Pivot::class,
 
         \Illuminate\Support\Carbon::class,
