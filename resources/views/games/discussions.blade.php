@@ -33,7 +33,7 @@
                         {{ __('reviews.discussions') }}
                         <span class="text-muted fs-5 fw-normal">({{ $game->posts_count }})</span>
                     </h3>
-                    <a href="/games/{{ $game->id }}" class="btn btn-outline-secondary">
+                    <a href="/games/{{ $game->id }}" class="btn btn-outline-secondary btn-sm">
                         <i class="bi bi-arrow-left me-1"></i> {{ __('reviews.back_to_reviews') }}
                     </a>
                 </div>

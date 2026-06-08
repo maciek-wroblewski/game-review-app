@@ -115,6 +115,28 @@ class User extends Authenticatable
         return $this->mutuals()->where('users.id', $targetUser->id)->exists();
     }
 
+    protected $followingIdsCache = null;
+
+    public function isFollowingUser(int $targetUserId): bool
+    {
+        if ($this->followingIdsCache === null) {
+            $this->followingIdsCache = \Illuminate\Support\Facades\Cache::remember(
+                "user_{$this->id}_following_ids",
+                3600,
+                function() {
+                    return $this->following()->pluck('users.id');
+                }
+            );
+        }
+
+        $cache = $this->followingIdsCache;
+        if ($cache instanceof \Illuminate\Support\Collection) {
+            return $cache->contains($targetUserId);
+        }
+
+        return in_array($targetUserId, (array) $cache);
+    }
+
     // --- Likes ---
     public function likedPosts()
     {

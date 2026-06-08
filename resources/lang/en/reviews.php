@@ -18,4 +18,5 @@ return [
     'back_to_reviews' => 'Back to Reviews',
     'community_discussions' => 'Community Discussions',
     'discussions' => 'Discussions',
+    'user_review' => 'Your Review',
 ];

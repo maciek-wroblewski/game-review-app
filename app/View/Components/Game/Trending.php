@@ -21,7 +21,7 @@ class Trending extends Component
      */
     public static function getTrendingGames(): Collection
     {
-        return Cache::remember('trending_games_v3_records', now()->addHour(), function () {
+        return Cache::remember('trending_games_v3_records', now()->addDay(), function () {
             $scores = self::calculateTrendingScores();
 
             if (empty($scores)) {

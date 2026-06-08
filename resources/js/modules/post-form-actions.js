@@ -288,18 +288,9 @@ export default class PostFormActions {
                                         placeholders.forEach(el => el.remove());
                                     } else {
                                         // Top-level post
-                                        let container = null;
-                                        if (card.dataset.hubType && card.dataset.hubId) {
-                                            container = document.getElementById(`hub-posts-feed-${card.dataset.hubType}-${card.dataset.hubId}`);
-                                        }
+                                        let container = card.closest('.hub-comments-wrapper')?.querySelector('.js-post-list-container');
                                         if (!container) {
-                                            container = document.getElementById('post-container');
-                                        }
-                                        if (!container) {
-                                            container = document.getElementById('user-posts-container');
-                                        }
-                                        if (!container) {
-                                            container = document.querySelector('.post-list-wrapper [id]');
+                                            container = document.querySelector('.js-post-list-container');
                                         }
 
                                         if (container) {

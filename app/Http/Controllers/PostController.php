@@ -300,7 +300,7 @@ class PostController extends Controller
         $this->syncMedia($post, $validated);
 
         if (isset($validated['rating']) && method_exists($post, 'isReview') && $post->isReview()) {
-            $post->review()->update(['rating' => $validated['rating']]);
+            $post->review?->update(['rating' => $validated['rating']]);
         }
 
         $this->loadPostRelations($post);

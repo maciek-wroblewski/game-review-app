@@ -1,4 +1,11 @@
 services:
+    mailpit:
+        image: 'axllent/mailpit:latest'
+        ports:
+            - '${FORWARD_MAILPIT_PORT:-1025}:1025'
+            - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
+        networks:
+            - sail
     laravel.test:
         build:
             context: './vendor/laravel/sail/runtimes/8.5'
@@ -21,7 +28,8 @@ services:
             - '.:/var/www/html'
         networks:
             - sail
-        depends_on: {  }
+        depends_on:
+            - mailpit
 networks:
     sail:
         driver: bridge

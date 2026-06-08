@@ -18,4 +18,5 @@ return [
     'back_to_reviews' => 'Wróć do recenzji',
     'community_discussions' => 'Dyskusje społeczności',
     'discussions' => 'Dyskusje',
+    'user_review' => 'Twoja recenzja',
 ];

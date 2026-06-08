@@ -30,9 +30,8 @@ class ReviewObserver
                     ->join('reviews', 'posts.id', '=', 'reviews.post_id')
                     ->avg('reviews.rating');
 
-                $game->update([
-                    'average_rating' => round($newAverage ?? 0, 2)
-                ]);
+                $game->average_rating = round($newAverage ?? 0, 2);
+                $game->save();
             }
         }
     }

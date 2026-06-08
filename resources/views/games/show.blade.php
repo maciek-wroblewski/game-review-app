@@ -39,6 +39,14 @@
             <!-- Right Column: Reviews -->
             <div class="col-md-8">
                 <!-- Write / Edit Review Form -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="m-0 fw-bold">
+                        {{ __('reviews.user_review') }}
+                    </h3>
+                    <a href="/games/{{ $game->id }}/discussions" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-chat-text me-1"></i> {{ __('reviews.view_discussions') }}
+                    </a>
+                </div>
                 @if($userReviewPost)
                 <x-post :post="$userReviewPost" />
                 @else
@@ -51,9 +59,6 @@
                         {{ __('reviews.player_reviews') }}
                         <span class="text-muted fs-5 fw-normal">({{ $game->reviews_count }})</span>
                     </h3>
-                    <a href="/games/{{ $game->id }}/discussions" class="btn btn-outline-secondary btn-sm">
-                        <i class="bi bi-chat-text me-1"></i> {{ __('reviews.view_discussions') }}
-                    </a>
                 </div>
 
                 <x-post.list :posts="$posts" feedId="game-reviews-container" emptyMessage="{{ __('reviews.no_reviews_yet') }}" />
