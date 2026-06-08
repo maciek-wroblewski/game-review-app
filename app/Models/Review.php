@@ -17,14 +17,10 @@ class Review extends Model
         return $this->belongsTo(Post::class);
     }
 
+
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->post->user();
-    }
-
-    public function getGameAttribute()
-    {
-        return $this->post->hub;
     }
 
     protected static function booted()

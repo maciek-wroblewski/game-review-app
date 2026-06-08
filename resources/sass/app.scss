@@ -1,19 +1,6 @@
 @import url('https://fonts.bunny.net/css?family=Nunito');
 @import 'variables';
 @import '~bootstrap/scss/bootstrap';
-
-// Component styles (extracted from inline @once blocks in Blade components)
-@import '../css/components/follow-button';
-@import '../css/components/like-button';
-@import '../css/components/truncate-text';
-@import '../css/components/lightbox';
-@import '../css/components/media-upload';
-@import 'components/clickable-card';
-@import 'components/media-grid';
-@import 'components/post-edit-form';
-@import 'components/rating-meter';
-@import 'components/spoiler';
-@import 'components/user-avatar';
     
 /* Shared utility class for asynchronous content reveals */
 .animate-fade-in {

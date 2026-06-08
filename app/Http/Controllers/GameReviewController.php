@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreReviewRequest;
-use App\Http\Requests\UpdateReviewRequest;
 use App\Models\Game;
 use App\Models\Review;
 use Illuminate\Http\Request;
@@ -15,13 +13,17 @@ class GameReviewController extends Controller
         return view('reviews.create', compact('game'));
     }
 
-    public function store(StoreReviewRequest $request, Game $game)
+    public function store(Request $request, Game $game)
     {
-        $validated = $request->validated();
-        $userId = auth()->id();
+        $validated = $request->validate([
+            'rating' => 'required|integer|min:1|max:10',
+            'body'   => 'required|string|max:5000',
+        ]);
+
+        $userId = auth()->id() ?? 1;
 
         if ($game->posts()->where('user_id', $userId)->whereHas('review')->exists()) {
-            return back()->withErrors(['rating' => __('common.already_reviewed')]);
+            return back()->withErrors(['rating' => 'You have already reviewed this game.']);
         }
 
         $post = $game->posts()->create([
@@ -34,21 +36,20 @@ class GameReviewController extends Controller
             'rating' => $validated['rating'],
         ]);
 
-        return redirect('/games/' . $game->id)->with('success', __('common.review_submitted'));
+        return redirect('/games/' . $game->id)->with('success', 'Review submitted successfully!');
     }
 
     public function edit(Review $review)
     {
-        $this->authorize('update', $review);
-
         return view('reviews.edit', compact('review'));
     }
 
-    public function update(UpdateReviewRequest $request, Review $review)
+    public function update(Request $request, Review $review)
     {
-        $this->authorize('update', $review);
-
-        $validated = $request->validated();
+        $validated = $request->validate([
+            'rating' => 'required|integer|min:1|max:10',
+            'body'   => 'required|string|max:5000',
+        ]);
 
         $review->update([
             'rating' => $validated['rating'],
@@ -58,16 +59,13 @@ class GameReviewController extends Controller
             'body' => $validated['body'],
         ]);
 
-        return redirect('/games/' . $review->game->id)->with('success', __('common.review_updated'));
+        return redirect('/games/' . $review->game->id)->with('success', 'Review updated successfully!');
     }
 
     public function destroy(Review $review)
     {
-        $this->authorize('delete', $review);
-
-        $gameId = $review->game->id;
-        $review->delete();
-
-        return redirect('/games/' . $gameId)->with('success', __('common.review_deleted'));
+        $review->delete($review->id);
+        
+        return redirect('/games/' . $review->game->id)->with('success', 'Review deleted successfully!');
     }
 }

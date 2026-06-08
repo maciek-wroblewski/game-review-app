@@ -46,7 +46,7 @@
                         <i class="bi bi-chat-left-text-fill text-primary display-5 mb-3"></i>
 
                         <h2 class="fw-bold">
-                            {{ auth()->user()->posts_count ?? auth()->user()->posts->count() }}
+                            {{ auth()->user()->posts->count() }}
                         </h2>
 
                         <p class="text-muted mb-0">
@@ -68,7 +68,7 @@
                         <i class="bi bi-collection-play-fill text-success display-5 mb-3"></i>
 
                         <h2 class="fw-bold">
-                            {{ auth()->user()->playlists_count ?? auth()->user()->playlists->count() }}
+                            {{ auth()->user()->playlists->count() }}
                         </h2>
 
                         <p class="text-muted mb-0">
@@ -90,7 +90,7 @@
                         <i class="bi bi-people-fill text-warning display-5 mb-3"></i>
 
                         <h2 class="fw-bold">
-                            {{ auth()->user()->following_count ?? auth()->user()->following->count() }}
+                            {{ auth()->user()->following->count() }}
                         </h2>
 
                         <p class="text-muted mb-0">

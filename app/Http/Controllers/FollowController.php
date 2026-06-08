@@ -26,11 +26,6 @@ class FollowController extends Controller
 
         if ($isFollowing) {
             $currentUser->following()->detach($user->id);
-            Notification::where([
-                'user_id' => $user->id,
-                'from_user_id' => $currentUser->id,
-                'type' => 'follow',
-            ])->delete();
             $status = 'unfollowed'; // Track status for JSON
             Log::info("User {$currentUser->id} unfollowed User {$user->id}");
         } else {

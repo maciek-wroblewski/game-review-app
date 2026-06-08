@@ -22,18 +22,17 @@ class ReviewObserver
         $post = $review->post;
 
         if ($post && $post->hub_type === 'game' && $post->hub_id) {
-            $game = Game::find($post->hub_id);
-            
-            if ($game) {
-                // Leverage the game model's reviews relation to perform the average calculation
-                $newAverage = $game->reviews()
-                    ->join('reviews', 'posts.id', '=', 'reviews.post_id')
-                    ->avg('reviews.rating');
+            $gameId = $post->hub_id;
 
-                $game->update([
-                    'average_rating' => round($newAverage ?? 0, 2)
-                ]);
-            }
+            // Perform an optimized join instead of whereHas
+            $newAverage = Review::join('posts', 'reviews.post_id', '=', 'posts.id')
+                ->where('posts.hub_id', $gameId)
+                ->where('posts.hub_type', 'game')
+                ->avg('reviews.rating');
+
+            Game::where('id', $gameId)->update([
+                'average_rating' => round($newAverage ?? 0, 2)
+            ]);
         }
     }
 }
