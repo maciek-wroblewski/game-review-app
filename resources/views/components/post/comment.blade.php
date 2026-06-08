@@ -60,7 +60,7 @@
         {{-- 2. Replies / Actions (Outside the background container so it doesn't stretch!) --}}
         <div class="position-relative w-100">
             <x-post.reply-container :post="$post">
-                <x-post.comment-create :hubType="$post->hubable_type ?? $post->hub_type"
+                <x-post.create-form :hubType="$post->hubable_type ?? $post->hub_type"
                     :hubId="$post->hubable_id ?? $post->hub_id" :parentId="$post->id" />
             </x-post.reply-container>
 
