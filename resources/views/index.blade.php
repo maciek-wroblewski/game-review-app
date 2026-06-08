@@ -133,9 +133,5 @@
                 
             </div>
         </div>
-
-        <!-- Collapsible Media Sandbox (For backwards compatibility/testing media upload) -->
-        <x-media-sandbox />
-
     </div>
 </x-layout>
