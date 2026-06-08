@@ -255,7 +255,7 @@
                             @endif
                         </div>
                         <p class="game-description animate-in delay-1">
-                            {{ Str::limit(strip_tags($game->details), 150) }}
+                            {{ Str::limit(strip_tags(Str::markdown($game->details ?? '')), 150) }}
                         </p>
                     </div>
                 </a>

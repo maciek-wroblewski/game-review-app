@@ -51,7 +51,9 @@
                 @endforelse
             </div>
 
-            <p class="card-text text-muted">{{ $game->details }}</p>
+            <div class="card-text text-muted">
+                {!! Str::markdown($game->details ?? '') !!}
+            </div>
 
             @if($playlists->count() > 0)
             <hr class="mt-4 mb-3">

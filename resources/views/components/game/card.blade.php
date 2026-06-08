@@ -41,7 +41,7 @@
 
             <!-- Description -->
             <p class="card-text text-secondary small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                {{ $game->details }}
+                {{ Str::limit(strip_tags(Str::markdown($game->details ?? '')), 120) }}
             </p>
 
             <!-- Genres -->
