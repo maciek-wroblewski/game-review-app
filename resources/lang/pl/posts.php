@@ -65,6 +65,7 @@ return [
     
     // Posts index
     'global_timeline' => 'Globalna oś czasu',
+    'global_timeline_description' => 'Odkryj, czym dzieli się społeczność w tej chwili.',
     
     // Post show
     'comments' => 'Komentarze:',
@@ -106,4 +107,6 @@ return [
     'write_post' => 'Napisz post...',
     'post_edit' => 'Edytuj post',
     'media' => 'Media',
+    'click_to_load_replies' => 'Kliknij, aby załadować odpowiedzi',
+    'deleted_post' => 'Usunięty post',
 ];

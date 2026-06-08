@@ -58,4 +58,5 @@ return [
     'latest_thoughts' => 'Latest thoughts and opinions from :username',
     'what_users_think' => 'What users think of :username',
     'profile_private' => 'This profile is private.',
+    'recent_posts' => 'Recent Posts',
 ];

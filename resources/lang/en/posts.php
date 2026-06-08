@@ -64,6 +64,7 @@ return [
     
     // Posts index
     'global_timeline' => 'Global Timeline',
+    'global_timeline_description' => 'Explore what the community is sharing right now.',
     
     // Post show
     'comments' => 'Comments:',
@@ -107,4 +108,6 @@ return [
     'post_edit' => 'Edit Post',
     'media' => 'Media',
     'load_more' => 'Load More',
+    'click_to_load_replies' => 'Click to load replies',
+    'deleted_post' => 'Deleted Post',
 ];

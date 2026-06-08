@@ -22,10 +22,10 @@ class PlaylistGameController extends Controller
 
         // Handle AJAX request
         if (request()->wantsJson()) {
-            return response()->json(['status' => 'success', 'message' => "Game added to {$playlist->name} successfully!"]);
+            return response()->json(['status' => 'success', 'message' => __('common.game_added_to_playlist', ['playlist' => $playlist->name])]);
         }
 
-        return back()->with('success', "Game added to {$playlist->name} successfully!");
+        return back()->with('success', __('common.game_added_to_playlist', ['playlist' => $playlist->name]));
     }
 
     public function destroy(Playlist $playlist, Game $game)
@@ -34,9 +34,9 @@ class PlaylistGameController extends Controller
 
         // Handle AJAX request
         if (request()->wantsJson()) {
-            return response()->json(['status' => 'success', 'message' => "Game removed from {$playlist->name} successfully!"]);
+            return response()->json(['status' => 'success', 'message' => __('common.game_removed_from_playlist', ['playlist' => $playlist->name])]);
         }
 
-        return back()->with('success', "Game removed from {$playlist->name} successfully!");
+        return back()->with('success', __('common.game_removed_from_playlist', ['playlist' => $playlist->name]));
     }
 }

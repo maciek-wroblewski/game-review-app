@@ -1,86 +1,141 @@
 <x-layout headtitle="Home">
-    {{ __('home.hello_bro') }}
+    <style>
+        /* Modern Glassmorphic Dashboard & Tabs Styling */
+        .premium-dashboard-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
 
-   <div class="container mt-4">
-        <!-- The Upload Form -->
-        <form id="mediaUploadForm" enctype="multipart/form-data">
-            @csrf
-            <div class="input-group mb-3">
-                <input type="file" name="file" class="form-control" id="fileInput" required>
-                <button class="btn btn-primary" type="submit" id="uploadBtn">
-                    <span class="spinner-border spinner-border-sm d-none" id="uploadSpinner" role="status" aria-hidden="true"></span>
-                    {{ __('home.upload') }}
-                </button>
+        .premium-dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .premium-tabs {
+            border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .premium-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 600;
+            padding: 0.75rem 1.25rem;
+            position: relative;
+            transition: color 0.2s ease;
+        }
+
+        .premium-tabs .nav-link:hover {
+            color: #0d6efd;
+            background: transparent;
+        }
+
+        .premium-tabs .nav-link.active {
+            color: #0d6efd;
+            background: transparent;
+            border: none;
+        }
+
+        .premium-tabs .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #0d6efd;
+            border-radius: 2px;
+            box-shadow: 0 2px 10px rgba(13, 110, 253, 0.4);
+        }
+
+        .playlist-badge {
+            background-color: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+        }
+    </style>
+
+    <div class="container-xl py-4">
+        <!-- 1. HERO CAROUSEL: Top Trending Games -->
+        <section class="mb-5">
+            <x-game.trending />
+        </section>
+
+        <!-- 2. MAIN GRID LAYOUT -->
+        <div class="row g-4">
+            
+            <!-- LEFT COLUMN: FEEDS & TIMELINES -->
+            <div class="col-lg-8">
+                @auth
+                    <!-- Quick Create Post Widget -->
+                    <div class="mb-4">
+                        <x-post.create-form />
+                    </div>
+                @endauth
+
+                <!-- Feed Navigation Tabs -->
+                <ul class="nav nav-tabs premium-tabs mb-4 gap-2 flex-nowrap overflow-auto pb-1">
+                    @auth
+                        <li class="nav-item">
+                            <a class="nav-link text-nowrap d-flex align-items-center {{ $tab === 'my_feed' ? 'active' : '' }}" href="{{ url('/?tab=my_feed') }}">
+                                <i class="bi bi-people-fill me-1"></i> {{ __('home.my_feed') }}
+                            </a>
+                        </li>
+                    @endauth
+                    <li class="nav-item">
+                        <a class="nav-link text-nowrap d-flex align-items-center {{ $tab === 'global_feed' ? 'active' : '' }}" href="{{ url('/?tab=global_feed') }}">
+                            <i class="bi bi-globe me-1"></i> {{ __('home.global_feed') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-nowrap d-flex align-items-center {{ $tab === 'trending' ? 'active' : '' }}" href="{{ url('/?tab=trending') }}">
+                            <i class="bi bi-fire me-1"></i> {{ __('home.trending_posts') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-nowrap d-flex align-items-center {{ $tab === 'popular_reviews' ? 'active' : '' }}" href="{{ url('/?tab=popular_reviews') }}">
+                            <i class="bi bi-award-fill me-1"></i> {{ __('home.popular_reviews') }}
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Feed Contents -->
+                <div class="feed-container">
+                    @php
+                        $emptyMsg = __('posts.no_posts');
+                        if ($tab === 'my_feed') {
+                            $emptyMsg = __('home.no_feed_posts');
+                        } elseif ($tab === 'popular_reviews') {
+                            $emptyMsg = __('home.no_reviews');
+                        }
+                    @endphp
+
+                    <x-post.list :posts="$posts" feedId="home-posts-feed" :emptyMessage="$emptyMsg" />
+                </div>
             </div>
-        </form>
 
-        <!-- Gallery / Preview Container -->
-        <div id="mediaPreviewGallery" class="row g-2 mt-3">
-            <!-- JavaScript will dynamically inject uploaded images here -->
+            <!-- RIGHT COLUMN: SIDEBAR WIDGETS -->
+            <div class="col-lg-4">
+                
+                <!-- Authenticated User Profile Summary -->
+                @auth
+                    <x-user.home-sidebar-profile />
+                    <x-playlist.home-sidebar-playlists :playlists="$playlists" />
+                @endauth
+
+                <!-- 3. SIDEBAR COMPONENT: Top Rated Games -->
+                <x-game.top-games-sidebar :games="$topGames" />
+
+                <!-- 4. SIDEBAR COMPONENT: Active Reviewers -->
+                <x-user.active-users :users="$activeUsers" />
+                
+            </div>
         </div>
 
-            <script>
-        document.getElementById('mediaUploadForm').addEventListener('submit', async function(e) {
-        e.preventDefault(); // Stop the page from reloading
+        <!-- Collapsible Media Sandbox (For backwards compatibility/testing media upload) -->
+        <x-media-sandbox />
 
-        const form = e.target;
-        const formData = new FormData(form); // Automatically captures the file input data
-        const uploadBtn = document.getElementById('uploadBtn');
-        const spinner = document.getElementById('uploadSpinner');
-        const gallery = document.getElementById('mediaPreviewGallery');
-
-        // 1. Show loading state
-        uploadBtn.disabled = true;
-        spinner.classList.remove('d-none');
-
-        try {
-            // 2. Send request to Laravel backend
-            const response = await fetch("{{ route('upload') }}", {
-                method: "POST",
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest' // Tells Laravel it's an AJAX request
-                }
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                // 3. Success! Handle your media record here
-                const media = data.media;
-                
-                // Example HTML insertion using Bootstrap Cards
-                const mediaHtml = `
-                    <div class="col-md-3 id="media-card-${media.id}">
-                        <div class="card h-100 text-center">
-                            <img src="${media.file_path}" class="card-img-top img-fluid p-2" style="max-height: 150px; object-fit: cover;" alt="Uploaded media">
-                            <div class="card-body p-2">
-                                <input type="hidden" name="media_ids[]" value="${media.id}">
-                                <span class="badge bg-secondary text-truncate style="max-width: 100%">ID: ${media.id}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                // Append new image to your gallery container
-                gallery.insertAdjacentHTML('beforeend', mediaHtml);
-                
-                // Reset the file input field so they can upload another one
-                form.reset();
-            } else {
-                // Handle validation errors from Laravel
-                alert(data.message || '{{ __('home.something_went_wrong_upload') }}');
-            }
-
-        } catch (error) {
-            console.error('Error uploading file:', error);
-            alert('{{ __('home.unexpected_error') }}');
-        } finally {
-            // 4. Reset loading state
-            uploadBtn.disabled = false;
-            spinner.classList.add('d-none');
-        }
-    });
-    </script>
     </div>
 </x-layout>

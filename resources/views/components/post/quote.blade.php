@@ -16,13 +16,13 @@ $height = $post->media->count() > 0 ? '1' : '3';
 
             <div class="d-flex align-items-center gap-2">
 
-                <x-user.avatar :user="$post->author ?? $post->user" layout="compact" :size="'24px'" />
+                <x-user.avatar :user="$post->author" layout="compact" :size="'24px'" />
 
                 <div>
 
                     <div class="fw-semibold small">
 
-                        {{ $post->author->username ?? $post->user->username ?? 'Deleted User' }}
+                        {{ $post->author->username ?? 'Deleted User' }}
                         <span class="text-muted small" style="font-size: 0.75rem;">{{ $post->created_at->diffForHumans() }}</span>
 
                     </div>

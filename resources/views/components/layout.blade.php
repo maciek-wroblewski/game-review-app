@@ -11,7 +11,7 @@
     <title>{{ $headtitle }} | VGDB</title>
     <link rel="icon" type="image/png" href="{{ asset('vgdb-favicon.png') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite([
     'resources/sass/app.scss',
     'resources/js/app.js'
@@ -33,6 +33,7 @@
         .nav-link {
             transition: color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
             opacity: 0.88;
+            transform: translateY(0);
         }
 
         .nav-link:hover {
@@ -66,6 +67,7 @@
             border-radius: 999px;
             font-weight: 600;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transform: translateY(0);
         }
 
         .premium-button:hover {
