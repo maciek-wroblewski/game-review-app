@@ -103,14 +103,25 @@
                         <div class="d-flex justify-content-between align-items-center mb-5">
                             <div>
                                 <h2 class="fw-bold mb-1">
-                                    {{ __('users.recent_posts') }}
+                                    Recent Posts
                                 </h2>
                                 <p class="text-muted mb-0">
                                     Latest thoughts and opinions from {{ $user->username }}
                                 </p>
                             </div>
                         </div>
-                        <x-post.list :posts="$posts" feedId="user-posts-container" emptyMessage="{{ __('users.no_posts_yet') }}" />
+                        @forelse($posts as $post)
+                        <x-post :post="$post" />
+                        @empty
+                        <div class="alert alert-info border-0 shadow-sm p-4 text-center">
+                            <h4 class="fw-bold mb-2">
+                                {{ __('users.no_posts_yet') }}
+                            </h4>
+                            <p class="mb-0">
+                                {{ __('users.no_posts_detail') }}
+                            </p>
+                        </div>
+                        @endforelse
                     </div>
                 </div>
             </div>

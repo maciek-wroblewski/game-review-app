@@ -1,4 +1,15 @@
-{{-- Data provided by NotificationComposer: $unreadNotificationCount, $recentNotifications --}}
+@php
+    $user = auth()->user();
+    $unreadNotificationCount = $user->notifications()->where('read', false)->count();
+
+    // Use simplePaginate instead of take(10)
+    // withPath() forces the load-more button to point to the correct controller route
+    $recentNotifications = $user->notifications()
+        ->with('fromUser.avatar')
+        ->latest()
+        ->simplePaginate(10)
+        ->withPath(route('notifications.index'));
+@endphp
 
 <li class="nav-item dropdown notification-wrapper">
     
@@ -11,18 +22,18 @@
                 {{ $unreadNotificationCount }}
             </span>
         @endif
-        <span class="d-lg-none ms-2">{{ __('notifications.notifications') }}</span>
+        <span class="d-lg-none ms-2">Notifications</span>
     </a>
 
     <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2 notification-dropdown">
         <li class="px-3 py-2 border-bottom">
             <div class="d-flex justify-content-between align-items-center">
-                <h6 class="fw-bold mb-0 text-dark">{{ __('notifications.notifications') }}</h6>
+                <h6 class="fw-bold mb-0 text-dark">Notifications</h6>
                 @if($unreadNotificationCount > 0)
                     <form action="/notifications/read-all" method="POST">
                         @csrf
-                        <button type="submit" class="btn btn-sm btn-link text-decoration-none p-0 text-end">
-                            {{ __('notifications.mark_all_read') }}
+                        <button type="submit" class="btn btn-sm btn-link text-decoration-none p-0">
+                            Mark all as read
                         </button>
                     </form>
                 @endif
@@ -34,7 +45,7 @@
             <div class="js-notifications-target">
                 @if($recentNotifications->isEmpty())
                     <li class="px-3 py-4 text-center text-muted">
-                        {{ __('notifications.no_notifications') }}
+                        No notifications yet
                     </li>
                 @else
                     @include('components.notification-items', ['notifications' => $recentNotifications])
@@ -47,7 +58,7 @@
                         :paginator="$recentNotifications" 
                         target=".js-notifications-target" 
                         buttonClass="btn btn-sm btn-light text-primary fw-semibold w-100 rounded-pill" 
-                        text="{{ __('notifications.load_older') }}" 
+                        text="Load Older" 
                     />
                 </li>
             @endif

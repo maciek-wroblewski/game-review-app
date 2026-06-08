@@ -1,13 +1,6 @@
 <?php
 
 return [
-    // Mail subjects
-    'mail_new_post_subject' => 'New post from :username',
-    'mail_new_comment_subject' => ':username commented on your post',
-    'mail_new_follower_subject' => 'New follower: :username',
-    'mail_likes_post_subject' => 'Your post is popular! 🎉',
-    'mail_temporary_password_subject' => 'Your temporary password 🔑',
-
     // New follower email
     'new_follower_subject' => 'New follower',
     'greeting' => 'Hello!',

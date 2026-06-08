@@ -36,11 +36,17 @@
         <div class="row justify-content-center">
             <div class="col-xl-8">
 
-                <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('profile.media.update') }}" enctype="multipart/form-data">
                     @csrf
                     @method('PATCH')
-
+                    
                     <div class="card shadow-sm border-0 mb-4 overflow-hidden position-relative">
+                        
+                        <div class="position-absolute top-0 end-0 p-3" style="z-index: 10;">
+                            <button type="submit" class="btn btn-primary fw-bold shadow-lg d-none reveal-btn" id="saveImagesBtn">
+                                <i class="bi bi-cloud-arrow-up-fill me-1"></i> {{ __('profile.save_images') }}
+                            </button>
+                        </div>
 
                         <div class="hover-overlay-container position-relative w-100" 
                              style="cursor: pointer; height: 250px; background: linear-gradient(135deg, {{ $bannerColor1 }}, {{ $bannerColor2 }});" 
@@ -88,61 +94,26 @@
                                     <div class="mt-2">
                                         @error('avatar') <div class="text-danger small fw-bold"><i class="bi bi-exclamation-circle"></i> Avatar: {{ $message }}</div> @enderror
                                         @error('banner') <div class="text-danger small fw-bold"><i class="bi bi-exclamation-circle"></i> Banner: {{ $message }}</div> @enderror
+                                        @if(session('status') === 'profile-media-updated')
+                                            <div class="text-success small fw-bold"><i class="bi bi-check-circle"></i> {{ __('profile.media_updated') }}</div>
+                                        @endif
                                     </div>
                                 </div>
 
                             </div>
                         </div>
                     </div>
-
-                    <div class="card shadow-sm border-0 mb-4">
-                        <div class="card-body p-4 p-lg-5">
-                            <div class="mb-4">
-                                <h3 class="fw-bold mb-1">{{ __('profile.information') }}</h3>
-                                <p class="text-muted mb-0">{{ __('profile.update_details') }}</p>
-                            </div>
-
-                            <!-- Username -->
-                            <div class="mb-4">
-                                <label for="username" class="form-label fw-semibold">{{ __('profile.username') }}</label>
-                                <input id="username" name="username" type="text" class="form-control form-control-lg"
-                                       value="{{ old('username', $user->username) }}" required>
-                                @error('username')
-                                    <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <!-- Email -->
-                            <div class="mb-4">
-                                <label for="email" class="form-label fw-semibold">{{ __('profile.email_address') }}</label>
-                                <input id="email" name="email" type="email" class="form-control form-control-lg"
-                                       value="{{ old('email', $user->email) }}" required>
-                                @error('email')
-                                    <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <!-- Bio -->
-                            <div class="mb-4">
-                                <label for="bio" class="form-label fw-semibold">{{ __('profile.bio') }}</label>
-                                <textarea id="bio" name="bio" rows="5" class="form-control">{{ old('bio', $user->bio) }}</textarea>
-                                @error('bio')
-                                    <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <!-- Save Button -->
-                            <div class="d-flex align-items-center">
-                                <button type="submit" class="btn btn-primary btn-lg px-5">
-                                    {{ __('profile.save_changes') }}
-                                </button>
-                                @if(session('status') === 'profile-updated')
-                                    <span class="text-success ms-3 fw-semibold">{{ __('profile.updated_successfully') }}</span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
                 </form>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-4 p-lg-5">
+                        <div class="mb-4">
+                            <h3 class="fw-bold mb-1">{{ __('profile.information') }}</h3>
+                            <p class="text-muted mb-0">{{ __('profile.update_details') }}</p>
+                        </div>
+                        @include('profile.partials.update-profile-information-form')
+                    </div>
+                </div>
 
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body p-4 p-lg-5">

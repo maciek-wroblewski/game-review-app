@@ -13,28 +13,19 @@ class PostLikeController extends Controller
 {
     public function store(Post $post, Request $request)
     {
-        $userId = auth()->id();
+        $userId = auth()->id(); // Safe to assume this exists due to blade @auth / route middleware
 
-        // toggleLike returns true if liked, false if unliked (2 queries: toggle + atomic increment/decrement)
-        $isLiked = $post->toggleLike($userId);
-
-        // Refresh to get updated likes_count (1 query)
-        $freshPost = $post->fresh();
-
+        $post->toggleLike($userId);
+        
+        $isLiked = $post->likes()->where('user_id', $userId)->exists();
+        
         if ($isLiked) {
             Log::info("User {$userId} liked Post {$post->id}");
         } else {
             Log::info("User {$userId} unliked Post {$post->id}");
-            Notification::where([
-                'user_id' => $post->user_id,
-                'from_user_id' => $userId,
-                'type' => 'like',
-                'target_url' => url('/posts/' . $post->id),
-            ])->delete();
         }
 
-        // Notification - only create if this is a new like
-        if ($isLiked && $post->user_id !== $userId) {
+        if ($post->user_id !== $userId) {
             Notification::create([
                 'user_id' => $post->user_id,
                 'from_user_id' => $userId,
@@ -46,13 +37,13 @@ class PostLikeController extends Controller
 
         if ($request->wantsJson()) {
             return response()->json([
-                'status' => $isLiked ? 'liked' : 'unliked',
-                'likes_count' => $freshPost->likes_count,
+                'status' => $post->likes()->where('user_id', $userId)->exists() ? 'liked' : 'unliked',
+                'likes_count' => $post->likes()->count()
             ]);
         }
 
-        // Send mail on milestone (10th like) - use the already-refreshed count
-        if ($freshPost->likes_count == 10 && $post->author && $post->author->email) {
+        // send a mail to the author of the post on the 10th like
+        if ($post->likes()->count() == 10 && $post->author && $post->author->email) {
             Mail::to($post->author->email)->send(new LikesPostMail($post->author, $post));
         }
 

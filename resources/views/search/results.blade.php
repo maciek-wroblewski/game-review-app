@@ -21,9 +21,7 @@
                     
                     <div class="row g-4" id="games-grid">
                         @foreach($games as $game)
-                            <div class="col-12 col-sm-6 col-lg-4 col-xl-3 animate-fade-in">
-                                <x-game.card :game="$game" />
-                            </div>
+                            @include('games.partials.game-card-wrapper', ['game' => $game])
                         @endforeach
                     </div>
 
@@ -40,7 +38,13 @@
                         <span class="text-muted small">{{ $users->total() }} {{ __('common.users_found') }}</span>
                     </div>
                     
-                    <x-user.list :users="$users" feedId="users-grid" />
+                    <div class="row g-4" id="users-grid">
+                        @foreach($users as $user)
+                            @include('users.partials.compact-card-wrapper', ['user' => $user])
+                        @endforeach
+                    </div>
+
+                    <x-load-more :paginator="$users" target="#users-grid" :text="__('common.load_more_users')" />
                 </section>
             @endif
 

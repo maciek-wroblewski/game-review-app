@@ -8,12 +8,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Blade;
-use App\Http\Controllers\Concerns\HasPaginatedResponses;
+
 
 class PlaylistController extends Controller
 {
-    use HasPaginatedResponses;
 
     public function create()
     {
@@ -28,7 +26,7 @@ class PlaylistController extends Controller
             'cover' => 'nullable|image|max:2048', // <-- Validate as image (max 2MB)
         ]);
 
-        $validated['is_public'] = $request->boolean('is_public');
+        $validated['is_public'] = $request->has('is_public');
 
         if ($request->hasFile('cover')) {
             $validated['cover'] = $request->file('cover')->store('playlist-covers', 'public');
@@ -42,7 +40,7 @@ class PlaylistController extends Controller
         }
         $playlist->users()->attach($users);
         Log::info('Created playlist: '.$playlist->name.' (ID: '.$playlist->id.') by '.(auth()->check() ? auth()->user()->username : 'guest'));
-        return redirect("/playlists/{$playlist->id}")->with('success', __('common.playlist_created'));
+        return redirect("/playlists/{$playlist->id}")->with('success', 'Playlist created successfully!');
     }
 
     public function show(Request $request, Playlist $playlist)
@@ -58,31 +56,32 @@ class PlaylistController extends Controller
             ->where('hub_id', $playlist->id)
             ->whereNull('parent_id')
             ->latest()
-            ->withFeedRelations(['hub' => false, 'review' => false]) 
+            ->withFeedRelations() 
             ->paginate(10, ['*'], 'posts_page');
 
-        $posts->getCollection()->each(function ($post) use ($playlist) {
-            $post->setRelation('hub', $playlist);
-            $post->setRelation('review', null);
-
-            if ($post->relationLoaded('parent') && $post->parent) {
-                $post->parent->setRelation('hub', $playlist);
-                $post->parent->setRelation('review', null);
-            }
-        });
-
         if ($request->ajax()) {
+
             if ($request->has('games_page')) {
-                return $this->ajaxCardGrid($games, 'components.game.card', 'game', ['playlist' => $playlist]);
+                $html = '';
+                foreach ($games as $game) {
+                    $html .= view('playlists.partials.game-card-wrapper', compact('game', 'playlist'))->render();
+                }
+
+                return response()->json([
+                    'html' => $html,
+                    'next_page_url' => $games->nextPageUrl(),
+                ]);
             }
 
             if ($request->has('posts_page')) {
-                return $this->ajaxFeed($posts);
+                return response()->json([
+                    'html' => view('components.post.items', compact('posts'))->render(),
+                    'next_page_url' => $posts->nextPageUrl(),
+                ]);
             }
         }
 
         Log::info('Viewing playlist: '.$playlist->name.' (ID: '.$playlist->id.') by '.(Auth::check() ? Auth::user()->username : 'guest'));
-        
         return view('playlists.show', compact('playlist', 'games', 'posts'));
     }
 
@@ -107,7 +106,7 @@ class PlaylistController extends Controller
             'cover' => 'nullable|image|max:2048', // <-- Validation
         ]);
 
-        $validated['is_public'] = $request->boolean('is_public');
+        $validated['is_public'] = $request->has('is_public');
 
         if ($request->hasFile('cover')) {
             if ($playlist->cover) {
@@ -126,7 +125,7 @@ class PlaylistController extends Controller
             $playlist->users()->sync($users);
         }
         Log::info('Updated playlist: '.$playlist->name.' (ID: '.$playlist->id.') by '.(auth()->check() ? auth()->user()->username : 'guest'));
-        return redirect("/playlists/{$playlist->id}")->with('success', __('common.playlist_updated'));
+        return redirect("/playlists/{$playlist->id}")->with('success', 'Playlist updated!');
     }
 
     public function destroy(Playlist $playlist)
@@ -141,6 +140,6 @@ class PlaylistController extends Controller
 
         $playlist->delete();
         Log::info('Deleted playlist: '.$playlist->name.' (ID: '.$playlist->id.') by '.(auth()->check() ? auth()->user()->username : 'guest'));
-        return redirect('/users/' . auth()->id() . '/playlists')->with('success', __('common.playlist_deleted'));
+        return redirect('/users/' . auth()->id() . '/playlists')->with('success', 'Playlist deleted.');
     }
 }

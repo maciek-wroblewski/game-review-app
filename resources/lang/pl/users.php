@@ -60,5 +60,4 @@ return [
     
     // Empty states detail
     'no_posts_detail' => 'Ten użytkownik nie napisał jeszcze żadnego posta.',
-    'recent_posts' => 'Najnowsze posty',
 ];

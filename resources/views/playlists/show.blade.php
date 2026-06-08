@@ -9,7 +9,7 @@
             @foreach($games as $game)
             <div class="col d-flex flex-column gap-2">
                 <div class="flex-grow-1">
-                    <x-game.card :game="$game" />
+                    <x-game-card :game="$game" />
                 </div>
 
                 @auth

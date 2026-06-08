@@ -34,7 +34,7 @@ class PasswordResetLinkController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
-            return back()->withErrors(['email' => __('common.user_not_found')]);
+            return back()->withErrors(['email' => 'Nie znaleźliśmy użytkownika z tym adresem e-mail.']);
         }
 
         $temporaryPassword = Str::random(12);
@@ -49,10 +49,10 @@ class PasswordResetLinkController extends Controller
             Mail::to($user->email)->send(new TemporaryPasswordMail($temporaryPassword));
         } catch (\Exception $e) {
             Log::error('Error sending temporary password email: ' . $e->getMessage());
-            return back()->with('error', __('common.password_reset_email_error'));
+            return back()->with('error', 'Wystąpił problem z wysyłką e-maila. Skontaktuj się z administratorem.');
         }
 
         Log::info('Temporary password email sent to user: '.$user->username.' (ID: '.$user->id.')');
-        return back()->with('status', __('common.password_reset_email_sent'));
+        return back()->with('status', 'New temporary password has been sent to your email.');
     }
 }

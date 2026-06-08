@@ -17,7 +17,7 @@
         <i class="bi bi-slash-circle-fill text-danger" style="font-size: {{ $iconSize }}; filter: drop-shadow(0 0 15px rgba(220,53,69,0.7));"></i>
     </div>
     @elseif($avatarUrl)
-    <img src="{{ $avatarUrl }}" class="rounded-circle shadow border border-4 border-white mx-auto"
+    <img src="{{ $avatarUrl }}" class="rounded-circle shadow"
         style="width: {{ $size }}; height: {{ $size }}; object-fit: cover; position: relative;"
         alt="{{ $user->username }}'s Avatar" {{ $attributes }}>
     @else

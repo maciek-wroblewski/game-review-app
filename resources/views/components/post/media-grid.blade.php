@@ -48,3 +48,40 @@
     </div>
 </div>
 @endif
+
+@once
+<style>
+.media-grid { 
+    display: grid; 
+    gap: 4px; 
+    border-radius: 0.5rem; 
+    overflow: hidden; 
+    max-height: 450px; 
+    width: 100%; 
+    aspect-ratio: var(--grid-aspect-ratio, 16/9); 
+}
+.media-grid .media-item-wrapper { position: relative; overflow: hidden; cursor: zoom-in; }
+.media-grid .media-item-wrapper:hover { opacity: 0.95; }
+.media-grid .media-element { width: 100%; height: 100%; object-fit: cover;}
+
+/* Grid Layouts */
+.grid-1 { grid-template-columns: 1fr; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.grid-3 > div:first-child { grid-row: 1 / 3; }
+.grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+
+.video-play-overlay {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: #fff; background: rgba(0, 0, 0, 0.5); border-radius: 50%;
+    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+}
+
+.media-more-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, 0.6); pointer-events: none;
+}
+</style>
+@endonce

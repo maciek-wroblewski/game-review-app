@@ -2,24 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StorePostRequest;
-use App\Http\Requests\UpdatePostRequest;
-use App\Models\Game;
 use App\Models\Media;
 use App\Models\Post;
-use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\Notification;
 use App\Mail\NewPostMail;
 use App\Mail\NewCommentMail;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Concerns\HasPaginatedResponses;
 
 class PostController extends Controller
 {
-    use HasPaginatedResponses;
     /**
      * Display a listing of top-level posts (Feed).
      */
@@ -28,107 +21,59 @@ class PostController extends Controller
         // Validate scoped hub filters if provided
         $request->validate([
             'hub_type' => 'nullable|string|in:game,playlist,user',
-            'hub_id'   => 'nullable|integer',
-            'filter'   => 'nullable|string|in:latest,trending,reviews',
+            'hub_id' => 'nullable|integer',
         ]);
 
-        $filter = $request->query('filter', 'latest');
+        $posts = Post::query()
+            ->withFeedRelations() // Leveraging your built-in clean relation loader scope
+            ->whereNull('parent_id')
+            ->latest();
 
         // Context filter: Is it a specific Hub? (e.g., Playlist or Profile view)
         if ($request->filled('hub_type') && $request->filled('hub_id')) {
-            $posts = Post::query()
-                ->withFeedRelations()
-                ->whereNull('parent_id')
-                ->where('hub_type', $request->input('hub_type'))
-                ->where('hub_id', $request->input('hub_id'))
-                ->latest()
-                ->paginate(10);
-        } elseif ($filter === 'trending') {
-            $posts = Post::query()
-                ->withFeedRelations()
-                ->whereNull('parent_id')
-                ->withCount('replies')
-                ->orderByRaw('(likes_count + replies_count) DESC')
-                ->latest()
-                ->paginate(10);
-        } elseif ($filter === 'reviews') {
-            $posts = Post::query()
-                ->withFeedRelations()
-                ->whereNull('parent_id')
-                ->has('review')
-                ->latest()
-                ->paginate(10);
+            $posts->where('hub_type', $request->input('hub_type'))
+                ->where('hub_id', $request->input('hub_id'));
         } else {
-            // Default: latest global feed
-            $posts = Post::query()
-                ->withFeedRelations()
-                ->whereNull('parent_id')
-                ->latest()
-                ->paginate(10);
+            // Global feed filter: Only show standard feed items or fallback constraints if needed
+            // optional: ->whereNull('hub_type'); // dynamic depending on if global feed shows everything
         }
+
+        $posts = $posts->paginate(10);
 
         if ($request->ajax()) {
-            return $this->ajaxFeed($posts, array_filter([
-                'hub_type' => $request->input('hub_type'),
-                'hub_id'   => $request->input('hub_id'),
-                'filter'   => $filter !== 'latest' ? $filter : null,
-            ]));
+            return response()->json([
+                // Reuses your uniform post view stack
+                'html' => view('components.post.items', compact('posts'))->render(),
+                'next_page_url' => $posts->appends($request->only(['hub_type', 'hub_id']))->nextPageUrl(),
+            ]);
         }
 
-        // Sidebar widgets (shared with home page)
-        $topGames = Cache::remember('home_top_games', 3600, function () {
-            return Game::query()
-                ->withCount(['posts as reviews_count' => function ($query) {
-                    $query->has('review');
-                }])
-                ->orderBy('average_rating', 'desc')
-                ->take(5)
-                ->get();
-        });
-
-        $activeUsers = Cache::remember('home_active_users', 3600, function () {
-            return User::query()
-                ->with('avatar')
-                ->withCount(['posts', 'followers'])
-                ->orderBy('followers_count', 'desc')
-                ->orderBy('posts_count', 'desc')
-                ->take(5)
-                ->get();
-        });
-
-        if (auth()->check()) {
-            $followingIds = auth()->user()->following()->pluck('users.id')->toArray();
-            foreach ($activeUsers as $userItem) {
-                $userItem->setAttribute('is_followed_by_auth', in_array($userItem->id, $followingIds));
-            }
-        }
-
-        return view('posts.index', compact('posts', 'topGames', 'activeUsers'));
+        return view('posts.index', compact('posts'));
     }
 
     /**
      * Store a newly created post or reply.
      */
-    public function store(StorePostRequest $request)
+    public function store(Request $request)
     {
-        $validated = $request->validated();
-        $currentUser = auth()->user();
-
-        // Check lock status BEFORE creating the reply
-        if (!empty($validated['parent_id'])) {
-            $parentPost = Post::with('author')->find($validated['parent_id']);
-
-            if (!$parentPost) {
-                abort(404, 'Parent post not found.');
-            }
-
-            if ($parentPost->is_locked || $parentPost->admin_locked) {
-                return response()->json(['message' => 'This post is locked.'], 403);
-            }
+        if (auth()->user()->is_suspended) {
+            abort(403, 'Your account is suspended.');
         }
+        $validated = $request->validate([
+            'body' => 'required|string|max:5000',
+            'hub_type' => 'nullable|string',
+            'hub_id' => 'nullable|integer',
+            'parent_id' => 'nullable|exists:posts,id',
+            'is_spoiler' => 'boolean',
+            'is_locked' => 'boolean',
+            'media_ids' => 'nullable|array',
+            'media_ids.*' => 'exists:media,id',
+            'review_type' => 'nullable|string|in:recommendation,article,patch_note,announcement',
+            'rating' => 'nullable|integer|min:1|max:10',
+        ]);
 
         $post = Post::create([
-            'user_id' => $currentUser->id,
+            'user_id' => auth()->id(),
             'body' => $validated['body'],
             'hub_type' => $validated['hub_type'],
             'hub_id' => $validated['hub_id'],
@@ -137,12 +82,50 @@ class PostController extends Controller
             'is_locked' => $validated['is_locked'] ?? false,
         ]);
 
+        $currentUser = auth()->user();
+
+        if (!empty($validated['parent_id'])) {
+            $parentPost = Post::with('author')->find($validated['parent_id']);
+            Log::info("User {$currentUser->id} commented on Post {$parentPost->id} (New Comment ID: {$post->id})");
+            
+            if ($parentPost && ($parentPost->is_locked || $parentPost->admin_locked)) {
+                return response()->json(['message' => 'This post is locked.'], 403);
+            }
+
+            if ($parentPost && $parentPost->user_id && $parentPost->user_id !== $currentUser->id) {
+                // 1. Zapis do bazy z linkiem (target_url)
+                Notification::create([
+                    'user_id' => $parentPost->user_id,
+                    'from_user_id' => $currentUser->id,
+                    'type' => 'comment',
+                    'message' => __(':username commented on your post.', ['username' => $currentUser->username]),
+                    'target_url' => url('/posts/' . $parentPost->id),
+                ]);
+
+                if ($parentPost->author && $parentPost->author->email) {
+                    Mail::to($parentPost->author->email)->queue(new NewCommentMail($currentUser, $post, $parentPost));
+                }
+            }
+        } 
+        else {
+            $followers = $currentUser->followers;
+
+            foreach ($followers as $follower) {
+                Notification::create([
+                    'user_id' => $follower->id,
+                    'from_user_id' => $currentUser->id,
+                    'type' => 'new_post',
+                    'message' => __(':username just posted a new post.', ['username' => $currentUser->username]),
+                    'target_url' => url('/posts/' . $post->id), // Link do nowego posta
+                ]);
+
+                Mail::to($follower->email)->queue(new \App\Mail\NewPostMail($currentUser, $post));
+            }
+        }
+
         Log::info("User {$currentUser->id} created Post {$post->id}");
 
-        $this->handleNotifications($post, $currentUser, $parentPost ?? null);
-        $this->attachMedia($post, $validated);
-
-        if (!empty($validated['review_type'])) {
+        if (! empty($validated['review_type'])) {
             $post->review()->create([
                 'type' => $validated['review_type'],
                 'rating' => $validated['review_type'] === 'recommendation' ? $validated['rating'] : null,
@@ -150,68 +133,12 @@ class PostController extends Controller
             Log::info("User {$currentUser->id} created Review for Post {$post->id}");
         }
 
-        $this->loadPostRelations($post);
-        $html = $this->renderPostHtml($post);
-
-        return response()->json([
-            'message' => 'Post created successfully',
-            'post' => $post,
-            'html' => $html,
-        ]);
-    }
-
-    /**
-     * Handle notifications and emails for post creation.
-     */
-    private function handleNotifications(Post $post, $currentUser, ?Post $parentPost): void
-    {
-        if ($parentPost) {
-            // Reply notification
-            Log::info("User {$currentUser->id} commented on Post {$parentPost->id} (New Comment ID: {$post->id})");
-
-            if ($parentPost->user_id && $parentPost->user_id !== $currentUser->id) {
-                Notification::create([
-                    'user_id' => $parentPost->user_id,
-                    'from_user_id' => $currentUser->id,
-                    'type' => 'comment',
-                    'message' => __(':username commented on your post.', ['username' => $currentUser->username]),
-                    'target_url' => url('/posts/' . $parentPost->id),
-                    'post_id' => $post->id,
-                ]);
-
-                if ($parentPost->author && $parentPost->author->email) {
-                    Mail::to($parentPost->author->email)->queue(new NewCommentMail($currentUser, $post, $parentPost));
-                }
-            }
-        } else {
-            // New post notification to followers
-            $currentUser->load('followers');
-
-            foreach ($currentUser->followers as $follower) {
-                Notification::create([
-                    'user_id' => $follower->id,
-                    'from_user_id' => $currentUser->id,
-                    'type' => 'new_post',
-                    'message' => __(':username just posted a new post.', ['username' => $currentUser->username]),
-                    'target_url' => url('/posts/' . $post->id),
-                    'post_id' => $post->id,
-                ]);
-
-                Mail::to($follower->email)->queue(new NewPostMail($currentUser, $post));
-            }
-        }
-    }
-
-    /**
-     * Attach media to post if provided.
-     */
-    private function attachMedia(Post $post, array $validated): void
-    {
-        if (!empty($validated['media_ids'])) {
+        if (! empty($validated['media_ids'])) {
             Media::whereIn('id', $validated['media_ids'])->update(['post_id' => $post->id]);
-            $userId = $validated['user_id'] ?? auth()->id();
-            Log::info("User {$userId} attached Media to Post {$post->id}");
+            Log::info("User {$currentUser->id} attached Media to Post {$post->id}");
         }
+
+        return response()->json(['message' => 'Post created successfully', 'post' => $post]);
     }
 
     /**
@@ -219,26 +146,31 @@ class PostController extends Controller
      */
     public function show(Request $request, Post $post)
     {
-        if ($post->trashed()) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'message' => __('common.this_post_has_been_deleted'),
-                    'success' => false
-                ], 404);
-            }
-            return view('posts.deleted');
+        // 1. Load data for the main post card
+        $post->load(['author', 'media', 'review', 'hub'])->loadCount('replies');
+        Log::info("User " . auth()->id() . " viewed Post {$post->id}");
+        if (auth()->check()) {
+            $post->loadExists(['likes as liked_by_auth' => function ($q) {
+                $q->where('user_id', auth()->id());
+            }]);
         }
 
-        $post->loadCount('replies');
-        $this->loadPostRelations($post);
-        Log::info("User " . auth()->id() . " viewed Post {$post->id}");
-
+        // If the front-end requests a single post wrapper via AJAX (e.g. to reset/cancel edit views)
         if ($request->ajax()) {
             return view('components.post', compact('post'))->render();
         }
 
+        // 2. Fetch the initial block of replies for the thread
         $replies = $post->replies()
-            ->withRepliesFeed()
+            ->with(['author', 'media'])
+            ->withCount('replies')
+            ->when(auth()->check(), function ($query) {
+                $query->withExists(['likes as liked_by_auth' => function ($q) {
+                    $q->where('user_id', auth()->id());
+                }]);
+            })
+            ->latest()
+            ->orderByDesc('is_pinned')
             ->paginate(10)
             ->withPath(url("/posts/{$post->id}/replies"));
 
@@ -248,9 +180,26 @@ class PostController extends Controller
     /**
      * Update the specified post or comment inline via AJAX.
      */
-    public function update(UpdatePostRequest $request, Post $post)
+    public function update(Request $request, Post $post)
     {
-        $validated = $request->validated();
+        if (auth()->user()->is_suspended) {
+            abort(403, 'Your account is suspended.');
+        }
+        if (auth()->id() !== $post->user_id) {
+            return response()->json(['message' => 'Unauthorized actions.'], 403);
+        }
+        if ($post->admin_locked && !auth()->user()->is_admin) {
+            return response()->json(['message' => 'This post is locked by an administrator.'], 403);
+        }
+
+        $validated = $request->validate([
+            'body' => 'required|string|max:5000',
+            'media_ids' => 'present|array',
+            'media_ids.*' => 'exists:media,id',
+            'rating' => 'nullable|integer|min:1|max:10',
+            'is_spoiler' => 'boolean',
+            'is_locked' => 'boolean',
+        ]);
 
         $post->update([
             'body' => $validated['body'],
@@ -258,16 +207,37 @@ class PostController extends Controller
             'is_locked' => $validated['is_locked'] ?? false,
         ]);
 
-        $this->syncMedia($post, $validated);
+        // Sync media layout
+        if (empty($validated['media_ids'])) {
+            $post->media()->update(['post_id' => null]);
+        } else {
+            $post->media()->whereNotIn('id', $validated['media_ids'])->update(['post_id' => null]);
+            Media::whereIn('id', $validated['media_ids'])->update(['post_id' => $post->id]);
+        }
 
         if (isset($validated['rating']) && method_exists($post, 'isReview') && $post->isReview()) {
             $post->review()->update(['rating' => $validated['rating']]);
         }
 
-        $this->loadPostRelations($post);
+        // Refresh all relationship logic for clean compilation
+        $post->load(['author', 'media', 'review', 'hub']);
+        if (auth()->check()) {
+            $post->loadExists(['likes as liked_by_auth' => function ($q) {
+                $q->where('user_id', auth()->id());
+            }]);
+        }
 
-        $html = $this->renderPostHtml($post);
-        Log::info("User " . auth()->id() . " updated Post {$post->id}");
+        /**
+         * THE MULTI-VIEW WORKFLOW:
+         * If this entry has a parent_id, it's a comment! Send back comment HTML.
+         * If it does NOT have a parent_id, it's a root post! Send back the full card HTML.
+         */
+        if ($post->parent_id) {
+            $html = view('components.post.comment', compact('post'))->render();
+        } else {
+            $html = view('components.post', compact('post'))->render();
+        }
+
         return response()->json([
             'message' => 'Updated successfully!',
             'html' => $html,
@@ -275,98 +245,22 @@ class PostController extends Controller
     }
 
     /**
-     * Sync media attachments with the post.
-     */
-    private function syncMedia(Post $post, array $validated): void
-    {
-        if (empty($validated['media_ids'])) {
-            $post->media()->update(['post_id' => null]);
-        } else {
-            $post->media()->whereNotIn('id', $validated['media_ids'])->update(['post_id' => null]);
-            Media::whereIn('id', $validated['media_ids'])->update(['post_id' => $post->id]);
-        }
-    }
-
-    /**
-     * Load standard post relations and like status.
-     */
-    private function loadPostRelations(Post $post): void
-    {
-        $post->load('parent');
-
-        $postsToLoad = new \Illuminate\Database\Eloquent\Collection([$post]);
-        if ($post->parent) {
-            $postsToLoad->push($post->parent);
-        }
-
-        $postsToLoad->load(['author.avatar', 'media', 'review', 'hub']);
-
-        if ($post->parent) {
-            $post->parent->loadCount('replies');
-        }
-
-        if (auth()->check()) {
-            $postsToLoad->loadExists(['likes as liked_by_auth' => function ($q) {
-                $q->where('user_id', auth()->id());
-            }]);
-        }
-    }
-
-    /**
-     * Render the appropriate HTML for a post (comment or root post).
-     */
-    private function renderPostHtml(Post $post): string
-    {
-        if ($post->parent_id) {
-            return view('components.post.comment', compact('post'))->render();
-        }
-
-        return view('components.post', compact('post'))->render();
-    }
-
-    /**
      * Remove the specified resource.
      */
-    public function destroy(Request $request, Post $post)
+    public function destroy(Post $post)
     {
-        $this->authorize('delete', $post);
-        $parentId = $post->parent_id;
-        $hubType = $post->hub_type;
-        $hubId = $post->hub_id;
-        $isReview = $post->isReview();
-        
-        // Determine if the action is taking place on the post's dedicated show view
-        $referer = request()->headers->get('referer');
-        $refererPath = $referer ? parse_url($referer, PHP_URL_PATH) : '';
-        $isPostShowView = rtrim($refererPath, '/') === "/posts/{$post->id}";
-        
+        if (auth()->user()->is_suspended) {
+            abort(403, 'Your account is suspended.');
+        }
+        if (auth()->id() !== $post->user_id &&
+            !auth()->user()->is_admin
+            ) {
+            abort(403, 'Unauthorized.');
+        }
+
         $post->delete();
 
-        if ($request->ajax() || $request->wantsJson()) {
-            $html = '';
-            if ($isReview && $hubType === 'game') {
-                $html = view('components.post.create-form', [
-                    'hubType' => 'game',
-                    'hubId' => $hubId,
-                    'reviewType' => 'recommendation'
-                ])->render();
-            }
-
-            return response()->json([
-                'message' => __('common.post_deleted'),
-                'success' => true,
-                'html'    => $html
-            ]);
-        }
-
-        // If we are on the post's own view, we must redirect away so the user doesn't hit a 404 page
-        if ($isPostShowView) {
-            $redirectUrl = $parentId ? url('/posts/' . $parentId) : url('/');
-            return redirect($redirectUrl)->with('success', __('common.post_deleted'));
-        }
-
-        // Otherwise, simply re-render the view they are currently on (Feed, Profile, etc.)
-        return back()->with('success', __('common.post_deleted'));
+        return redirect()->back()->with('success', 'Post deleted successfully.');
     }
 
     /**
@@ -375,9 +269,19 @@ class PostController extends Controller
     public function getReplies(Request $request, Post $post)
     {
         $replies = $post->replies()
-            ->withRepliesFeed()
-            ->paginate(10);
+            ->with(['author', 'media'])
+            ->when(auth()->check(), function ($query) {
+                $query->withExists(['likes as liked_by_auth' => function ($q) {
+                    $q->where('user_id', auth()->id());
+                }]);
+            })
+            ->latest()
+            ->paginate(10); // Changed from cursorPaginate to standard pagination
 
-        return $this->ajaxFeed($replies, [], 'components.post.replies-items', 'replies');
+        return response()->json([
+            // FIX: Render replies-items HERE, not replies-list wrapper layout!
+            'html' => view('components.post.replies-items', compact('replies'))->render(),
+            'next_page_url' => $replies->nextPageUrl(),
+        ]);
     }
 }

@@ -240,7 +240,7 @@
 
                                         <div class="fw-semibold">
 
-                                            {{ $post->author->username ?? 'Deleted User' }}
+                                            {{ $post->user->username ?? 'Deleted User' }}
 
                                         </div>
 
@@ -271,7 +271,7 @@
 
                                 <div class="text-muted small">
 
-                                    {{ Str::limit($post->body, 120) }}
+                                    {{ Str::limit($post->content, 120) }}
 
                                 </div>
 

@@ -13,12 +13,11 @@ return [
     'mentioned_you' => 'mentioned you',
     'replied_to' => 'replied to',
     'shared_post' => 'shared a post',
-    'notifications' => 'Notifications',
+];
 
-    // Inline notification messages
-    'started_following' => ':username started following you.',
-    'commented_on_post' => ':username commented on your post.',
-    'posted_new_post' => ':username just posted a new post.',
-    'liked_post' => ':username liked your post.',
+return [
+    // Notifications
+    'mark_all_as_read' => 'Mark all as read',
+    'empty' => 'No notifications yet',
     'load_older' => 'Load Older',
 ];
