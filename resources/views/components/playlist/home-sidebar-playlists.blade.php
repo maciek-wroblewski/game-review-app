@@ -10,7 +10,7 @@
             @forelse($playlists as $playlist)
                 <a href="{{ url('/playlists/' . $playlist->id) }}" class="d-flex justify-content-between align-items-center p-2 rounded text-decoration-none text-dark hover-bg-light" style="transition: background 0.2s;">
                     <span class="fw-semibold text-truncate" style="max-width: 200px;">{{ $playlist->name }}</span>
-                    <span class="badge rounded-pill playlist-badge">{{ $playlist->games_count }} {{ trans_choice('games.genre', $playlist->games_count) }}</span>
+                    <span class="badge rounded-pill playlist-badge">{{ $playlist->games_count }} {{ trans_choice('games.genres_count', $playlist->games_count) }}</span>
                 </a>
             @empty
                 <div class="text-muted small text-center py-3">

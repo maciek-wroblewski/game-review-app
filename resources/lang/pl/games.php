@@ -13,6 +13,7 @@ return [
     'platform' => 'Platforma',
     'description' => 'Opis',
     'reviews_count' => '{1} Recenzja|[2,4] Recenzje|[5,*] Recenzji',
+    'genres_count' => '{1} Gatunek|[2,4] Gatunki|[5,*] Gatunków',
     'average_rating' => 'Średnia ocena',
     'explore' => 'Odkrywaj gry',
     'titles_found' => 'znalezionych tytułów',

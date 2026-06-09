@@ -12,6 +12,20 @@
             transition: opacity 0.2s ease-in-out;
             background: rgba(0, 0, 0, 0.65);
         }
+        .playlist-cover-wrapper {
+            cursor: pointer;
+            aspect-ratio: 1 / 1;
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            background: linear-gradient(135deg, #6c757d, #343a40);
+        }
+        @media (min-width: 768px) {
+            .playlist-cover-wrapper {
+                width: 200px;
+                height: 200px;
+            }
+        }
     </style>
         <form action="/playlists" method="POST" enctype="multipart/form-data">
 
@@ -21,29 +35,31 @@
             <p class="text-muted">{{ __('playlists.create_description') }}</p>
         </div>
 
-            <div class="card border-0 shadow-sm card-body p-4 d-flex flex-row gap-4 justify-content-center">
+            <div class="card border-0 shadow-sm card-body p-4">
                     @csrf
-                        <div class="mb-4">
-                            <x-input-label value="{{ __('playlists.cover_optional') }}" class="mb-2 fw-semibold" />
-                            
-                            <div class="hover-overlay-container position-relative rounded overflow-hidden shadow-sm" 
-                                style="cursor: pointer; height: 200px; width: 200px; background: linear-gradient(135deg, #6c757d, #343a40);" 
-                                onclick="document.getElementById('coverInput').click()">
+                    <div class="row g-4">
+                        <div class="col-md-auto">
+                            <div class="mb-4">
+                                <x-input-label value="{{ __('playlists.cover_optional') }}" class="mb-2 fw-semibold" />
                                 
-                                <img src="" id="coverPreview" class="w-100 h-100 object-fit-cover d-none" alt="Cover Preview">
-                                
-                                <div class="hover-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-white">
-                                    <div class="text-center">
-                                        <i class="bi bi-image fs-3 mb-1"></i>
-                                        <div class="fw-semibold">{{ __('playlists.upload_cover') }}</div>
+                                <div class="hover-overlay-container playlist-cover-wrapper position-relative rounded overflow-hidden shadow-sm" 
+                                    onclick="document.getElementById('coverInput').click()">
+                                    
+                                    <img src="" id="coverPreview" class="w-100 h-100 object-fit-cover d-none" alt="Cover Preview">
+                                    
+                                    <div class="hover-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-white">
+                                        <div class="text-center">
+                                            <i class="bi bi-image fs-3 mb-1"></i>
+                                            <div class="fw-semibold">{{ __('playlists.upload_cover') }}</div>
+                                        </div>
                                     </div>
+                                    <input type="file" name="cover" id="coverInput" class="d-none" accept="image/*" onchange="previewImage(this, 'coverPreview')">
                                 </div>
-                                <input type="file" name="cover" id="coverInput" class="d-none" accept="image/*" onchange="previewImage(this, 'coverPreview')">
+                                <x-input-error class="mt-2 text-danger" :messages="$errors->get('cover')" />
                             </div>
-                            <x-input-error class="mt-2 text-danger" :messages="$errors->get('cover')" />
                         </div>
 
-                        <div class="w-100">
+                        <div class="col-md">
                             <div class="mb-3">
                                 <x-input-label for="name" value="{{ __('playlists.name') }}" />
                                 <x-text-input id="name" name="name" type="text" class="form-control" :value="old('name')" required autofocus />
@@ -72,6 +88,7 @@
                             </div>
                             <x-user-search-selector name="users[]" :initialUsers="$playlist->users ?? [auth()->user()]" label="Playlist Owners" />
                         </div>
+                    </div>
             </div>
 
     </div>
