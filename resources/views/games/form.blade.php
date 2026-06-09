@@ -1,22 +1,29 @@
-<x-layout headtitle="Edit {{ $game->title }}">
+<x-layout headtitle="{{ $game->exists ? __('games.edit_game_profile') . ' - ' . $game->title : 'Create New Game' }}">
 
     <div class="container py-5 max-w-4xl mx-auto">
-        
         <div class="d-flex align-items-center justify-content-between mb-4">
             <div>
-                <h2 class="fw-bold mb-1">{{ __('games.edit_game_profile') }}</h2>
-                <p class="text-muted mb-0">{{ __('games.update_info_media') }} {{ $game->title }}</p>
+                <h2 class="fw-bold mb-1">{{ $game->exists ? __('games.edit_game_profile') : 'Add a New Game' }}</h2>
+                <p class="text-muted mb-0">
+                    @if($game->exists)
+                        {{ __('games.update_info_media') }} {{ $game->title }}
+                    @else
+                        Create a game profile for the database.
+                    @endif
+                </p>
             </div>
-            <a href="/games/{{ $game->id }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> {{ __('games.back_to_game') }}
+            <a href="{{ $game->exists ? '/games/' . $game->id : '/games' }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> {{ $game->exists ? __('games.back_to_game') : 'Cancel' }}
             </a>
         </div>
 
         <div class="card border-0 shadow-sm">
             <div class="card-body p-0">
-                <form method="POST" action="/games/{{ $game->id }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ $game->exists ? '/games/' . $game->id : '/games' }}" enctype="multipart/form-data">
                     @csrf
-                    @method('PATCH')
+                    @if($game->exists)
+                        @method('PATCH')
+                    @endif
 
                     <div class="p-4 bg-light border-bottom">
                         <h5 class="fw-bold mb-3">{{ __('games.game_media') }}</h5>
@@ -89,14 +96,14 @@
 
                         <x-user-search-selector 
                             name="credits" 
-                            :initialUsers="$game->credits" 
+                            :initialUsers="$game->exists ? $game->credits : [auth()->user()]" 
                             label="{{ __('games.credits') }} / Authors" 
                             :withRole="true"
                         />
 
                         <x-game.genre-selector 
                             :genres="$genres" 
-                            :selected="old('genres', $game->genres ?? [])"
+                            :selected="old('genres', $game->exists ? $game->genres : [])"
                         />
 
                         <div class="mb-4">
@@ -106,9 +113,13 @@
                         </div>
 
                         <div class="d-flex justify-content-end gap-2 pt-3 border-top">
-                            <a href="/games/{{ $game->id }}" class="btn btn-light">{{ __('games.cancel') }}</a>
+                            <a href="{{ $game->exists ? '/games/' . $game->id : '/games' }}" class="btn btn-light">{{ __('games.cancel') }}</a>
                             <button type="submit" class="btn btn-primary px-4 fw-bold">
-                                <i class="bi bi-check-circle me-1"></i> {{ __('games.save_changes') }}
+                                @if($game->exists)
+                                    <i class="bi bi-check-circle me-1"></i> {{ __('games.save_changes') }}
+                                @else
+                                    <i class="bi bi-plus-circle me-1"></i> Create Game
+                                @endif
                             </button>
                         </div>
                     </div>

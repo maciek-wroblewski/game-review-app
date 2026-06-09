@@ -17,7 +17,7 @@ class PlaylistController extends Controller
 
     public function create()
     {
-        return view('playlists.create');
+        return view('playlists.form', ['playlist' => new Playlist()]);
     }
 
     public function store(Request $request)
@@ -101,7 +101,7 @@ class PlaylistController extends Controller
             abort(403);
         }
 
-        return view('playlists.edit', compact('playlist'));
+        return view('playlists.form', compact('playlist'));
     }
 
     public function update(Request $request, Playlist $playlist)

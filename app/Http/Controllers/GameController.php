@@ -23,7 +23,10 @@ class GameController extends Controller
 
         $genres = Cache::remember('genres_list', 86400, fn() => Genre::orderBy('name')->get());
 
-        return view('games.create', compact('genres'));
+        return view('games.form', [
+            'game' => new Game(),
+            'genres' => $genres,
+        ]);
     }
 
     public function store(StoreGameRequest $request)
@@ -193,7 +196,7 @@ class GameController extends Controller
 
         $genres = Cache::remember('genres_list', 86400, fn() => Genre::orderBy('name')->get());
 
-        return view('games.edit', compact('game', 'genres'));
+        return view('games.form', compact('game', 'genres'));
     }
 
     public function update(UpdateGameRequest $request, Game $game)

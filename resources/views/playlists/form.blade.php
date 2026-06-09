@@ -1,4 +1,4 @@
-<x-layout headtitle="{{ __('playlists.edit_playlist') }} - {{ $playlist->name }}">
+<x-layout headtitle="{{ $playlist->exists ? __('playlists.edit_playlist') . ' - ' . $playlist->name : __('playlists.create_playlist') }}">
     <style>
         /* Hover Overlay Logic */
         .hover-overlay-container {
@@ -35,23 +35,23 @@
     </style>
 
     <div class="container py-5 max-w-2xl mx-auto">
-        <div class="mb-4 d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="fw-bold mb-1">{{ __('playlists.edit_playlist') }}</h1>
-                <p class="text-muted">{{ __('playlists.edit_description') }}</p>
-            </div>
+        <div class="mb-4">
+            <h1 class="fw-bold mb-1">{{ $playlist->exists ? __('playlists.edit_playlist') : __('playlists.create_playlist') }}</h1>
+            <p class="text-muted">{{ $playlist->exists ? __('playlists.edit_description') : __('playlists.create_description') }}</p>
         </div>
 
         <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
-                <form action="/playlists/{{ $playlist->id }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ $playlist->exists ? '/playlists/' . $playlist->id : '/playlists' }}" method="POST" enctype="multipart/form-data">
                     @csrf
-                    @method('PUT')
+                    @if($playlist->exists)
+                        @method('PUT')
+                    @endif
 
                     <div class="row g-4">
                         <div class="col-md-auto">
                             <div class="mb-4">
-                                <x-input-label value="{{ __('playlists.cover') }}" class="mb-2 fw-semibold" />
+                                <x-input-label value="{{ $playlist->exists ? __('playlists.cover') : __('playlists.cover_optional') }}" class="mb-2 fw-semibold" />
                                 
                                 <div class="hover-overlay-container playlist-cover-wrapper position-relative rounded overflow-hidden shadow-sm" 
                                      onclick="document.getElementById('coverInput').click()">
@@ -64,12 +64,14 @@
                                     <div class="hover-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-white">
                                         <div class="text-center">
                                             <i class="bi bi-image fs-3 mb-1"></i>
-                                            <div class="fw-semibold">{{ __('playlists.change_cover') }}</div>
+                                            <div class="fw-semibold">{{ $playlist->exists ? __('playlists.change_cover') : __('playlists.upload_cover') }}</div>
                                         </div>
                                     </div>
                                     <input type="file" name="cover" id="coverInput" class="d-none" accept="image/*" onchange="previewImage(this, 'coverPreview')">
                                 </div>
-                                <div class="form-text mt-1 playlist-cover-helper">{{ __('playlists.keep_current_cover') }}</div>
+                                @if($playlist->exists && $playlist->cover)
+                                    <div class="form-text mt-1 playlist-cover-helper">{{ __('playlists.keep_current_cover') }}</div>
+                                @endif
                                 <x-input-error class="mt-2 text-danger" :messages="$errors->get('cover')" />
                             </div>
                         </div>
@@ -91,15 +93,18 @@
                             </div>
 
                             <div class="mb-4 form-check form-switch">
-                                <input type="checkbox" class="form-check-input" id="is_public" name="is_public" value="1" {{ old('is_public', $playlist->is_public) ? 'checked' : '' }}>
+                                <input type="checkbox" class="form-check-input" id="is_public" name="is_public" value="1" {{ old('is_public', $playlist->exists ? $playlist->is_public : true) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="is_public">{{ __('playlists.make_public') }}</label>
+                                @if(!$playlist->exists)
+                                    <div class="form-text">{{ __('playlists.public_description') }}</div>
+                                @endif
                             </div>
 
                             <div class="d-flex justify-content-end gap-2 mt-4">
-                                <a href="/playlists/{{ $playlist->id }}" class="btn btn-outline-secondary">{{ __('common.cancel') }}</a>
+                                <a href="{{ $playlist->exists ? '/playlists/' . $playlist->id : 'javascript:history.back()' }}" class="btn btn-outline-secondary">{{ __('common.cancel') }}</a>
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-plus-lg me-1"></i>
-                                    {{ __('common.save_changes') }}
+                                    {{ $playlist->exists ? __('common.save_changes') : __('playlists.create_playlist') }}
                                 </button>
                             </div>
 
