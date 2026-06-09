@@ -150,7 +150,7 @@
                 {{-- Quick Create Post (auth only) --}}
                 @auth
                     <div class="mb-4">
-                        <x-post.create-form />
+                        <x-post.form />
                     </div>
                 @endauth
 

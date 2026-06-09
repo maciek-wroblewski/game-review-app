@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('average_rating', 3, 2)->default(0.00);
             $table->string('publisher')->nullable()->after('details');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

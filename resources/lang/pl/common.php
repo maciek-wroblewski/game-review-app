@@ -65,6 +65,8 @@ return [
     'view_profile' => 'Zobacz profil',
     'game_created' => 'Gra została pomyślnie utworzona.',
     'game_updated' => 'Informacje o grze zostały pomyślnie zaktualizowane.',
+    'game_deleted' => 'Gra została pomyślnie usunięta.',
+    'confirm_delete_game' => 'Czy na pewno chcesz usunąć tę grę? Ta akcja jest nieodwracalna.',
     'playlist_created' => 'Playlista została pomyślnie utworzona!',
     'playlist_updated' => 'Playlista zaktualizowana!',
     'playlist_deleted' => 'Playlista usunięta.',

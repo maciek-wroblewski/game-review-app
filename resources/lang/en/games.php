@@ -46,4 +46,6 @@ return [
     'cancel' => 'Cancel',
     'save_changes' => 'Save Changes',
     'add_game' => 'Add Game',
+    'deleted_game' => 'Deleted Game',
+    'this_game_has_been_deleted' => '[This game has been deleted]',
 ];

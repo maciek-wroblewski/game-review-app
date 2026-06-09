@@ -22,5 +22,5 @@ return [
     'my_playlists' => 'Moje Playlisty',
     'welcome_back' => 'Witaj z powrotem, :username!',
     'no_feed_posts' => 'Brak wpisów od obserwowanych użytkowników. Sprawdź Globalny Feed!',
-    'top_reviewers' => 'Najlepsi Recenzenci',
+    'top_reviewers' => 'Najaktywniejsi Użytkownicy',
 ];

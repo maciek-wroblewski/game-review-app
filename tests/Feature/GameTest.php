@@ -255,3 +255,56 @@ test('ajax game list pagination returns json grid', function () {
         'next_page_url',
     ]);
 });
+
+/* -------------------------------------------------------------------------- */
+/*  GAME SOFT DELETE                                                          */
+/* -------------------------------------------------------------------------- */
+
+test('admin can soft delete a game', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $game = Game::factory()->create();
+
+    $response = $this->actingAs($admin)->delete("/games/{$game->id}");
+
+    $response->assertRedirect('/games');
+    expect($game->fresh()->deleted_at)->not()->toBeNull();
+});
+
+test('non-admin cannot soft delete a game', function () {
+    $user = User::factory()->create(['is_admin' => false]);
+    $game = Game::factory()->create();
+
+    $response = $this->actingAs($user)->delete("/games/{$game->id}");
+
+    $response->assertForbidden();
+    expect($game->fresh()->deleted_at)->toBeNull();
+});
+
+test('guest cannot soft delete a game', function () {
+    $game = Game::factory()->create();
+
+    $response = $this->delete("/games/{$game->id}");
+
+    $response->assertRedirect('/login');
+    expect($game->fresh()->deleted_at)->toBeNull();
+});
+
+test('viewing a deleted game returns the deleted view instead of a 404', function () {
+    $game = Game::factory()->create();
+    $game->delete();
+
+    $response = $this->get("/games/{$game->id}");
+
+    $response->assertOk();
+    $response->assertViewIs('games.deleted');
+});
+
+test('viewing deleted game discussions returns the deleted view instead of a 404', function () {
+    $game = Game::factory()->create();
+    $game->delete();
+
+    $response = $this->get("/games/{$game->id}/discussions");
+
+    $response->assertOk();
+    $response->assertViewIs('games.deleted');
+});

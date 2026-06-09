@@ -71,7 +71,7 @@
                 @auth
                     <!-- Quick Create Post Widget -->
                     <div class="mb-4">
-                        <x-post.create-form />
+                        <x-post.form />
                     </div>
                 @endauth
 

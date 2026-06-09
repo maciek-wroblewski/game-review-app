@@ -22,5 +22,5 @@ return [
     'my_playlists' => 'My Playlists',
     'welcome_back' => 'Welcome back, :username!',
     'no_feed_posts' => 'No posts from users you follow yet. Check out the Global Feed!',
-    'top_reviewers' => 'Top Reviewers',
+    'top_reviewers' => 'Top Posters',
 ];

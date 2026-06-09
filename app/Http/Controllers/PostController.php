@@ -391,7 +391,7 @@ class PostController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             $html = '';
             if ($isReview && $hubType === 'game') {
-                $html = view('components.post.create-form', [
+                $html = view('components.post.form', [
                     'hubType' => 'game',
                     'hubId' => $hubId,
                     'reviewType' => 'recommendation'

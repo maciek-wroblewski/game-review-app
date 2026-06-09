@@ -26,8 +26,8 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/games', [GameController::class, 'index']);
 Route::get('/search', [SearchController::class, 'index']);
-Route::get('/games/{game}', [GameController::class, 'show']);
-Route::get('/games/{game}/discussions', [GameController::class, 'discussions']);
+Route::get('/games/{game}', [GameController::class, 'show'])->withTrashed();
+Route::get('/games/{game}/discussions', [GameController::class, 'discussions'])->withTrashed();
 
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{post}', [PostController::class, 'show'])->withTrashed();
@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
     // Edit Game
     Route::get('/games/{game}/edit', [GameController::class, 'edit'])->name('games.edit');
     Route::patch('/games/{game}', [GameController::class, 'update'])->name('games.update');
+    Route::delete('/games/{game}', [GameController::class, 'destroy'])->name('games.destroy');
         
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'show'])->name('dashboard');
 

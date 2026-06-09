@@ -23,4 +23,6 @@ return [
     'add_to_list' => 'Dodaj do listy',
     'remove_from_list' => 'Usuń z listy',
     'add_game' => 'Dodaj grę',
+    'deleted_game' => 'Usunięta gra',
+    'this_game_has_been_deleted' => '[Ta gra została usunięta]',
 ];

@@ -57,6 +57,16 @@ class GameController extends Controller
 
     public function show(Request $request, Game $game)
     {
+        if ($game->trashed()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'message' => __('games.this_game_has_been_deleted'),
+                    'success' => false
+                ], 404);
+            }
+            return view('games.deleted');
+        }
+
         $game = Cache::remember("game_show_model_{$game->id}", 3600, function() use ($game) {
             $game->load(['genres', 'credits']);
             return $game;
@@ -126,6 +136,16 @@ class GameController extends Controller
 
     public function discussions(Request $request, Game $game)
     {
+        if ($game->trashed()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'message' => __('games.this_game_has_been_deleted'),
+                    'success' => false
+                ], 404);
+            }
+            return view('games.deleted');
+        }
+
         $game->load(['genres', 'credits']);
         $game->loadCount(['posts' => function ($query) {
             $query->doesntHave('review');
@@ -308,5 +328,19 @@ class GameController extends Controller
             'success' => true,
             'data' => $reviews,
         ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+
+    public function destroy(Game $game)
+    {
+        $this->authorize('delete', $game);
+
+        $gameId = $game->id;
+        $game->delete();
+
+        // Clear cache
+        Cache::forget("game_show_model_{$gameId}");
+        Cache::forget('games_total_count');
+
+        return redirect('/games')->with('success', __('common.game_deleted'));
     }
 }

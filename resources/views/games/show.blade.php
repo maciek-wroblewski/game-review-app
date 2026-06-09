@@ -50,7 +50,7 @@
                 @if($userReviewPost)
                 <x-post :post="$userReviewPost" />
                 @else
-                <x-post.create-form hub-type="game" :hub-id="$game->id" review-type="recommendation" />
+                <x-post.form hub-type="game" :hub-id="$game->id" review-type="recommendation" />
                 @endif
 
                 <!-- Existing Reviews List (Now using components) -->

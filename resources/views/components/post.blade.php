@@ -104,13 +104,13 @@
             @endif
         </div>
 
-        <x-post.edit-form :post="$post" />
+        <x-post.form :post="$post" />
         @endif
 
 
         <x-post.reply-container :post="$post">
             @if(!$post->is_locked && !$post->admin_locked)
-            <x-post.create-form :hubType="$post->hubable_type ?? $post->hub_type"
+            <x-post.form :hubType="$post->hubable_type ?? $post->hub_type"
                 :hubId="$post->hubable_id ?? $post->hub_id" :parentId="$post->id" />
             @endif
         </x-post.reply-container>

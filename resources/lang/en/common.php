@@ -73,6 +73,8 @@ return [
     'view_profile' => 'View Profile',
     'game_created' => 'Game created successfully.',
     'game_updated' => 'Game information updated successfully.',
+    'game_deleted' => 'Game deleted successfully.',
+    'confirm_delete_game' => 'Are you sure you want to delete this game? This action cannot be undone.',
     'playlist_created' => 'Playlist created successfully!',
     'playlist_updated' => 'Playlist updated!',
     'playlist_deleted' => 'Playlist deleted.',

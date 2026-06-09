@@ -23,4 +23,12 @@ class GamePolicy
         // User must be an admin, OR they must be listed in the game's credits
         return $user->is_admin || $game->credits->contains('id', $user->id);
     }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Game $game): bool
+    {
+        return $user->is_admin;
+    }
 }

@@ -3,7 +3,7 @@
 <div class="hub-comments-wrapper my-4">
         <div class="mb-4">
             {{-- Passing down our explicit scoping values to the post-creation card --}}
-            <x-post.create-form :hub-type="$hubType" :hub-id="$hubId" />
+            <x-post.form :hub-type="$hubType" :hub-id="$hubId" />
         </div>
 
     {{-- Pass the heavy lifting to our unified post list component! --}}

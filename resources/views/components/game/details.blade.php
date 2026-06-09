@@ -7,15 +7,27 @@
         @endif
         <div class="card-body">
             
-            {{-- Header with Edit Button --}}
+            {{-- Header with Edit & Delete Buttons --}}
             <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
                 <h5 class="card-title fw-bold mb-0">{{ __('games.info') }}</h5>
                 
-                @if(auth()->check() && (auth()->user()->is_admin || $game->credits->contains('id', auth()->id())))
-                    <a href="/games/{{ $game->id }}/edit" class="btn btn-sm btn-outline-secondary">
-                        <i class="bi bi-pencil"></i> Edit
-                    </a>
-                @endif
+                <div class="d-flex gap-2">
+                    @if(auth()->check() && (auth()->user()->is_admin || $game->credits->contains('id', auth()->id())))
+                        <a href="/games/{{ $game->id }}/edit" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil"></i> {{ __('common.edit') }}
+                        </a>
+                    @endif
+                    
+                    @if(auth()->check() && auth()->user()->is_admin)
+                        <form method="POST" action="/games/{{ $game->id }}" onsubmit="return confirm('{{ __('common.confirm_delete_game') }}')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash-fill"></i> {{ __('common.delete') }}
+                            </button>
+                        </form>
+                    @endif
+                </div>
             </div>
 
             <p class="mb-2">
